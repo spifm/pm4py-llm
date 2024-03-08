@@ -120,3 +120,10 @@ dist
 # Saved models:
 saved_models/*
 !saved_models/.gitkeep
+
+# Configuration
+config/config.json
+
+# pycache
+config/__pycache__/
+lib/__pycache__/

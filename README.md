@@ -10,6 +10,12 @@
 docker-compose up -d
 ```
 
+### (OPTIONAL) Create a config file called config.json using the template to specify configuration parameters
+
+```bash
+cp config/config_template.json config/config.json
+```
+
 ### Run the python script
 
 ```bash

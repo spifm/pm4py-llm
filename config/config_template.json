@@ -1,0 +1,12 @@
+{
+    "debug": 1,
+    "filter": {
+        "game_result": 0,
+        "exam_result": 1
+    },
+    "discovery": {
+        "bpmn": 0,
+        "dfg": 0,
+        "temporal_profile": 1
+    }
+}

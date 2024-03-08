@@ -1,0 +1,9 @@
+version: "3.9"
+services:
+  pm4py:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: pm4py_app
+    volumes:
+      - .:/pm4py_app

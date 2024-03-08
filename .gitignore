@@ -117,9 +117,9 @@ dist
 .tern-port
 
 
-# Saved models:
-saved_models/*
-!saved_models/.gitkeep
+# Saved outputs:
+output/*
+!output/.gitkeep
 
 # Configuration
 config/config.json

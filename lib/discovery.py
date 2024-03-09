@@ -4,29 +4,27 @@ import csv
 from config.constants import *
 
 # BPMN: Discover and save model
-def get_bpmn(filtered_log):
+def get_bpmn(filtered_log, file_name):
     noise_threshold = 0.0
     noise_threshold = float(input("Insert the ratio (0-100) to filter infrequent paths: "))
     bpmn_model = pm4py.discover_bpmn_inductive(filtered_log, noise_threshold/100)
-    pm4py.save_vis_bpmn(bpmn_model, "{}/bpmn_{}.png".format(outputs_path, int(time.time())))
+    pm4py.save_vis_bpmn(bpmn_model, file_name)
 
 # Directly-Follows Graph (DFG): Discover and save model
-def get_dfg(filtered_log):
+def get_dfg(filtered_log, file_name):
     dfg, start_activities, end_activities = pm4py.discover_dfg(filtered_log, case_id_key='case_id', activity_key='concept:name', timestamp_key='time:timestamp')
-    pm4py.save_vis_dfg(dfg, start_activities, end_activities, "{}/dfg_{}.png".format(outputs_path, int(time.time())))
+    pm4py.save_vis_dfg(dfg, start_activities, end_activities, file_name)
 
 # Temporal profile: Discover and create csv file
-def get_temporal_profile(filtered_log, debug = 0):
+def get_temporal_profile(filtered_log, file_name, debug = 0):
     temporal_profile = pm4py.discover_temporal_profile(filtered_log, activity_key='concept:name', case_id_key='case_id', timestamp_key='time:timestamp')
 
     if debug > 0:
         print("Temporal profile:\n")
 
-    filePath = "{}/temporal_profile_{}.csv".format(outputs_path, int(time.time()))
-
     fields = ["Activities", "AVG time (seconds)", "STD (seconds)"]
 
-    with open(filePath, 'w', newline = '') as csv_file:
+    with open(file_name, 'w', newline = '') as csv_file:
         writer = csv.DictWriter(csv_file, fieldnames = fields)
         writer.writeheader()
         writer = csv.writer(csv_file)
@@ -42,3 +40,12 @@ def get_temporal_profile(filtered_log, debug = 0):
                 # Source list --> print("{}: {}\n".format(key, value))
 
             writer.writerow([key, value_as_list[0], value_as_list[1]])
+
+# Build file name
+def build_file_name(model_type, number_of_cases, filter_param, min, max, file_extension):
+    file_name_base = model_type + "-numcases_" + str(number_of_cases) + "-" + filter_param + "-" + str(min) + "-" + str(max)
+    return outputs_path + "/" + file_name_base + "." + file_extension
+
+# Build file name with timestamp
+def build_file_name_with_timestamp(model_type, number_of_cases, file_extension):
+    return "{}/{}-numcases_{}_{}.{}".format(outputs_path, model_type, number_of_cases, int(time.time()), file_extension)

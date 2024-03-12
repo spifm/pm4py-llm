@@ -25,14 +25,17 @@ def get_temporal_profile(filtered_log, file_name, debug = 0):
     fields = ["Activities", "AVG time (seconds)", "STD (seconds)"]
 
     with open(file_name, 'w', newline = '') as csv_file:
-        writer = csv.DictWriter(csv_file, fieldnames = fields)
+        writer = csv.DictWriter(csv_file, fieldnames = fields, delimiter = ';')
         writer.writeheader()
-        writer = csv.writer(csv_file)
+        writer = csv.writer(csv_file, delimiter = ';')
 
         for key, value in temporal_profile.items():
             value_as_list = list(value)
-            value_as_list[0] = value_as_list[0] / 1000
-            value_as_list[1] = value_as_list[1] / 1000
+
+            for i in range(0, len(value_as_list)):
+                value_as_list[i] = round((value_as_list[i] / 1000), 3)
+                value_as_list[i] = str(value_as_list[i]).replace('.', ',')
+
             converted_value = tuple(value_as_list)
 
             if debug > 0:

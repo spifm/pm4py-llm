@@ -41,17 +41,14 @@ if __name__ == "__main__":
     # Discover and save models
     if bpmn > 0:
         file_name = discovery.build_file_name("bpmn", number_of_cases, filter_param, min, max, "png")
-        file_name = discovery.build_file_name_with_timestamp("bpmn", number_of_cases, "png")
         discovery.get_bpmn(filtered_log, file_name)
     
     if dfg > 0:
         file_name = discovery.build_file_name("dfg", number_of_cases, filter_param, min, max, "png")
-        file_name = discovery.build_file_name_with_timestamp("dfg", number_of_cases, "png")
         discovery.get_dfg(filtered_log, file_name)
 
     if temporal_profile > 0:
         file_name = discovery.build_file_name("temporal_profile", number_of_cases, filter_param, min, max, "csv")
-        file_name = discovery.build_file_name_with_timestamp("temporal_profile", number_of_cases, "csv")
         discovery.get_temporal_profile(filtered_log, file_name)
 
             

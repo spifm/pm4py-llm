@@ -1,8 +1,12 @@
 {
     "debug": 1,
     "filter": {
-        "game_result": 1,
-        "exam_result": 0
+        "level": "trace",
+        "attr": {
+            "game_result": 0,
+            "exam_result": 1,
+            "grade_er": 0
+        }
     },
     "discovery": {
         "bpmn": 1,

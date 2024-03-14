@@ -16,13 +16,15 @@ def get_dfg(filtered_log, file_name):
     pm4py.save_vis_dfg(dfg, start_activities, end_activities, file_name)
 
 # Temporal profile: Discover and create csv file
+# Implements the approach described in: Stertz, Florian, Jürgen Mangler, and Stefanie Rinderle-Ma.
+# “Temporal Conformance Checking at Runtime based on Time-infused Process Models.” arXiv preprint arXiv:2008.07262 (2020).
 def get_temporal_profile(filtered_log, file_name, debug = 0):
     temporal_profile = pm4py.discover_temporal_profile(filtered_log, activity_key='concept:name', case_id_key='case_id', timestamp_key='time:timestamp')
 
     if debug > 0:
         print("Temporal profile:\n")
 
-    fields = ["Activities", "AVG time (seconds)", "STD (seconds)"]
+    fields = ["Activities", "AVG time", "STD"]
 
     with open(file_name, 'w', newline = '') as csv_file:
         writer = csv.DictWriter(csv_file, fieldnames = fields, delimiter = ';')
@@ -33,13 +35,13 @@ def get_temporal_profile(filtered_log, file_name, debug = 0):
             value_as_list = list(value)
 
             for i in range(0, len(value_as_list)):
-                value_as_list[i] = round((value_as_list[i] / 1000), 3)
+                value_as_list[i] = round((value_as_list[i]), 3)
                 value_as_list[i] = str(value_as_list[i]).replace('.', ',')
 
             converted_value = tuple(value_as_list)
 
             if debug > 0:
-                print(f"Key: {key}, Time in secs. (avg, std): {converted_value}")
+                print(f"Key: {key}, Time (avg, std): {converted_value}")
                 # Source list --> print("{}: {}\n".format(key, value))
 
             writer.writerow([key, value_as_list[0], value_as_list[1]])

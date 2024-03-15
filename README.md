@@ -10,6 +10,9 @@ The configuration file is located in the config folder. The file is called confi
     - `trace` --> to filter by trace attributes
     - `event` --> to filter by event attributes
 - `filter.attr`: attribute to be used for filtering. The attribute must be present in the event or trace attributes such as `grade_outcome`, `grade_er`, `grade_final`, etc.
+- `filter.export_formats`: list of export formats to be used. If empty, no export will be performed. Possible values are:
+    - `csv` --> to export the filtered log in CSV format
+    - `xes` --> to export the filtered log in XES format
 - `discovery.bpmn`: 1 to enable the generation of the BPMN model, 0 to disable it
 - `discovery.dfg`: 1 to enable the generation of the DFG, 0 to disable it
 - `discovery.temporal_profile`: 1 to enable the generation of a temporal profile, 0 to disable it

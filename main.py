@@ -12,13 +12,13 @@ if __name__ == "__main__":
     debug = config['debug']
     filter_level = config['filter']['level']
     filter_attr = config['filter']['attr']
+    export_formats = config['filter']['export_formats']
     bpmn = config['discovery']['bpmn']
     dfg = config['discovery']['dfg']
     temporal_profile = config['discovery']['temporal_profile']
 
     # Convert the CSV event log to XES
     log = pm4py.format_dataframe(pandas.read_csv('dataset/anon.csv', sep=','), case_id='case_id',activity_key='concept:name', timestamp_key='time:timestamp')
-    name = ""
 
     # Filter log by config parameters
     filtered_log, min, max,  = filter.filter_log(log, filter_attr, filter_level)
@@ -35,6 +35,12 @@ if __name__ == "__main__":
         print("Case IDs: {}".format(case_values))
         number_of_cases = len(case_values)
         print("Number of cases: {}\n".format(number_of_cases))
+
+    # Export filtered log if enabled
+    if export_formats:
+        for export_format in export_formats:
+            file_name = discovery.build_file_name("filtered_log", number_of_cases, filter_attr, min, max, export_format)
+            filter.export_filtered_log(filtered_log, file_name, export_format)
 
     # Discover and save models
     if bpmn > 0:

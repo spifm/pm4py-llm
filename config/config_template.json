@@ -2,7 +2,8 @@
     "debug": 1,
     "filter": {
         "level": "trace",
-        "attr": "game_result"
+        "attr": "game_result",
+        "export_formats": []
     },
     "discovery": {
         "bpmn": 1,

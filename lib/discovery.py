@@ -3,17 +3,26 @@ import time
 import csv
 from config.constants import *
 
-# BPMN: Discover and save model
-def get_bpmn(filtered_log, file_name):
+# Petri Net: Discover and save model
+def get_petri_net(filtered_log, file_name, pn_filename):
     noise_threshold = 0.0
-    noise_threshold = float(input("Insert the ratio (0-100) to filter infrequent paths: "))
-    bpmn_model = pm4py.discover_bpmn_inductive(filtered_log, noise_threshold/100)
-    pm4py.save_vis_bpmn(bpmn_model, file_name)
+    noise_threshold = float(input("Petri Net: Insert the ratio (0-100) to filter infrequent paths: "))
+    net, im, fm = pm4py.discover_petri_net_inductive(filtered_log, noise_threshold/100, case_id_key='case_id', activity_key='concept:name', timestamp_key='time:timestamp')
+    pm4py.write_pnml(net, im, fm, pn_filename)
+    pm4py.save_vis_petri_net(net, im, fm, file_name)
+    return net, im, fm
 
 # Directly-Follows Graph (DFG): Discover and save model
 def get_dfg(filtered_log, file_name):
     dfg, start_activities, end_activities = pm4py.discover_dfg(filtered_log, case_id_key='case_id', activity_key='concept:name', timestamp_key='time:timestamp')
     pm4py.save_vis_dfg(dfg, start_activities, end_activities, file_name)
+
+# BPMN: Discover and save model
+def get_bpmn(filtered_log, file_name):
+    noise_threshold = 0.0
+    noise_threshold = float(input("BPMN: Insert the ratio (0-100) to filter infrequent paths: "))
+    bpmn_model = pm4py.discover_bpmn_inductive(filtered_log, noise_threshold/100)
+    pm4py.save_vis_bpmn(bpmn_model, file_name)
 
 # Temporal profile: Discover and create csv file
 # Implements the approach described in: Stertz, Florian, Jürgen Mangler, and Stefanie Rinderle-Ma.

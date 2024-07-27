@@ -2,12 +2,25 @@
     "debug": 1,
     "filter": {
         "level": "trace",
-        "attr": "game_result",
+        "attr": "game_outcome",
         "export_formats": []
     },
     "discovery": {
-        "bpmn": 1,
+        "petri_net": 1,
         "dfg": 1,
+        "bpmn": 1,
         "temporal_profile": 1
+    },
+    "llm": {
+        "hugging_face_api_key": "your_hugging_face_api_key",
+        "model_name": "mistralai/Mistral-7B-Instruct-v0.3",
+        "petri_net": {
+            "enabled": 1,
+            "max_tokens": 500
+        },
+        "dfg": {
+            "enabled": 1,
+            "max_tokens": 500
+        }
     }
 }

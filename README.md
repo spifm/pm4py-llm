@@ -16,6 +16,14 @@ The configuration file is located in the config folder. The file is called confi
 - `discovery.bpmn`: 1 to enable the generation of the BPMN model, 0 to disable it
 - `discovery.dfg`: 1 to enable the generation of the DFG, 0 to disable it
 - `discovery.temporal_profile`: 1 to enable the generation of a temporal profile, 0 to disable it
+- `llm.hugging_face_api_key`: API key to use the Hugging Face API for the LLM model
+- `llm.model_name`: name of the LLM model to use
+- `llm.petri_net`: configuration for analyzing an abstraction of Petri Net
+    - `enabled`: 1 to enable the analysis, 0 to disable it
+    - `max_tokens`: maximum number of tokens to be used in the analysis of the Petri Net
+- `llm.dfg`: configuration for analyzing an abstraction of Petri Net. If empty, analysis will not be performed
+    - `enabled`: 1 to enable the analysis, 0 to disable it
+    - `max_tokens`: maximum number of tokens to be used in the analysis of the DFG
 
 
 ## Instructions

@@ -75,10 +75,12 @@ if __name__ == "__main__":
         print("\n\nPetri net analysis:\n\n")
         petri_net_description = pm4py.llm.abstract_petri_net(net, im, fm)
         prompt = f"Analyze the following Petri net model and provide a list of behavior patterns:\n\n{petri_net_description}"
-        llm_prompt.exec_prompt(client, llm_config['petri_net'], prompt)
+        file_name = discovery.build_file_name("petri_net_analysis", number_of_cases, filter_attr, min, max, "txt")
+        llm_prompt.exec_prompt(client, llm_config['petri_net'], prompt, file_name, debug)
 
     if dfg_enabled > 0 and llm_config['petri_net']['enabled'] > 0:
         print("\n\nDFG analysis:\n\n")
         dfg_description = pm4py.llm.abstract_dfg(filtered_log)
         prompt = f"Analyze the following DFG model and provide a list of behavior patterns:\n\n{dfg_description}"
-        llm_prompt.exec_prompt(client, llm_config['dfg'], prompt)
+        file_name = discovery.build_file_name("dfg_analysis", number_of_cases, filter_attr, min, max, "txt")
+        llm_prompt.exec_prompt(client, llm_config['dfg'], prompt, file_name, debug)

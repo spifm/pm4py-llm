@@ -1,5 +1,7 @@
 import pandas
 import pm4py
+import time
+import os
 from config.constants import *
 import lib.config_loader as config_loader
 import lib.filter as filter
@@ -20,6 +22,14 @@ if __name__ == "__main__":
     bpmn_enabled = config['discovery']['bpmn']
     temporal_profile_enabled = config['discovery']['temporal_profile']
     llm_config = config['llm']
+
+
+    # Create output directory
+    exec_path = str(int(time.time()))
+    try:
+        os.makedirs(outputs_path + "/" + exec_path, exist_ok=True)
+    except Exception as e:
+        print(f"Error creating output directory '{exec_path}': {e}")
 
     # Convert the CSV event log to XES
     log = pm4py.format_dataframe(pandas.read_csv('dataset/anon.csv', sep=','), case_id='case_id',activity_key='concept:name', timestamp_key='time:timestamp')
@@ -43,25 +53,25 @@ if __name__ == "__main__":
     # Export filtered log if enabled
     if export_formats:
         for export_format in export_formats:
-            file_name = discovery.build_file_name("filtered_log", number_of_cases, filter_attr, min, max, export_format)
+            file_name = discovery.build_file_name(exec_path, "filtered_log", number_of_cases, filter_attr, min, max, export_format)
             filter.export_filtered_log(filtered_log, file_name, export_format)
 
     # Discover and save models
     if petri_net_enabled > 0:
-        file_name = discovery.build_file_name("petri_net", number_of_cases, filter_attr, min, max, "png")
-        pn_file_name = discovery.build_file_name("petri_net", number_of_cases, filter_attr, min, max, "pnml")
+        file_name = discovery.build_file_name(exec_path, "petri_net", number_of_cases, filter_attr, min, max, "png")
+        pn_file_name = discovery.build_file_name(exec_path, "petri_net", number_of_cases, filter_attr, min, max, "pnml")
         net, im, fm = discovery.get_petri_net(filtered_log, file_name, pn_file_name)
 
     if dfg_enabled  > 0:
-        file_name = discovery.build_file_name("dfg", number_of_cases, filter_attr, min, max, "png")
+        file_name = discovery.build_file_name(exec_path, "dfg", number_of_cases, filter_attr, min, max, "png")
         discovery.get_dfg(filtered_log, file_name)
 
     if bpmn_enabled  > 0:
-        file_name = discovery.build_file_name("bpmn", number_of_cases, filter_attr, min, max, "png")
+        file_name = discovery.build_file_name(exec_path, "bpmn", number_of_cases, filter_attr, min, max, "png")
         discovery.get_bpmn(filtered_log, file_name)
 
     if temporal_profile_enabled  > 0:
-        file_name = discovery.build_file_name("temporal_profile", number_of_cases, filter_attr, min, max, "csv")
+        file_name = discovery.build_file_name(exec_path, "temporal_profile", number_of_cases, filter_attr, min, max, "csv")
         discovery.get_temporal_profile(filtered_log, file_name)
 
 
@@ -75,12 +85,12 @@ if __name__ == "__main__":
         print("\n\nPetri net analysis:\n\n")
         petri_net_description = pm4py.llm.abstract_petri_net(net, im, fm)
         prompt = f"Analyze the following Petri net model and provide a list of behavior patterns:\n\n{petri_net_description}"
-        file_name = discovery.build_file_name("petri_net_analysis", number_of_cases, filter_attr, min, max, "txt")
+        file_name = discovery.build_file_name(exec_path, "petri_net_analysis", number_of_cases, filter_attr, min, max, "txt")
         llm_prompt.exec_prompt(client, llm_config['petri_net'], prompt, file_name, debug)
 
     if dfg_enabled > 0 and llm_config['petri_net']['enabled'] > 0:
         print("\n\nDFG analysis:\n\n")
         dfg_description = pm4py.llm.abstract_dfg(filtered_log)
         prompt = f"Analyze the following DFG model and provide a list of behavior patterns:\n\n{dfg_description}"
-        file_name = discovery.build_file_name("dfg_analysis", number_of_cases, filter_attr, min, max, "txt")
+        file_name = discovery.build_file_name(exec_path, "dfg_analysis", number_of_cases, filter_attr, min, max, "txt")
         llm_prompt.exec_prompt(client, llm_config['dfg'], prompt, file_name, debug)

@@ -13,6 +13,7 @@ if __name__ == "__main__":
 
     # Load configuration parameters
     config = config_loader.load_config()
+    dataset_path = config['dataset']['path']
     debug = config['debug']
     filter_level = config['filter']['level']
     filter_attr = config['filter']['attr']
@@ -30,9 +31,19 @@ if __name__ == "__main__":
         os.makedirs(outputs_path + "/" + exec_path, exist_ok=True)
     except Exception as e:
         print(f"Error creating output directory '{exec_path}': {e}")
+        exit(1)
 
-    # Convert the CSV event log to XES
-    log = pm4py.format_dataframe(pandas.read_csv('dataset/anon.csv', sep=','), case_id='case_id',activity_key='concept:name', timestamp_key='time:timestamp')
+    # Read the dataset
+    file_extension = os.path.splitext(dataset_path)[1]
+
+    if file_extension == ".xes":
+        log = pm4py.read_xes(dataset_path)
+    elif file_extension == ".csv":
+        # Convert the CSV event log to XES
+        log = pm4py.format_dataframe(pandas.read_csv(dataset_path, sep=config['dataset']['csv_delimiter']),case_id='case_id',activity_key='concept:name',timestamp_key='time:timestamp')
+    else:
+        print("Unsupported file extension, please provide a .xes or .csv file")
+        exit(1)
 
     # Filter log by config parameters
     filtered_log, min, max,  = filter.filter_log(log, filter_attr, filter_level)
@@ -82,15 +93,9 @@ if __name__ == "__main__":
     )
 
     if petri_net_enabled > 0 and llm_config['petri_net']['enabled'] > 0:
-        print("\n\nPetri net analysis:\n\n")
-        petri_net_description = pm4py.llm.abstract_petri_net(net, im, fm)
-        prompt = f"Analyze the following Petri net model and provide a list of behavior patterns:\n\n{petri_net_description}"
         file_name = discovery.build_file_name(exec_path, "petri_net_analysis", number_of_cases, filter_attr, min, max, "txt")
-        llm_prompt.exec_prompt(client, llm_config['petri_net'], prompt, file_name, debug)
+        llm_prompt.analyze_petri_net(client, llm_config, net, im, fm, file_name, debug)
 
     if dfg_enabled > 0 and llm_config['petri_net']['enabled'] > 0:
-        print("\n\nDFG analysis:\n\n")
-        dfg_description = pm4py.llm.abstract_dfg(filtered_log)
-        prompt = f"Analyze the following DFG model and provide a list of behavior patterns:\n\n{dfg_description}"
         file_name = discovery.build_file_name(exec_path, "dfg_analysis", number_of_cases, filter_attr, min, max, "txt")
-        llm_prompt.exec_prompt(client, llm_config['dfg'], prompt, file_name, debug)
+        llm_prompt.analyze_dfg(client, llm_config, filtered_log, file_name, debug)

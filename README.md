@@ -5,6 +5,8 @@
 ## Configuration
 
 The configuration file is located in the config folder. The file is called config.json and it contains the following parameters:
+- `dataset.path`: path to the log file to be analyzed
+- `dataset.csv_delimiter`: separator used in the CSV file (ignored if the file is not in CSV format)
 - `debug`: boolean to enable debug mode
 - `filter.level`: filter level to be used. Possible values are:
     - `trace` --> to filter by trace attributes
@@ -18,6 +20,7 @@ The configuration file is located in the config folder. The file is called confi
 - `discovery.temporal_profile`: 1 to enable the generation of a temporal profile, 0 to disable it
 - `llm.hugging_face_api_key`: API key to use the Hugging Face API for the LLM model
 - `llm.model_name`: name of the LLM model to use
+- `llm.context`: context to be used for the LLM model
 - `llm.petri_net`: configuration for analyzing an abstraction of Petri Net
     - `enabled`: 1 to enable the analysis, 0 to disable it
     - `max_tokens`: maximum number of tokens to be used in the analysis of the Petri Net

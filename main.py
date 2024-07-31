@@ -15,6 +15,7 @@ if __name__ == "__main__":
     # Load configuration parameters
     config = config_loader.load_config()
     dataset_path = config['dataset']['path']
+    dataset_columns = config['dataset']['columns']
     debug = config['debug']
     filter_enabled = config['filter']['enabled']
     filter_level = config['filter']['level']
@@ -42,7 +43,7 @@ if __name__ == "__main__":
         log = pm4py.read_xes(dataset_path)
     elif file_extension == ".csv":
         # Convert the CSV event log to XES
-        log = pm4py.format_dataframe(pandas.read_csv(dataset_path, sep=config['dataset']['csv_delimiter']),case_id='case_id',activity_key='concept:name',timestamp_key='time:timestamp')
+        log = pm4py.format_dataframe(pandas.read_csv(dataset_path, sep=config['dataset']['csv_delimiter']),case_id=dataset_columns['case_id'], activity_key=dataset_columns['activity'],timestamp_key=dataset_columns['timestamp'])
     else:
         print("Unsupported file extension, please provide a .xes or .csv file")
         exit(1)

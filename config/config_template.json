@@ -1,7 +1,12 @@
 {
     "dataset": {
         "path": "dataset/anon.csv",
-        "csv_delimiter": ","
+        "csv_delimiter": ",",
+        "columns": {
+            "case_id": "case_id",
+            "activity": "concept:name",
+            "timestamp": "time:timestamp"
+        }
     },
     "debug": 1,
     "filter": {

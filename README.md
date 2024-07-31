@@ -11,6 +11,10 @@ This Python application uses [pm4py](https://pm4py.fit.fraunhofer.de/) to perfor
 The configuration file is located in the config folder. The file is called config.json and it contains the following parameters:
 - `dataset.path`: path to the log file to be analyzed
 - `dataset.csv_delimiter`: separator used in the CSV file (ignored if the file is not in CSV format)
+- `dataset.columns`: list of columns to be used in the log file. The columns must be present in the log file:
+    - `case_id` --> field for case identifier
+    - `activity` --> field for activity name
+    - `timestamp` --> field for timestamp of the activity
 - `debug`: boolean to enable debug mode
 - `filter.level`: filter level to be used. Possible values are:
     - `trace` --> to filter by trace attributes
@@ -49,6 +53,15 @@ docker-compose up -d
 
 ```bash
 cp config/config_template.json config/config.json
+```
+
+### Add a Hugging Face token in the config file
+
+```json
+{
+    "llm": {
+        "hugging_face_api_key": "your_hugging_face_api_key",
+    ...
 ```
 
 ### Run the python script

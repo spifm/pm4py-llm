@@ -100,12 +100,12 @@ if __name__ == "__main__":
 
     if petri_net_enabled and llm_config['petri_net']['enabled']:
         file_name = utils.build_file_name(exec_path, "petri_net_analysis", number_of_cases, filter_attr, min, max, "txt")
-        llm.analyze_petri_net(client, llm_config, net, im, fm, file_name, debug)
+        llm.analyze_petri_net(client, llm_config, net, im, fm, file_name)
 
     if dfg_enabled and llm_config['petri_net']['enabled']:
         file_name = utils.build_file_name(exec_path, "dfg_analysis", number_of_cases, filter_attr, min, max, "txt")
-        llm.analyze_dfg(client, llm_config, filtered_log, file_name, debug)
+        llm.analyze_dfg(client, llm_config, filtered_log, file_name)
 
     if temporal_profile_enabled and llm_config['temporal_profile']['enabled']:
         file_name = utils.build_file_name(exec_path, "temporal_profile_analysis", number_of_cases, filter_attr, min, max, "txt")
-        llm.analyze_temporal_profile(client, llm_config, temporal_profile, file_name, debug)
+        llm.analyze_temporal_profile(client, llm_config, temporal_profile, file_name)

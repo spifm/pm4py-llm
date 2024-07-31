@@ -127,3 +127,11 @@ config/config.json
 # pycache
 config/__pycache__/
 lib/__pycache__/
+
+# dataset
+dataset/*
+!dataset/anon.csv
+!dataset/anon.xes
+!dataset/filtered_file.csv
+!dataset/running-example.csv
+!dataset/running-example.xes

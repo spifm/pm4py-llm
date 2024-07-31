@@ -1,3 +1,7 @@
+## Introduction
+
+This Python application uses [pm4py](https://pm4py.fit.fraunhofer.de/) to perform process mining on event logs from any csv/xes dataset and can generate various models: Petri net, DFG, BPMN and Temporal Profile. It uses configurations to filter logs and export models. Additionally, it integrates with a Large Language Model (LLM) from Hugging Face to analyze the discovered models and provide insights. The results, including filtered logs and analysis, are saved to an output directory created with a timestamp. The application is dockerized and can be run in any environment.
+
 ## Requirements
 
 - Docker

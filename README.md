@@ -15,17 +15,21 @@ The configuration file is located in the config folder. The file is called confi
 - `filter.export_formats`: list of export formats to be used. If empty, no export will be performed. Possible values are:
     - `csv` --> to export the filtered log in CSV format
     - `xes` --> to export the filtered log in XES format
-- `discovery.bpmn`: 1 to enable the generation of the BPMN model, 0 to disable it
-- `discovery.dfg`: 1 to enable the generation of the DFG, 0 to disable it
-- `discovery.temporal_profile`: 1 to enable the generation of a temporal profile, 0 to disable it
+- `discovery.petri_net`: boolean to enable/disable the discovery of BPMN using true/false
+- `discovery.bpmn`: boolean to enable/disable the discovery of BPMN using true/false
+- `discovery.dfg`: boolean to enable/disable the discovery of DFG using true/false
+- `discovery.temporal_profile`: boolean to enable/disable the discovery of the temporal profile using true/false
 - `llm.hugging_face_api_key`: API key to use the Hugging Face API for the LLM model
 - `llm.model_name`: name of the LLM model to use
 - `llm.context`: context to be used for the LLM model
 - `llm.petri_net`: configuration for analyzing an abstraction of Petri Net
-    - `enabled`: 1 to enable the analysis, 0 to disable it
+    - `enabled`: boolean to enable/disable the analysis using true/false
     - `max_tokens`: maximum number of tokens to be used in the analysis of the Petri Net
 - `llm.dfg`: configuration for analyzing an abstraction of Petri Net. If empty, analysis will not be performed
-    - `enabled`: 1 to enable the analysis, 0 to disable it
+    - `enabled`: boolean to enable/disable the analysis using true/false
+    - `max_tokens`: maximum number of tokens to be used in the analysis of the DFG
+- `llm.temporal_profile`: configuration for analyzing an abstraction of Temporal Profile. If empty, analysis will not be performed
+    - `enabled`: boolean to enable/disable the analysis using true/false
     - `max_tokens`: maximum number of tokens to be used in the analysis of the DFG
 
 

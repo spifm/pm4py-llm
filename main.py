@@ -4,9 +4,10 @@ import time
 import os
 from config.constants import *
 import lib.config_loader as config_loader
-import lib.filter as filter
+import lib.filtering as filtering
 import lib.discovery as discovery
-import lib.llm_prompt as llm_prompt
+import lib.llm as llm
+import lib.utils as utils
 from huggingface_hub import InferenceClient
 
 if __name__ == "__main__":
@@ -15,6 +16,7 @@ if __name__ == "__main__":
     config = config_loader.load_config()
     dataset_path = config['dataset']['path']
     debug = config['debug']
+    filter_enabled = config['filter']['enabled']
     filter_level = config['filter']['level']
     filter_attr = config['filter']['attr']
     export_formats = config['filter']['export_formats']
@@ -46,10 +48,13 @@ if __name__ == "__main__":
         exit(1)
 
     # Filter log by config parameters
-    filtered_log, min, max,  = filter.filter_log(log, filter_attr, filter_level)
+    if filter_enabled:
+        filtered_log, min, max,  = filtering.filter_log(log, filter_attr, filter_level)
+    else:
+        filtered_log, min, max = log, '', ''
 
     # Show info if debug is enabled
-    if debug > 0:
+    if debug:
         if filter_level == "event":
             event_values = pm4py.stats.get_event_attribute_values(filtered_log, filter_attr)
             print("\nEvent values ({}): {}".format(filter_attr, event_values))
@@ -64,26 +69,26 @@ if __name__ == "__main__":
     # Export filtered log if enabled
     if export_formats:
         for export_format in export_formats:
-            file_name = discovery.build_file_name(exec_path, "filtered_log", number_of_cases, filter_attr, min, max, export_format)
-            filter.export_filtered_log(filtered_log, file_name, export_format)
+            file_name = utils.build_file_name(exec_path, "filtered_log", number_of_cases, filter_attr, min, max, export_format)
+            filtering.export_filtered_log(filtered_log, file_name, export_format)
 
     # Discover and save models
-    if petri_net_enabled > 0:
-        file_name = discovery.build_file_name(exec_path, "petri_net", number_of_cases, filter_attr, min, max, "png")
-        pn_file_name = discovery.build_file_name(exec_path, "petri_net", number_of_cases, filter_attr, min, max, "pnml")
+    if petri_net_enabled:
+        file_name = utils.build_file_name(exec_path, "petri_net", number_of_cases, filter_attr, min, max, "png")
+        pn_file_name = utils.build_file_name(exec_path, "petri_net", number_of_cases, filter_attr, min, max, "pnml")
         net, im, fm = discovery.get_petri_net(filtered_log, file_name, pn_file_name)
 
-    if dfg_enabled  > 0:
-        file_name = discovery.build_file_name(exec_path, "dfg", number_of_cases, filter_attr, min, max, "png")
+    if dfg_enabled:
+        file_name = utils.build_file_name(exec_path, "dfg", number_of_cases, filter_attr, min, max, "png")
         discovery.get_dfg(filtered_log, file_name)
 
-    if bpmn_enabled  > 0:
-        file_name = discovery.build_file_name(exec_path, "bpmn", number_of_cases, filter_attr, min, max, "png")
+    if bpmn_enabled:
+        file_name = utils.build_file_name(exec_path, "bpmn", number_of_cases, filter_attr, min, max, "png")
         discovery.get_bpmn(filtered_log, file_name)
 
-    if temporal_profile_enabled  > 0:
-        file_name = discovery.build_file_name(exec_path, "temporal_profile", number_of_cases, filter_attr, min, max, "csv")
-        discovery.get_temporal_profile(filtered_log, file_name)
+    if temporal_profile_enabled:
+        file_name = utils.build_file_name(exec_path, "temporal_profile", number_of_cases, filter_attr, min, max, "csv")
+        temporal_profile = discovery.get_temporal_profile(filtered_log, file_name)
 
 
     # LLM
@@ -92,10 +97,14 @@ if __name__ == "__main__":
         token=llm_config['hugging_face_api_key'],
     )
 
-    if petri_net_enabled > 0 and llm_config['petri_net']['enabled'] > 0:
-        file_name = discovery.build_file_name(exec_path, "petri_net_analysis", number_of_cases, filter_attr, min, max, "txt")
-        llm_prompt.analyze_petri_net(client, llm_config, net, im, fm, file_name, debug)
+    if petri_net_enabled and llm_config['petri_net']['enabled']:
+        file_name = utils.build_file_name(exec_path, "petri_net_analysis", number_of_cases, filter_attr, min, max, "txt")
+        llm.analyze_petri_net(client, llm_config, net, im, fm, file_name, debug)
 
-    if dfg_enabled > 0 and llm_config['petri_net']['enabled'] > 0:
-        file_name = discovery.build_file_name(exec_path, "dfg_analysis", number_of_cases, filter_attr, min, max, "txt")
-        llm_prompt.analyze_dfg(client, llm_config, filtered_log, file_name, debug)
+    if dfg_enabled and llm_config['petri_net']['enabled']:
+        file_name = utils.build_file_name(exec_path, "dfg_analysis", number_of_cases, filter_attr, min, max, "txt")
+        llm.analyze_dfg(client, llm_config, filtered_log, file_name, debug)
+
+    if temporal_profile_enabled and llm_config['temporal_profile']['enabled']:
+        file_name = utils.build_file_name(exec_path, "temporal_profile_analysis", number_of_cases, filter_attr, min, max, "txt")
+        llm.analyze_temporal_profile(client, llm_config, temporal_profile, file_name, debug)

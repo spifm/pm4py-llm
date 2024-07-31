@@ -1,7 +1,5 @@
 import pm4py
-import time
 import csv
-from config.constants import *
 
 # Petri Net: Discover and save model
 def get_petri_net(filtered_log, file_name, pn_filename):
@@ -55,11 +53,4 @@ def get_temporal_profile(filtered_log, file_name, debug = 0):
 
             writer.writerow([key, value_as_list[0], value_as_list[1]])
 
-# Build file name
-def build_file_name(exec_path, model_type, number_of_cases, filter_param, min, max, file_extension):
-    file_name_base = model_type + "-numcases_" + str(number_of_cases) + "-" + filter_param + "-" + str(min) + "-" + str(max)
-    return outputs_path + "/" + exec_path + "/" + file_name_base + "." + file_extension
-
-# Build file name with timestamp
-def build_file_name_with_timestamp(model_type, number_of_cases, file_extension):
-    return "{}/{}-numcases_{}_{}.{}".format(outputs_path, model_type, number_of_cases, int(time.time()), file_extension)
+    return temporal_profile

@@ -8,7 +8,7 @@
             "timestamp": "time:timestamp"
         }
     },
-    "debug": 1,
+    "debug": true,
     "filter": {
         "enabled": true,
         "level": "trace",

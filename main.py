@@ -16,6 +16,9 @@ if __name__ == "__main__":
     config = config_loader.load_config()
     dataset_path = config['dataset']['path']
     dataset_columns = config['dataset']['columns']
+    case_id=dataset_columns['case_id']
+    activity_key=dataset_columns['activity']
+    timestamp_key=dataset_columns['timestamp']
     debug = config['debug']
     filter_enabled = config['filter']['enabled']
     filter_level = config['filter']['level']
@@ -43,7 +46,7 @@ if __name__ == "__main__":
         log = pm4py.read_xes(dataset_path)
     elif file_extension == ".csv":
         # Convert the CSV event log to XES
-        log = pm4py.format_dataframe(pandas.read_csv(dataset_path, sep=config['dataset']['csv_delimiter']),case_id=dataset_columns['case_id'], activity_key=dataset_columns['activity'],timestamp_key=dataset_columns['timestamp'])
+        log = pm4py.format_dataframe(pandas.read_csv(dataset_path, sep=config['dataset']['csv_delimiter']),case_id, activity_key,timestamp_key)
     else:
         print("Unsupported file extension, please provide a .xes or .csv file")
         exit(1)
@@ -56,13 +59,13 @@ if __name__ == "__main__":
 
     # Show info if debug is enabled
     if debug:
-        if filter_level == "event":
+        if filter_enabled and filter_level == "event":
             event_values = pm4py.stats.get_event_attribute_values(filtered_log, filter_attr)
             print("\nEvent values ({}): {}".format(filter_attr, event_values))
-        elif filter_level == "trace":
+        elif filter_enabled and filter_level == "trace":
             trace_values = pm4py.stats.get_trace_attribute_values(filtered_log, 'case:' + filter_attr)
             print("\nTrace values ({}): {}".format(filter_attr, trace_values))
-        case_values = pm4py.stats.get_trace_attribute_values(filtered_log, 'case_id')
+        case_values = pm4py.stats.get_trace_attribute_values(filtered_log, case_id)
         print("Case IDs: {}".format(case_values))
         number_of_cases = len(case_values)
         print("Number of cases: {}\n".format(number_of_cases))

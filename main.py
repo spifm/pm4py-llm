@@ -47,10 +47,12 @@ if __name__ == "__main__":
     elif file_extension == ".csv":
         # Convert csv to dataframe
         log_df = pandas.read_csv(dataset_path, sep=config['dataset']['csv_delimiter'])
-        # Convert timestamp to datetime type
+        # Convert timestamp column to datetime type
         log_df[timestamp_key] = pandas.to_datetime(log_df[timestamp_key], errors='coerce')
         # Convert the CSV event log to XES
         log = pm4py.format_dataframe(log_df,case_id, activity_key,timestamp_key)
+        # Convert case_id column to string type
+        log[case_id] = log[case_id].astype(str)
     else:
         print("Unsupported file extension, please provide a .xes or .csv file")
         exit(1)

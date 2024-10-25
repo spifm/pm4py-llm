@@ -57,6 +57,9 @@ if __name__ == "__main__":
     else:
         filtered_log, min, max = log, '', ''
 
+    case_values = pm4py.stats.get_trace_attribute_values(filtered_log, case_id)
+    number_of_cases = len(case_values)
+
     # Show info if debug is enabled
     if debug:
         if filter_enabled and filter_level == "event":
@@ -65,9 +68,7 @@ if __name__ == "__main__":
         elif filter_enabled and filter_level == "trace":
             trace_values = pm4py.stats.get_trace_attribute_values(filtered_log, 'case:' + filter_attr)
             print("\nTrace values ({}): {}".format(filter_attr, trace_values))
-        case_values = pm4py.stats.get_trace_attribute_values(filtered_log, case_id)
         print("Case IDs: {}".format(case_values))
-        number_of_cases = len(case_values)
         print("Number of cases: {}\n".format(number_of_cases))
 
     # Export filtered log if enabled

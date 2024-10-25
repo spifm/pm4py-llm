@@ -46,7 +46,7 @@ The configuration file is located in the config folder. The file is called confi
 ### Build the docker image and run the container
 
 ```bash
-docker-compose up -d
+docker compose up -d
 ```
 
 ### (OPTIONAL) Create a config file called config.json using the template to specify configuration parameters
@@ -73,6 +73,6 @@ docker exec -it pm4py_llm python3 main.py
 ### Stop the container
 
 ```bash
-docker-compose down
+docker compose down
 ```
 

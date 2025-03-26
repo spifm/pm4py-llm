@@ -4,32 +4,40 @@ import lib.config_loader as config_loader
 
 config = config_loader.load_config()
 dataset_columns = config['dataset']['columns']
+debug = config['debug']
 
 # Petri Net: Discover and save model
-def get_petri_net(filtered_log, file_name, pn_filename):
+def get_petri_net(filtered_log, image_file_name, abstract_file_name, pn_filename):
     noise_threshold = 0.0
     noise_threshold = float(input("Petri Net: Insert the ratio (0-100) to filter infrequent paths: "))
     net, im, fm = pm4py.discover_petri_net_inductive(filtered_log, noise_threshold/100, case_id_key=dataset_columns['case_id'], activity_key=dataset_columns['activity'], timestamp_key=dataset_columns['timestamp'])
     pm4py.write_pnml(net, im, fm, pn_filename)
-    pm4py.save_vis_petri_net(net, im, fm, file_name)
-    return net, im, fm
+    pm4py.save_vis_petri_net(net, im, fm, image_file_name)
+
+    abstract_petri_net = pm4py.llm.abstract_petri_net(net, im, fm)
+    save_abstract_model(abstract_petri_net, abstract_file_name)
+    return abstract_petri_net, net, im, fm
 
 # Directly-Follows Graph (DFG): Discover and save model
-def get_dfg(filtered_log, file_name):
+def get_dfg(filtered_log, image_file_name, abstract_file_name):
     dfg, start_activities, end_activities = pm4py.discover_dfg(filtered_log, case_id_key=dataset_columns['case_id'], activity_key=dataset_columns['activity'], timestamp_key=dataset_columns['timestamp'])
-    pm4py.save_vis_dfg(dfg, start_activities, end_activities, file_name)
+    pm4py.save_vis_dfg(dfg, start_activities, end_activities, image_file_name)
+
+    dfg_description = pm4py.llm.abstract_dfg(log_obj=filtered_log, case_id_key=dataset_columns['case_id'], activity_key=dataset_columns['activity'], timestamp_key=dataset_columns['timestamp'],secondary_performance_aggregation = 'stdev', max_len = 100000 )
+    save_abstract_model(dfg_description, abstract_file_name)
+    return dfg_description
 
 # BPMN: Discover and save model
-def get_bpmn(filtered_log, file_name):
+def get_bpmn(filtered_log, image_file_name):
     noise_threshold = 0.0
     noise_threshold = float(input("BPMN: Insert the ratio (0-100) to filter infrequent paths: "))
     bpmn_model = pm4py.discover_bpmn_inductive(filtered_log, noise_threshold/100)
-    pm4py.save_vis_bpmn(bpmn_model, file_name)
+    pm4py.save_vis_bpmn(bpmn_model, image_file_name)
 
 # Temporal profile: Discover and create csv file
 # Implements the approach described in: Stertz, Florian, Jürgen Mangler, and Stefanie Rinderle-Ma.
 # “Temporal Conformance Checking at Runtime based on Time-infused Process Models.” arXiv preprint arXiv:2008.07262 (2020).
-def get_temporal_profile(filtered_log, file_name, debug = 0):
+def get_temporal_profile(filtered_log, file_name, abstract_model_file_name):
     temporal_profile = pm4py.discover_temporal_profile(filtered_log, activity_key=dataset_columns['activity'], case_id_key=dataset_columns['case_id'], timestamp_key=dataset_columns['timestamp'])
 
     if debug > 0:
@@ -51,10 +59,20 @@ def get_temporal_profile(filtered_log, file_name, debug = 0):
 
             converted_value = tuple(value_as_list)
 
-            if debug > 0:
-                print(f"Key: {key}, Time (avg, std): {converted_value}")
+            #if debug > 0:
+                # Print model --> print(f"Key: {key}, Time (avg, std): {converted_value}")
                 # Source list --> print("{}: {}\n".format(key, value))
 
             writer.writerow([key, value_as_list[0], value_as_list[1]])
 
-    return temporal_profile
+    abstract_model = pm4py.llm.abstract_temporal_profile(temporal_profile, include_header=True)
+    save_abstract_model(abstract_model, abstract_model_file_name)
+
+    return temporal_profile, abstract_model
+
+
+# Save abstract model
+def save_abstract_model(abstract_model, output_file):
+    with open(output_file, 'a') as f:
+        f.write(abstract_model)
+        f.write("\n\n")

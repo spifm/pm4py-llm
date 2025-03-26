@@ -29,15 +29,20 @@ The configuration file is located in the config folder. The file is called confi
 - `discovery.temporal_profile`: boolean to enable/disable the discovery of the temporal profile using true/false
 - `llm.hugging_face_api_key`: API key to use the Hugging Face API for the LLM model
 - `llm.model_name`: name of the LLM model to use
+- `llm.model_type`: type of the LLM model to use, possible values are:
+    - `text-generation-inference` --> to use a text generation model
 - `llm.context`: context to be used for the LLM model
 - `llm.petri_net`: configuration for analyzing an abstraction of Petri Net
     - `enabled`: boolean to enable/disable the analysis using true/false
+    - `prompt`: prompt to be used for the analysis joined with the context
     - `max_tokens`: maximum number of tokens to be used in the analysis of the Petri Net
 - `llm.dfg`: configuration for analyzing an abstraction of Petri Net. If empty, analysis will not be performed
     - `enabled`: boolean to enable/disable the analysis using true/false
+    - `prompt`: prompt to be used for the analysis joined with the context
     - `max_tokens`: maximum number of tokens to be used in the analysis of the DFG
 - `llm.temporal_profile`: configuration for analyzing an abstraction of Temporal Profile. If empty, analysis will not be performed
     - `enabled`: boolean to enable/disable the analysis using true/false
+    - `prompt`: prompt to be used for the analysis joined with the context
     - `max_tokens`: maximum number of tokens to be used in the analysis of the DFG
 
 
@@ -49,7 +54,7 @@ The configuration file is located in the config folder. The file is called confi
 docker compose up -d
 ```
 
-### (OPTIONAL) Create a config file called config.json using the template to specify configuration parameters
+### Create a config file called config.json using the template to specify configuration parameters
 
 ```bash
 cp config/config_template.json config/config.json

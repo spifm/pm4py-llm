@@ -1,4 +1,4 @@
-FROM pm4py/pm4py-core:latest
+FROM pm4py/pm4py-core:2.7.11
 
 RUN pip install pyarrow
 

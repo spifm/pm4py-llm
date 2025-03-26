@@ -8,7 +8,6 @@ import lib.filtering as filtering
 import lib.discovery as discovery
 import lib.llm as llm
 import lib.utils as utils
-from huggingface_hub import InferenceClient
 
 if __name__ == "__main__":
 
@@ -85,37 +84,35 @@ if __name__ == "__main__":
 
     # Discover and save models
     if petri_net_enabled:
-        file_name = utils.build_file_name(exec_path, "petri_net", number_of_cases, filter_attr, min, max, "png")
+        image_file_name = utils.build_file_name(exec_path, "petri_net", number_of_cases, filter_attr, min, max, "png")
+        abstract_file_name = utils.build_file_name(exec_path, "abstract-petri_net", number_of_cases, filter_attr, min, max, "txt")
         pn_file_name = utils.build_file_name(exec_path, "petri_net", number_of_cases, filter_attr, min, max, "pnml")
-        net, im, fm = discovery.get_petri_net(filtered_log, file_name, pn_file_name)
+        abstract_pn, net, im, fm = discovery.get_petri_net(filtered_log, image_file_name, abstract_file_name, pn_file_name)
 
     if dfg_enabled:
-        file_name = utils.build_file_name(exec_path, "dfg", number_of_cases, filter_attr, min, max, "png")
-        discovery.get_dfg(filtered_log, file_name)
+        image_file_name = utils.build_file_name(exec_path, "dfg", number_of_cases, filter_attr, min, max, "png")
+        abstract_file_name = utils.build_file_name(exec_path, "abstract-dfg", number_of_cases, filter_attr, min, max, "txt")
+        abstract_dfg = discovery.get_dfg(filtered_log, image_file_name, abstract_file_name)
 
     if bpmn_enabled:
-        file_name = utils.build_file_name(exec_path, "bpmn", number_of_cases, filter_attr, min, max, "png")
-        discovery.get_bpmn(filtered_log, file_name)
+        image_file_name = utils.build_file_name(exec_path, "bpmn", number_of_cases, filter_attr, min, max, "png")
+        discovery.get_bpmn(filtered_log, image_file_name)
 
     if temporal_profile_enabled:
         file_name = utils.build_file_name(exec_path, "temporal_profile", number_of_cases, filter_attr, min, max, "csv")
-        temporal_profile = discovery.get_temporal_profile(filtered_log, file_name)
+        abstract_file_name = utils.build_file_name(exec_path, "abstract-temporal_profile", number_of_cases, filter_attr, min, max, "txt")
+        temporal_profile, abstract_tp = discovery.get_temporal_profile(filtered_log, file_name, abstract_file_name)
 
 
     # LLM
-    client = InferenceClient(
-        llm_config['model_name'],
-        token=llm_config['hugging_face_api_key'],
-    )
-
     if petri_net_enabled and llm_config['petri_net']['enabled']:
-        file_name = utils.build_file_name(exec_path, "petri_net_analysis", number_of_cases, filter_attr, min, max, "txt")
-        llm.analyze_petri_net(client, llm_config, net, im, fm, file_name)
+        analysis_name = utils.build_file_name(exec_path, "petri_net_analysis",number_of_cases, filter_attr, min, max, "txt")
+        llm.analyze_petri_net(abstract_pn, file_name)
 
     if dfg_enabled and llm_config['petri_net']['enabled']:
         file_name = utils.build_file_name(exec_path, "dfg_analysis", number_of_cases, filter_attr, min, max, "txt")
-        llm.analyze_dfg(client, llm_config, filtered_log, file_name)
+        llm.analyze_dfg(abstract_dfg, file_name)
 
     if temporal_profile_enabled and llm_config['temporal_profile']['enabled']:
         file_name = utils.build_file_name(exec_path, "temporal_profile_analysis", number_of_cases, filter_attr, min, max, "txt")
-        llm.analyze_temporal_profile(client, llm_config, temporal_profile, file_name)
+        llm.analyze_temporal_profile(abstract_tp, file_name)

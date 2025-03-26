@@ -1,0 +1,17 @@
+FROM pm4py/pm4py-core:2.7.11
+
+RUN pip install pyarrow
+
+# For integration with LLM
+RUN pip install transformers requests
+RUN pip install vllm
+
+# Patch to avoid psutil.NoSuchProcess error in pm4py
+COPY patch_pm4py.py /patch_pm4py.py
+RUN python3 /patch_pm4py.py
+
+ENV PATH="/usr/bin/python3:${PATH}"
+
+WORKDIR /pm4py_llm
+
+CMD ["tail", "-f", "/dev/null"]

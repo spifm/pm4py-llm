@@ -1,6 +1,6 @@
 {
     "dataset": {
-        "path": "dataset/anon.csv",
+        "path": "dataset/dataset-example.csv",
         "csv_delimiter": ",",
         "columns": {
             "case_id": "case_id",

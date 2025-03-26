@@ -109,7 +109,7 @@ if __name__ == "__main__":
         analysis_name = utils.build_file_name(exec_path, "petri_net_analysis",number_of_cases, filter_attr, min, max, "txt")
         llm.analyze_petri_net(abstract_pn, file_name)
 
-    if dfg_enabled and llm_config['petri_net']['enabled']:
+    if dfg_enabled and llm_config['dfg']['enabled']:
         file_name = utils.build_file_name(exec_path, "dfg_analysis", number_of_cases, filter_attr, min, max, "txt")
         llm.analyze_dfg(abstract_dfg, file_name)
 

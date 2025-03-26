@@ -122,8 +122,7 @@ output/*
 !output/.gitkeep
 
 # Configuration
-config/config.json
-
+config/config.*
 # pycache
 config/__pycache__/
 lib/__pycache__/

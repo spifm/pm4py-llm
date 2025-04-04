@@ -1,9 +1,9 @@
 services:
   pm4py:
-    image: pm4py_llm
+    image: pm4py-llm
     build:
       context: .
       dockerfile: Dockerfile
-    container_name: pm4py_llm_container
+    container_name: pm4py-llm-container
     volumes:
-      - .:/pm4py_llm
+      - .:/pm4py-llm

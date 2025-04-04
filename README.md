@@ -72,7 +72,7 @@ cp config/config_template.json config/config.json
 ### Run the python script
 
 ```bash
-docker exec -it pm4py_llm python3 main.py
+docker exec -it pm4py-llm-container python3 main.py
 ```
 
 ### Stop the container

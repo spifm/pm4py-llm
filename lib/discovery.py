@@ -1,6 +1,8 @@
 import pm4py
 import csv
 import lib.config_loader as config_loader
+import pandas as pd
+
 
 config = config_loader.load_config()
 dataset_columns = config['dataset']['columns']
@@ -22,10 +24,15 @@ def get_petri_net(filtered_log, image_file_name, abstract_file_name, pn_filename
 def get_dfg(filtered_log, image_file_name, abstract_file_name):
     dfg, start_activities, end_activities = pm4py.discover_dfg(filtered_log, case_id_key=dataset_columns['case_id'], activity_key=dataset_columns['activity'], timestamp_key=dataset_columns['timestamp'])
     pm4py.save_vis_dfg(dfg, start_activities, end_activities, image_file_name)
-
-    dfg_description = pm4py.llm.abstract_dfg(log_obj=filtered_log, case_id_key=dataset_columns['case_id'], activity_key=dataset_columns['activity'], timestamp_key=dataset_columns['timestamp'],secondary_performance_aggregation = 'stdev', max_len = 100000 )
+    filtered_log = filtered_log.sort_values(by=[dataset_columns['case_id'], dataset_columns['timestamp']])
+    dfg_description = pm4py.llm.abstract_dfg(log_obj=filtered_log, case_id_key=dataset_columns['case_id'], activity_key=dataset_columns['activity'], timestamp_key=dataset_columns['timestamp'], include_performance = True, secondary_performance_aggregation = 'stdev', max_len = 100000 )
     save_abstract_model(dfg_description, abstract_file_name)
     return dfg_description
+
+# Performance Directly-Follows Graph (DFG): Discover and save model
+def get_performance_dfg(filtered_log, image_file_name):
+    pdfg, start_activities, end_activities = pm4py.discover_performance_dfg(filtered_log, case_id_key=dataset_columns['case_id'], activity_key=dataset_columns['activity'], timestamp_key=dataset_columns['timestamp'])
+    pm4py.save_vis_performance_dfg(pdfg, start_activities, end_activities, image_file_name)
 
 # BPMN: Discover and save model
 def get_bpmn(filtered_log, image_file_name):

@@ -93,6 +93,8 @@ if __name__ == "__main__":
         image_file_name = utils.build_file_name(exec_path, "dfg", number_of_cases, filter_attr, min, max, "png")
         abstract_file_name = utils.build_file_name(exec_path, "abstract-dfg", number_of_cases, filter_attr, min, max, "txt")
         abstract_dfg = discovery.get_dfg(filtered_log, image_file_name, abstract_file_name)
+        performance_image_file_name = utils.build_file_name(exec_path, "performance-dfg", number_of_cases, filter_attr, min, max, "png")
+        discovery.get_performance_dfg(filtered_log, performance_image_file_name)
 
     if bpmn_enabled:
         image_file_name = utils.build_file_name(exec_path, "bpmn", number_of_cases, filter_attr, min, max, "png")

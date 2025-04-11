@@ -81,7 +81,7 @@ docker exec -it pm4py-llm-container python3 main.py
 docker compose down
 ```
 
-## Additional functonalities
+## Additional functionalities
 
 ### Random sample of the log
 

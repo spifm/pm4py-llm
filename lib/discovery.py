@@ -22,10 +22,29 @@ def get_petri_net(filtered_log, image_file_name, abstract_file_name, pn_filename
 
 # Directly-Follows Graph (DFG): Discover and save model
 def get_dfg(filtered_log, image_file_name, abstract_file_name):
-    dfg, start_activities, end_activities = pm4py.discover_dfg(filtered_log, case_id_key=dataset_columns['case_id'], activity_key=dataset_columns['activity'], timestamp_key=dataset_columns['timestamp'])
+
+    dfg, start_activities, end_activities = pm4py.discover_dfg(
+        filtered_log,
+        case_id_key=dataset_columns['case_id'],
+        activity_key=dataset_columns['activity'],
+        timestamp_key=dataset_columns['timestamp']
+    )
+
     pm4py.save_vis_dfg(dfg, start_activities, end_activities, image_file_name)
-    filtered_log = filtered_log.sort_values(by=[dataset_columns['case_id'], dataset_columns['timestamp']])
-    dfg_description = pm4py.llm.abstract_dfg(log_obj=filtered_log, case_id_key=dataset_columns['case_id'], activity_key=dataset_columns['activity'], timestamp_key=dataset_columns['timestamp'], include_performance = True, secondary_performance_aggregation = 'stdev', max_len = 100000 )
+    filtered_log = filtered_log.sort_values(
+        by=[dataset_columns['case_id'],
+            dataset_columns['timestamp']
+        ]
+    )
+    dfg_description = pm4py.llm.abstract_dfg(
+        log_obj=filtered_log,
+        case_id_key=dataset_columns['case_id'],
+        activity_key=dataset_columns['activity'],
+        timestamp_key=dataset_columns['timestamp'],
+        include_performance = True,
+        secondary_performance_aggregation = 'stdev',
+        max_len = 100000
+    )
     save_abstract_model(dfg_description, abstract_file_name)
     return dfg_description
 
@@ -46,9 +65,6 @@ def get_bpmn(filtered_log, image_file_name):
 # “Temporal Conformance Checking at Runtime based on Time-infused Process Models.” arXiv preprint arXiv:2008.07262 (2020).
 def get_temporal_profile(filtered_log, file_name, abstract_model_file_name):
     temporal_profile = pm4py.discover_temporal_profile(filtered_log, activity_key=dataset_columns['activity'], case_id_key=dataset_columns['case_id'], timestamp_key=dataset_columns['timestamp'])
-
-    if debug > 0:
-        print("Temporal profile:\n")
 
     fields = ["Activities", "AVG time", "STD"]
 

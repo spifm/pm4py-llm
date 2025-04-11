@@ -81,3 +81,12 @@ docker exec -it pm4py-llm-container python3 main.py
 docker compose down
 ```
 
+## Additional functonalities
+
+### Random sample of the log
+
+The application can generate a random sample of the log file indicated in the config file. The sample is generated using `random_sample_selection.py`, which is a script that must be run independently. When the script is run, the user is prompted to enter the number the number of cases to be sampled. The script will then generate a new log file with the sampled cases. The new log file will be saved in the output directory created with a timestamp. The script can be run using the following command:
+
+```bash
+docker exec -it pm4py-llm-container python3 random_sample_selection.py
+```

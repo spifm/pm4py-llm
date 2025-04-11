@@ -56,11 +56,16 @@ if __name__ == "__main__":
         print("Unsupported file extension, please provide a .xes or .csv file")
         exit(1)
 
+    if debug:
+        print("Columns of the log:\n", log.columns.tolist())
+        print("First row of the log:\n", log.iloc[0])
+
+
     # Filter log by config parameters
     if filter_enabled:
-        filtered_log, min, max,  = filtering.filter_log(log, filter_attr, filter_level)
+        filtered_log, filtered_info_str = filtering.filter_log(log, filter_attr, filter_level)
     else:
-        filtered_log, min, max = log, '', ''
+        filtered_log, filtered_info_str = log, ''
 
     case_values = pm4py.stats.get_trace_attribute_values(filtered_log, case_id)
     number_of_cases = len(case_values)
@@ -79,42 +84,67 @@ if __name__ == "__main__":
     # Export filtered log if enabled
     if export_formats:
         for export_format in export_formats:
-            file_name = utils.build_file_name(exec_path, "filtered_log", number_of_cases, filter_attr, min, max, export_format)
-            filtering.export_filtered_log(filtered_log, file_name, export_format)
+            filename = "filtered_log" + "-numcases_" + str(number_of_cases) + "-" + filtered_info_str
+            full_filename = utils.build_file_name(exec_path, filename, export_format)
+            filtering.export_filtered_log(filtered_log, full_filename, export_format)
 
     # Discover and save models
     if petri_net_enabled:
-        image_file_name = utils.build_file_name(exec_path, "petri_net", number_of_cases, filter_attr, min, max, "png")
-        abstract_file_name = utils.build_file_name(exec_path, "abstract-petri_net", number_of_cases, filter_attr, min, max, "txt")
-        pn_file_name = utils.build_file_name(exec_path, "petri_net", number_of_cases, filter_attr, min, max, "pnml")
-        abstract_pn, net, im, fm = discovery.get_petri_net(filtered_log, image_file_name, abstract_file_name, pn_file_name)
+        print("Discovering Petri net...")
+        image_filename = "petri_net" + "-numcases_" + str(number_of_cases) + "-" + filtered_info_str
+        full_image_filename = utils.build_file_name(exec_path, image_filename, "png")
+
+        abstract_filename = "abstract-petri_net" + "-numcases_" + str(number_of_cases) + "-" + filtered_info_str
+        full_abstract_filename = utils.build_file_name(exec_path, abstract_filename, "txt")
+
+        pn_filename = "petri_net" + "-numcases_" + str(number_of_cases) + "-" + filtered_info_str
+        full_pn_filename = utils.build_file_name(exec_path, pn_filename, "pnml")
+
+        abstract_pn, net, im, fm = discovery.get_petri_net(
+            filtered_log, full_image_filename, full_abstract_filename, full_pn_filename
+        )
 
     if dfg_enabled:
-        image_file_name = utils.build_file_name(exec_path, "dfg", number_of_cases, filter_attr, min, max, "png")
-        abstract_file_name = utils.build_file_name(exec_path, "abstract-dfg", number_of_cases, filter_attr, min, max, "txt")
-        abstract_dfg = discovery.get_dfg(filtered_log, image_file_name, abstract_file_name)
-        performance_image_file_name = utils.build_file_name(exec_path, "performance-dfg", number_of_cases, filter_attr, min, max, "png")
-        discovery.get_performance_dfg(filtered_log, performance_image_file_name)
+        print("Discovering DFG...")
+        image_filename = "dfg" + "-numcases_" + str(number_of_cases) + "-" + filtered_info_str
+        full_image_filename = utils.build_file_name(exec_path, image_filename, "png")
+        abstract_filename = "abstract-dfg" + "-numcases_" + str(number_of_cases) + "-" + filtered_info_str
+        full_abstract_filename = utils.build_file_name(exec_path, abstract_filename, "txt")
+        abstract_dfg = discovery.get_dfg(filtered_log, full_image_filename, full_abstract_filename)
+        performance_image_filename = "performance-dfg" + "-numcases_" + str(number_of_cases) + "-" + filtered_info_str
+        full_performance_image_filename = utils.build_file_name(exec_path, performance_image_filename, "png")
+        discovery.get_performance_dfg(filtered_log, full_performance_image_filename)
 
     if bpmn_enabled:
-        image_file_name = utils.build_file_name(exec_path, "bpmn", number_of_cases, filter_attr, min, max, "png")
-        discovery.get_bpmn(filtered_log, image_file_name)
+        print("Discovering BPMN...")
+        image_filename = "bpmn" + "-numcases_" + str(number_of_cases) + "-" + filtered_info_str
+        full_image_filename = utils.build_file_name(exec_path, image_filename, "png")
+        discovery.get_bpmn(filtered_log, full_image_filename)
 
     if temporal_profile_enabled:
-        file_name = utils.build_file_name(exec_path, "temporal_profile", number_of_cases, filter_attr, min, max, "csv")
-        abstract_file_name = utils.build_file_name(exec_path, "abstract-temporal_profile", number_of_cases, filter_attr, min, max, "txt")
-        temporal_profile, abstract_tp = discovery.get_temporal_profile(filtered_log, file_name, abstract_file_name)
-
+        print("Discovering temporal profile...")
+        filename = "temporal_profile" + "-numcases_" + str(number_of_cases) + "-" + filtered_info_str
+        full_filename = utils.build_file_name(exec_path, filename, "csv")
+        
+        abstract_filename = "abstract-temporal_profile" + "-numcases_" + str(number_of_cases) + "-" + filtered_info_str
+        full_abstract_filename = utils.build_file_name(exec_path, abstract_filename, "txt")
+        
+        temporal_profile, abstract_tp = discovery.get_temporal_profile(
+            filtered_log, full_filename, full_abstract_filename
+        )
 
     # LLM
     if petri_net_enabled and llm_config['petri_net']['enabled']:
-        analysis_name = utils.build_file_name(exec_path, "petri_net_analysis",number_of_cases, filter_attr, min, max, "txt")
-        llm.analyze_petri_net(abstract_pn, file_name)
+        filename = "petri_net_analysis" + "-numcases_" + str(number_of_cases) + "-" + filtered_info_str
+        full_filename = utils.build_file_name(exec_path, filename, "txt")
+        llm.analyze_petri_net(abstract_pn, full_filename)
 
     if dfg_enabled and llm_config['dfg']['enabled']:
-        file_name = utils.build_file_name(exec_path, "dfg_analysis", number_of_cases, filter_attr, min, max, "txt")
-        llm.analyze_dfg(abstract_dfg, file_name)
+        filename = "dfg_analysis" + "-numcases_" + str(number_of_cases) + "-" + filtered_info_str
+        full_filename = utils.build_file_name(exec_path, filename, "txt")
+        llm.analyze_dfg(abstract_dfg, full_filename)
 
     if temporal_profile_enabled and llm_config['temporal_profile']['enabled']:
-        file_name = utils.build_file_name(exec_path, "temporal_profile_analysis", number_of_cases, filter_attr, min, max, "txt")
-        llm.analyze_temporal_profile(abstract_tp, file_name)
+        filename = "temporal_profile_analysis" + "-numcases_" + str(number_of_cases) + "-" + filtered_info_str
+        full_filename = utils.build_file_name(exec_path, filename, "txt")
+        llm.analyze_temporal_profile(abstract_tp, full_filename)

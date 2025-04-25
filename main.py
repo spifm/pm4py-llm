@@ -106,11 +106,14 @@ if __name__ == "__main__":
 
     if dfg_enabled:
         print("Discovering DFG...")
-        image_filename = "dfg" + "-numcases_" + str(number_of_cases) + "-" + filtered_info_str
-        full_image_filename = utils.build_file_name(exec_path, image_filename, "png")
+        dfg_filename = "dfg" + "-numcases_" + str(number_of_cases) + "-" + filtered_info_str
+        full_image_filename = utils.build_file_name(exec_path, dfg_filename, "png")
+        full_dfg_filename = utils.build_file_name(exec_path, dfg_filename, "dfg")
         abstract_filename = "abstract-dfg" + "-numcases_" + str(number_of_cases) + "-" + filtered_info_str
         full_abstract_filename = utils.build_file_name(exec_path, abstract_filename, "txt")
-        abstract_dfg = discovery.get_dfg(filtered_log, full_image_filename, full_abstract_filename)
+        abstract_dfg = discovery.get_dfg(
+            filtered_log, full_image_filename, full_dfg_filename, full_abstract_filename
+        )
         performance_image_filename = "performance-dfg" + "-numcases_" + str(number_of_cases) + "-" + filtered_info_str
         full_performance_image_filename = utils.build_file_name(exec_path, performance_image_filename, "png")
         discovery.get_performance_dfg(filtered_log, full_performance_image_filename)

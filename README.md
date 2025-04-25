@@ -90,3 +90,19 @@ The application can generate a random sample of the log file indicated in the co
 ```bash
 docker exec -it pm4py-llm-container python3 random_sample_selection.py
 ```
+
+### Merge abstract dfgs to json
+
+This script reads abstract DFG models from a directory structure, extracts user IDs and grades from folder names, and combines them into a single JSON file for later processing. The script is called `merge_abstract_dfgs_to_json.py` and it must be run independently. When the script is run, the user is prompted to enter the path to the base directory (e.g., output/my-dfg-folder) where the abstract DFGs are stored. The script will then generate a new json file with the merged abstract DFGs. The new log file will be saved in the output directory created with a timestamp. The script can be run using the following command:
+
+```bash
+docker exec -it pm4py-llm-container python3 merge_abstract_dfgs_to_json.py
+```
+
+### DFG to PNG
+
+This script reads a dfg model from a pm4py .dfg file and generates a PNG image of the model. The script is called `dfg_to_png.py` and it must be run independently. The dfg file path is directly set in the script. The script will then generate a new png file with the DFG model. The script can be run using the following command:
+
+```bash
+docker exec -it pm4py-llm-container python3 dfg_to_png.py
+```

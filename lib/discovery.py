@@ -21,7 +21,7 @@ def get_petri_net(filtered_log, image_file_name, abstract_file_name, pn_filename
     return abstract_petri_net, net, im, fm
 
 # Directly-Follows Graph (DFG): Discover and save model
-def get_dfg(filtered_log, image_file_name, abstract_file_name):
+def get_dfg(filtered_log, image_file_name, full_dfg_filename, abstract_file_name):
 
     dfg, start_activities, end_activities = pm4py.discover_dfg(
         filtered_log,
@@ -31,6 +31,9 @@ def get_dfg(filtered_log, image_file_name, abstract_file_name):
     )
 
     pm4py.save_vis_dfg(dfg, start_activities, end_activities, image_file_name)
+
+    pm4py.write_dfg(dfg, start_activities, end_activities, full_dfg_filename)
+
     filtered_log = filtered_log.sort_values(
         by=[dataset_columns['case_id'],
             dataset_columns['timestamp']

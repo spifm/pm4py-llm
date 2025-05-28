@@ -22,9 +22,17 @@
         "temporal_profile": true
     },
     "llm": {
-        "hugging_face_api_key": "your_hugging_face_api_key",
-        "model_name": "mistralai/Mistral-7B-Instruct-v0.3",
-        "model_type": "text-generation-inference",
+        "llm_provider": "ollama",
+        "huggingface": {
+            "hugging_face_api_key": "your_hugging_face_api_key",
+            "model_name": "mistralai/Mistral-7B-Instruct-v0.3",
+            "model_type": "text-generation-inference"
+        },
+        "ollama": {
+            "api_url": "http://myurl.es:11434",
+            "": "/api/chat",
+            "model_name": "gemma3:27b-it-qat"
+        },
         "context": [
             "Context for the next prompts:",
             "process models obtained using process mining techniques will be provided later. The process consists of a serious game focused on designing an Entity-Relationship (ER) diagram to model a relational database based on given requirements within the game. The players are students enrolled in a mandatory course called \"Databases\", which is part of the second year curriculum for a Computer Science degree at the University of Cádiz. The proposed solution contained 6 entities, 19 attributes, 7 binary relations and their 14 cardinalities. The results will be used to analyze the students' performance and to improve the understanding of ER modeling concepts in the course considering the detected insights after analyzing the process models. Based on the detected patterns and their metrics, provide interpretative insights, such as iterative processes, starting points, heterogeneous behavior, deletion activities, structured subprocesses, linked activities, parallelism, attribute links, end patterns, loop behavior, suitable frequencies, and variability. Justify the provided insights."

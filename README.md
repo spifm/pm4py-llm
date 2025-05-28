@@ -1,6 +1,6 @@
 ## Introduction
 
-This Python application uses [pm4py](https://pm4py.fit.fraunhofer.de/) to perform process mining on event logs from any csv/xes dataset and can generate various models: Petri net, DFG, BPMN and Temporal Profile. It uses configurations to filter logs and export models. The application integrates with a Large Language Model (LLM) from Hugging Face to analyze the discovered models and provide insights. The results, including filtered logs and analysis, are saved to an output directory created with a timestamp. The application is dockerized and can be run in any environment.
+This Python application uses [pm4py](https://pm4py.fit.fraunhofer.de/) to perform process mining on event logs from any csv/xes dataset and can generate various models: Petri net, DFG, BPMN and Temporal Profile. It uses configurations to filter logs and export models. The application integrates with a Large Language Model (LLM) to analyze the discovered models and provide insights. The results, including filtered logs and analysis, are saved to an output directory created with a timestamp. The application is dockerized and can be run in any environment.
 
 ## Requirements
 
@@ -27,10 +27,18 @@ The configuration file is located in the config folder. The file is called confi
 - `discovery.bpmn`: boolean to enable/disable the discovery of BPMN using true/false
 - `discovery.dfg`: boolean to enable/disable the discovery of DFG using true/false
 - `discovery.temporal_profile`: boolean to enable/disable the discovery of the temporal profile using true/false
-- `llm.hugging_face_api_key`: API key to use the Hugging Face API for the LLM model
-- `llm.model_name`: name of the LLM model to use
-- `llm.model_type`: type of the LLM model to use, possible values are:
-    - `text-generation-inference` --> to use a text generation model
+- `llm.llm_provider`: provider of the LLM model to be used. Possible values are:
+    - `hugging_face` --> to use a model from Hugging Face
+    - `ollama` --> to use a model from Ollama
+- If hugging_face is selected as the LLM provider, the following parameters must be specified:
+    - `llm.huggingface.hugging_face_api_key`: API key to use the Hugging Face API for the LLM model
+    - `llm.huggingface.model_name`: name of the LLM model to use
+    - `llm.huggingface.model_type`: type of the LLM model to use, possible values are:
+        - `text-generation-inference` --> to use a text generation model
+- If ollama is selected as the LLM provider, the following parameters must be specified:
+    - `llm.ollama.api_url`: URL (including port) of the Ollama API to use the LLM model
+    - `llm.ollama.api_endpoint`: endpoint of the Ollama API to use the LLM model
+    - `llm.ollama.model_name`: name of the LLM model to use
 - `llm.context`: context to be used for the LLM model
 - `llm.petri_net`: configuration for analyzing an abstraction of Petri Net
     - `enabled`: boolean to enable/disable the analysis using true/false

@@ -6,7 +6,7 @@ This Python application uses [pm4py](https://pm4py.fit.fraunhofer.de/) to perfor
 
 - Docker
 
-## Configuration
+## Configuration
 
 The configuration file is located in the config folder. The file is called config.json and it contains the following parameters:
 - `dataset.path`: path to the log file to be analyzed

@@ -5,8 +5,12 @@ RUN pip install pyarrow
 # For integration with LLM
 RUN pip install transformers requests
 
+# For serving the code
+RUN pip install fastapi uvicorn
+
+
 ENV PATH="/usr/bin/python3:${PATH}"
 
 WORKDIR /pm4py-llm
 
-CMD ["tail", "-f", "/dev/null"]
+CMD ["uvicorn", "fastapi_app:app", "--host", "0.0.0.0", "--port", "8000"]

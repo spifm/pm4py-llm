@@ -7,3 +7,5 @@ services:
     container_name: pm4py-llm-container
     volumes:
       - .:/pm4py-llm
+    ports:
+      - "8000:8000"

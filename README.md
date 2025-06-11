@@ -68,15 +68,6 @@ docker compose up -d
 cp config/config_template.json config/config.json
 ```
 
-### Add a Hugging Face token in the config file
-
-```json
-{
-    "llm": {
-        "hugging_face_api_key": "your_hugging_face_api_key",
-    ...
-```
-
 ### Run the python script
 
 ```bash
@@ -88,6 +79,22 @@ docker exec -it pm4py-llm-container python3 main.py
 ```bash
 docker compose down
 ```
+
+## API
+
+The application can also be run using HTTP requests. The API is available at `http://localhost:8000`. The following endpoints are available:
+
+- `POST /run`: This endpoint runs the process mining application with the configuration specified in the config file. The following parameters can be specified in the request body:
+    - `script` [optional]: The script to be run. Default value is `main`, which will run the process mining application with the configuration specified in the config file. The additional functionalities explained in the next section can also be run using this endpoint by specifying the script name.
+
+Example CURL request to run the main script:
+
+```bash
+curl -X POST http://localhost:8000/run \
+    -H "Content-Type: application/json" \
+    -d '{"script": "main.py"}'
+```
+
 
 ## Additional functionalities
 

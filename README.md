@@ -21,10 +21,10 @@ Two containers will be created:
 ## Create a config file called config.json using the template to specify configuration parameters
 
 ```bash
-cp config/config_template.json config/config.json
+cp app/config/config_template.json app/config/config.json
 ```
 
-Then, edit the `config/config.json` file to specify the parameters for the application. The configuration file is explained in the next section.
+Then, edit the `app/config/config.json` file to specify the parameters for the application. The configuration file is explained in the next section.
 
 ## Run
 
@@ -48,7 +48,7 @@ docker compose down
 
 # API container
 
-The API documentation is available at `http://localhost:8000/docs` after the container `api-container` is started. The documentation is generated using [FastAPI](https://fastapi.tiangolo.com/) and it provides information about the available endpoints, request and response formats, and examples of how to use the API.
+The API documentation is available at `http://localhost:8000/docs` after the container `api-container` is started. The documentation is generated using [FastAPI] and it provides information about the available endpoints, request and response formats, and examples of how to use the API.
 
 # Configuration
 

@@ -7,7 +7,7 @@ app = FastAPI()
 
 @app.post("/run")
 def run_script(request: PMAnalysisRequest):
-    script_path = os.path.join("/pm4py-llm", request.script)
+    script_path = os.path.join("/app", request.script)
     if not os.path.isfile(script_path):
         return {"error": f"Script not found: {script_path}"}
 

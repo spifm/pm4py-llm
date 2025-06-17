@@ -11,6 +11,6 @@ RUN pip install fastapi uvicorn
 
 ENV PATH="/usr/bin/python3:${PATH}"
 
-WORKDIR /pm4py-llm
+WORKDIR /app
 
-CMD ["uvicorn", "fastapi_app:app", "--host", "0.0.0.0", "--port", "8001"]
+CMD ["uvicorn", "api_app:app", "--host", "0.0.0.0", "--port", "8001"]

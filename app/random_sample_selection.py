@@ -1,10 +1,12 @@
 import pandas as pd
 from config.constants import *
-import lib.config_loader as config_loader
+from lib.Config import Config
 import os
 import time
 
-config = config_loader.load_config()
+configInstance = Config()
+configInstance.initialize()
+config = configInstance.get()
 debug = config['debug']
 dataset_path = config['dataset']['path']
 case_id = config['dataset']['columns']['case_id']

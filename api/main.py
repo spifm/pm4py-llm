@@ -1,4 +1,5 @@
 from fastapi import FastAPI, Query
+from dtos import *
 import requests
 
 app = FastAPI()
@@ -10,9 +11,9 @@ def read_root():
     return {"message": "API container is running"}
 
 @app.post("/run-pm-analysis")
-def run_script():
+def run_pm_analysis(request: PMAnalysisRequest):
     try:
-        response = requests.post(PM4PY_URL, json={})
+        response = requests.post(PM4PY_URL, json=request.dict())
         response.raise_for_status()
         return {"output": response.json()}
     except requests.exceptions.RequestException as e:

@@ -1,15 +1,18 @@
 import pm4py
 import csv
-import lib.config_loader as config_loader
 import pandas as pd
+from lib.Config import Config
 
 
-config = config_loader.load_config()
-dataset_columns = config['dataset']['columns']
-debug = config['debug']
+def get_config():
+    return Config().get()
 
 # Petri Net: Discover and save model
 def get_petri_net(filtered_log, image_file_name, abstract_file_name, pn_filename):
+
+    config = get_config()
+    dataset_columns = config['dataset']['columns']
+
     noise_threshold = 0.0
     noise_threshold = float(input("Petri Net: Insert the ratio (0-100) to filter infrequent paths: "))
     net, im, fm = pm4py.discover_petri_net_inductive(filtered_log, noise_threshold/100, case_id_key=dataset_columns['case_id'], activity_key=dataset_columns['activity'], timestamp_key=dataset_columns['timestamp'])
@@ -22,6 +25,9 @@ def get_petri_net(filtered_log, image_file_name, abstract_file_name, pn_filename
 
 # Directly-Follows Graph (DFG): Discover and save model
 def get_dfg(filtered_log, image_file_name, full_dfg_filename, abstract_file_name):
+
+    config = get_config()
+    dataset_columns = config['dataset']['columns']
 
     dfg, start_activities, end_activities = pm4py.discover_dfg(
         filtered_log,
@@ -53,6 +59,10 @@ def get_dfg(filtered_log, image_file_name, full_dfg_filename, abstract_file_name
 
 # Performance Directly-Follows Graph (DFG): Discover and save model
 def get_performance_dfg(filtered_log, image_file_name):
+
+    config = get_config()
+    dataset_columns = config['dataset']['columns']
+
     pdfg, start_activities, end_activities = pm4py.discover_performance_dfg(filtered_log, case_id_key=dataset_columns['case_id'], activity_key=dataset_columns['activity'], timestamp_key=dataset_columns['timestamp'])
     pm4py.save_vis_performance_dfg(pdfg, start_activities, end_activities, image_file_name)
 
@@ -67,6 +77,10 @@ def get_bpmn(filtered_log, image_file_name):
 # Implements the approach described in: Stertz, Florian, Jürgen Mangler, and Stefanie Rinderle-Ma.
 # “Temporal Conformance Checking at Runtime based on Time-infused Process Models.” arXiv preprint arXiv:2008.07262 (2020).
 def get_temporal_profile(filtered_log, file_name, abstract_model_file_name):
+
+    config = get_config()
+    dataset_columns = config['dataset']['columns']
+
     temporal_profile = pm4py.discover_temporal_profile(filtered_log, activity_key=dataset_columns['activity'], case_id_key=dataset_columns['case_id'], timestamp_key=dataset_columns['timestamp'])
 
     fields = ["Activities", "AVG time", "STD"]

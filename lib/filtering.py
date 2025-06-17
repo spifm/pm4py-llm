@@ -3,12 +3,11 @@ import pm4py
 import pandas as pd
 from pm4py.algo.filtering.log.attributes import attributes_filter
 from config.constants import *
-import lib.config_loader as config_loader
+from lib.Config import Config
 
-config = config_loader.load_config()
-dataset_columns = config['dataset']['columns']
-case_id=dataset_columns['case_id']
 
+def get_config():
+    return Config().get()
 
 # Filter log
 def filter_log(log, filter_attr, filter_level):
@@ -30,6 +29,8 @@ def filter_log(log, filter_attr, filter_level):
 # Filter log by string attribute
 def filter_by_string_attribute(log, filter_attr, filter_level):
 
+    config = get_config()
+
     print(f"Available values for '{filter_attr}':")
     print(log[filter_attr].unique())
 
@@ -42,7 +43,7 @@ def filter_by_string_attribute(log, filter_attr, filter_level):
             log,
             filter_attr,
             [input_value],
-            case_id_key=case_id
+            case_id_key=config['dataset']['columns']['case_id']
         )
     elif filter_level == 'event':
         filtered_dataframe = pm4py.filter_event_attribute_values(
@@ -50,7 +51,7 @@ def filter_by_string_attribute(log, filter_attr, filter_level):
             filter_attr,
             [input_value],
             'case',
-            case_id_key=case_id
+            case_id_key=config['dataset']['columns']['case_id']
         )
     else:
         raise ValueError("Invalid filter level. Use 'case' or 'event'.")

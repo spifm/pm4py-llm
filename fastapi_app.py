@@ -1,25 +1,25 @@
-# fastapi_app.py
 from fastapi import FastAPI, Query
-from pydantic import BaseModel
+from lib.dtos import PMAnalysisRequest
 import subprocess
 import os
 
 app = FastAPI()
 
-class ScriptRequest(BaseModel):
-    script: str = "main.py"
-    args: list[str] = []
-
 @app.post("/run")
-def run_script(req: ScriptRequest):
-    script_path = os.path.join("/pm4py-llm", req.script)
+def run_script(request: PMAnalysisRequest):
+    script_path = os.path.join("/pm4py-llm", request.script)
     if not os.path.isfile(script_path):
         return {"error": f"Script not found: {script_path}"}
 
     try:
         # Run the script as a subprocess and capture the output
         result = subprocess.run(
-            ["python3", script_path] + req.args,
+            [
+                "python3",
+                script_path,
+                "--dataset-path", request.datasetPath,
+                "--dataset-csv_delimiter", request.datasetCsvDelimiter
+            ],
             capture_output=True,
             text=True,
             timeout=600

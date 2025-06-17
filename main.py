@@ -2,17 +2,28 @@ import pandas
 import pm4py
 import time
 import os
+import argparse
 from config.constants import *
-import lib.config_loader as config_loader
+from lib.Config import Config
 import lib.filtering as filtering
 import lib.discovery as discovery
 import lib.llm as llm
 import lib.utils as utils
 
+def parse_args():
+    parser = argparse.ArgumentParser()
+    parser.add_argument("--dataset-path")
+    parser.add_argument("--dataset-csv_delimiter")
+    parser.add_argument("--debug")
+    return parser.parse_args()
+
 if __name__ == "__main__":
 
     # Load configuration parameters
-    config = config_loader.load_config()
+    configInstance = Config()
+    configInstance.initialize(parse_args())
+    config = configInstance.get()
+
     dataset_path = config['dataset']['path']
     dataset_columns = config['dataset']['columns']
     case_id=dataset_columns['case_id']

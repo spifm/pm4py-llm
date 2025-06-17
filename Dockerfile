@@ -13,4 +13,4 @@ ENV PATH="/usr/bin/python3:${PATH}"
 
 WORKDIR /pm4py-llm
 
-CMD ["uvicorn", "fastapi_app:app", "--host", "0.0.0.0", "--port", "8000"]
+CMD ["uvicorn", "fastapi_app:app", "--host", "0.0.0.0", "--port", "8001"]

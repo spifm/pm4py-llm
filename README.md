@@ -1,12 +1,56 @@
-## Introduction
+# Introduction
 
 This Python application uses [pm4py](https://pm4py.fit.fraunhofer.de/) to perform process mining on event logs from any csv/xes dataset and can generate various models: Petri net, DFG, BPMN and Temporal Profile. It uses configurations to filter logs and export models. The application integrates with a Large Language Model (LLM) to analyze the discovered models and provide insights. The results, including filtered logs and analysis, are saved to an output directory created with a timestamp. The application is dockerized and can be run in any environment.
 
-## Requirements
+# Requirements
 
 - Docker
 
-## Configuration
+# Instructions
+
+## Build the docker images and run the containers
+
+```bash
+docker compose up -d
+```
+
+Two containers will be created:
+- `pm4py-llm-container`: the container that runs the Python application. It includes the necessary libraries and scripts to run the process mining application. The container will also run the API server to expose the functionalities of the application through a generic endpoint
+- `api-container`: the container with the client API. In case of integration with other systems, this API can be used to communicate with the Python application
+
+## Create a config file called config.json using the template to specify configuration parameters
+
+```bash
+cp config/config_template.json config/config.json
+```
+
+Then, edit the `config/config.json` file to specify the parameters for the application. The configuration file is explained in the next section.
+
+## Run
+
+The system can be run using a command or using an API endpoint.
+
+### Using the script main.py
+
+```bash
+docker exec -it pm4py-llm-container python3 main.py
+```
+
+### Using the API endpoint
+
+The API is available at `http://localhost:8001` after the container `pm4py-llm-container` is started. The corresponding documentation is available at `http://localhost:8001/docs`.
+
+## Stop the container
+
+```bash
+docker compose down
+```
+
+# API container
+
+The API documentation is available at `http://localhost:8000/docs` after the container `api-container` is started. The documentation is generated using [FastAPI](https://fastapi.tiangolo.com/) and it provides information about the available endpoints, request and response formats, and examples of how to use the API.
+
+# Configuration
 
 The configuration file is located in the config folder. The file is called config.json and it contains the following parameters:
 - `dataset.path`: path to the log file to be analyzed
@@ -54,51 +98,9 @@ The configuration file is located in the config folder. The file is called confi
     - `max_tokens`: maximum number of tokens to be used in the analysis of the DFG
 
 
-## Instructions
+# Additional functionalities
 
-### Build the docker image and run the container
-
-```bash
-docker compose up -d
-```
-
-### Create a config file called config.json using the template to specify configuration parameters
-
-```bash
-cp config/config_template.json config/config.json
-```
-
-### Run the python script
-
-```bash
-docker exec -it pm4py-llm-container python3 main.py
-```
-
-### Stop the container
-
-```bash
-docker compose down
-```
-
-## API
-
-The application can also be run using HTTP requests. The API is available at `http://localhost:8000`. The following endpoints are available:
-
-- `POST /run`: This endpoint runs the process mining application with the configuration specified in the config file. The following parameters can be specified in the request body:
-    - `script` [optional]: The script to be run. Default value is `main`, which will run the process mining application with the configuration specified in the config file. The additional functionalities explained in the next section can also be run using this endpoint by specifying the script name.
-
-Example CURL request to run the main script:
-
-```bash
-curl -X POST http://localhost:8000/run \
-    -H "Content-Type: application/json" \
-    -d '{"script": "main.py"}'
-```
-
-
-## Additional functionalities
-
-### Random sample of the log
+## Random sample of the log
 
 The application can generate a random sample of the log file indicated in the config file. The sample is generated using `random_sample_selection.py`, which is a script that must be run independently. When the script is run, the user is prompted to enter the number the number of cases to be sampled. The script will then generate a new log file with the sampled cases. The new log file will be saved in the output directory created with a timestamp. The script can be run using the following command:
 
@@ -106,7 +108,7 @@ The application can generate a random sample of the log file indicated in the co
 docker exec -it pm4py-llm-container python3 random_sample_selection.py
 ```
 
-### Merge abstract dfgs to json
+## Merge abstract dfgs to json
 
 This script reads abstract DFG models from a directory structure, extracts user IDs and grades from folder names, and combines them into a single JSON file for later processing. The script is called `merge_abstract_dfgs_to_json.py` and it must be run independently. When the script is run, the user is prompted to enter the path to the base directory (e.g., output/my-dfg-folder) where the abstract DFGs are stored. The script will then generate a new json file with the merged abstract DFGs. The new log file will be saved in the output directory created with a timestamp. The script can be run using the following command:
 
@@ -114,7 +116,7 @@ This script reads abstract DFG models from a directory structure, extracts user 
 docker exec -it pm4py-llm-container python3 merge_abstract_dfgs_to_json.py
 ```
 
-### DFG to PNG
+## DFG to PNG
 
 This script reads a dfg model from a pm4py .dfg file and generates a PNG image of the model. The script is called `dfg_to_png.py` and it must be run independently. The dfg file path is directly set in the script. The script will then generate a new png file with the DFG model. The script can be run using the following command:
 

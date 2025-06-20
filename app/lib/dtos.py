@@ -5,6 +5,7 @@ class PMAnalysisRequest(BaseModel):
     script: Optional[str] = "main.py"
     datasetPath: str
     datasetCsvDelimiter: str = ","
+    outputPath: Optional[str] = ""
 
 class DatasetToStoreRequest(BaseModel):
     filename: str

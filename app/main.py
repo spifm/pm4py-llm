@@ -14,6 +14,7 @@ def parse_args():
     parser = argparse.ArgumentParser()
     parser.add_argument("--dataset-path")
     parser.add_argument("--dataset-csv_delimiter")
+    parser.add_argument("--output_path")
     parser.add_argument("--debug")
     return parser.parse_args()
 
@@ -42,7 +43,11 @@ if __name__ == "__main__":
 
 
     # Create output directory
-    exec_path = str(int(time.time()))
+    if config['output_path'] != "":
+        exec_path = config['output_path']
+    else:
+        exec_path = str(int(time.time()))
+
     try:
         os.makedirs(outputs_path + "/" + exec_path, exist_ok=True)
     except Exception as e:

@@ -19,11 +19,15 @@ class Config:
         with open(configFileName) as f:
             self.config = json.load(f)
 
+        self.config['output_path'] = ""
+
         if cliArgs:
             if cliArgs.dataset_path:
                 self.config['dataset']['path'] = cliArgs.dataset_path
             if cliArgs.dataset_csv_delimiter:
                 self.config['dataset']['csv_delimiter'] = cliArgs.dataset_csv_delimiter
+            if cliArgs.output_path:
+                self.config['output_path'] = cliArgs.output_path
 
         self._initialized = True
 

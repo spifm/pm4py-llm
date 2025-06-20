@@ -19,7 +19,8 @@ def run_script(request: PMAnalysisRequest):
                 "python3",
                 script_path,
                 "--dataset-path", request.datasetPath,
-                "--dataset-csv_delimiter", request.datasetCsvDelimiter
+                "--dataset-csv_delimiter", request.datasetCsvDelimiter,
+                "--output_path", request.outputPath
             ],
             capture_output=True,
             text=True,

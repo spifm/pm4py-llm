@@ -1,7 +1,8 @@
-from fastapi import FastAPI, Query
-from lib.dtos import PMAnalysisRequest
+from fastapi import FastAPI, HTTPException
+from lib.dtos import *
 import subprocess
 import os
+from lib.store_dataset_as_csv import store_json_dataset_as_csv
 
 app = FastAPI()
 
@@ -31,3 +32,14 @@ def run_script(request: PMAnalysisRequest):
         }
     except Exception as e:
         return {"error": str(e)}
+
+
+@app.post("/store-dataset")
+def run_script(request: DatasetToStoreRequest):
+    try:
+        output_path = store_json_dataset_as_csv(request.filename, request.data)
+        return {"success": True, "file": output_path}
+    except ValueError as ve:
+        raise HTTPException(status_code=400, detail=str(ve))
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))

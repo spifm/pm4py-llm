@@ -1,10 +1,16 @@
-from fastapi import FastAPI, HTTPException
+from fastapi import FastAPI, HTTPException, Query
+from fastapi.responses import JSONResponse
 from dtos import *
 import requests
+import os
+from datetime import datetime, timedelta
+import json
 
 app = FastAPI()
 
 PM4PY_BASE_URL = "http://pm4py-llm-container:8001"
+CACHE_DIR = "tmp/cache/"
+CACHE_DURATION = timedelta(seconds=60 * 60 * 24)  # Cache duration in seconds (1 day)
 
 @app.get(
         "/",
@@ -65,3 +71,50 @@ def store_dataset(request: DatasetToStoreRequest):
         raise
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
+
+
+@app.get(
+        "/get-analysis",
+        summary="Get analysis results",
+        description=(
+            "Retrieves the analysis results for a given filename.\n\n"
+            "It first checks if a cached version exists and is still valid. If so, it returns the cached data.\n"
+            "If not, it fetches the data from the PM4PY container and caches it for future requests."
+        )
+)
+def get_analysis(analysis_dir: str = Query(
+                                    alias="analysis_dir",
+                                    description="Directory where the analysis results are stored"
+                                    )
+    ):
+    # Check if the analysis is stored in a cache directory
+    os.makedirs(CACHE_DIR, exist_ok=True)
+    cache_file = os.path.join(CACHE_DIR, f"{analysis_dir}.json")
+
+    if os.path.isfile(cache_file):
+        cache_time = datetime.fromtimestamp(os.path.getmtime(cache_file))
+        if datetime.now() - cache_time < CACHE_DURATION:
+             with open(cache_file, "r") as f:
+                return JSONResponse(content=json.load(f))
+
+    # If not cached or cache is expired, fetch from PM4PY container
+    url = f"{PM4PY_BASE_URL}/get-analysis"
+    try:
+        response = requests.get(url, params={"analysis_dir": analysis_dir})
+
+        if response.status_code != 200:
+            try:
+                detail = response.json().get("detail", "Unknown error")
+            except Exception:
+                detail = response.text or "Unknown error"
+            raise HTTPException(status_code=response.status_code, detail=f"PM4PY error: {detail}")
+
+        data = response.json()
+
+        with open(cache_file, "w") as f:
+            json.dump(data, f)
+
+        return JSONResponse(content=data)
+
+    except requests.exceptions.RequestException as e:
+        raise HTTPException(status_code=500, detail=f"Error fetching analysis: {str(e)}")

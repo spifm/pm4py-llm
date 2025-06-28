@@ -1,4 +1,4 @@
 from pm4py.util import constants
 
-outputs_path = "output"
+OUTPUT_PATH = "output"
 constants.SHOW_EVENT_LOG_DEPRECATION = False

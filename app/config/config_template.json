@@ -16,9 +16,18 @@
         "export_formats": []
     },
     "discovery": {
-        "petri_net": true,
-        "bpmn": true,
-        "dfg": true,
+        "petri_net": {
+            "enabled": true,
+            "infrequent_ratio": 0.0
+        },
+        "bpmn": {
+            "enabled": true,
+            "infrequent_ratio": 0.0
+        },
+        "dfg": {
+            "enabled": true,
+            "performance-enabled": true
+        },
         "temporal_profile": true
     },
     "llm": {

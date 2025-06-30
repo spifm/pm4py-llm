@@ -67,9 +67,15 @@ The configuration file is located in the config folder. The file is called confi
 - `filter.export_formats`: list of export formats to be used. If empty, no export will be performed. Possible values are:
     - `csv` --> to export the filtered log in CSV format
     - `xes` --> to export the filtered log in XES format
-- `discovery.petri_net`: boolean to enable/disable the discovery of BPMN using true/false
-- `discovery.bpmn`: boolean to enable/disable the discovery of BPMN using true/false
-- `discovery.dfg`: boolean to enable/disable the discovery of DFG using true/false
+- `discovery.petri_net`: configuration for discovering a Petri Net
+    - `enabled`: boolean to enable/disable the discovery using true/false
+    - `infrequent_ratio`: ratio of infrequent activities to be removed from the Petri Net (0-100). If set to 0.00, no infrequent activities will be remove
+- `discovery.bpmn`: configuration for discovering BPMN
+    - `enabled`: boolean to enable/disable the discovery using true/false
+    - `infrequent_ratio`: ratio of infrequent activities to be removed from the BPMN (0-100). If set to 0.00, no infrequent activities will be removed
+- `discovery.dfg`: configuration for discovering a DFG
+    - `enabled`: boolean to enable/disable the discovery using true/false
+    - `performance-enabled`: boolean to enable/disable an additional performance analysis using true/false
 - `discovery.temporal_profile`: boolean to enable/disable the discovery of the temporal profile using true/false
 - `llm.llm_provider`: provider of the LLM model to be used. Possible values are:
     - `hugging_face` --> to use a model from Hugging Face

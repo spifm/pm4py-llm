@@ -9,9 +9,6 @@ import lib.filtering as filtering
 import lib.discovery as discovery
 import lib.llm as llm
 
-# Build file name
-def build_file_name(exec_path, filename, file_extension):
-    return OUTPUT_PATH + "/" + exec_path + "/" + filename + "." + file_extension
 
 def parse_args():
     parser = argparse.ArgumentParser()
@@ -38,9 +35,10 @@ if __name__ == "__main__":
     filter_level = config['filter']['level']
     filter_attr = config['filter']['attr']
     export_formats = config['filter']['export_formats']
-    petri_net_enabled = config['discovery']['petri_net']
-    dfg_enabled = config['discovery']['dfg']
-    bpmn_enabled = config['discovery']['bpmn']
+    petri_net_enabled = config['discovery']['petri_net']['enabled']
+    dfg_enabled = config['discovery']['dfg']['enabled']
+    performance_dfg_enabled = config['discovery']['dfg']['performance-enabled']
+    bpmn_enabled = config['discovery']['bpmn']['enabled']
     temporal_profile_enabled = config['discovery']['temporal_profile']
     llm_config = config['llm']
 
@@ -70,14 +68,14 @@ if __name__ == "__main__":
 
     # Create output directory
     if config['output_path'] != "":
-        exec_path = config['output_path']
+        outputDirectory = OUTPUT_PATH + "/" + config['output_path']
     else:
-        exec_path = str(int(time.time()))
+        outputDirectory = OUTPUT_PATH + "/" + str(int(time.time()))
 
     try:
-        os.makedirs(OUTPUT_PATH + "/" + exec_path, exist_ok=True)
+        os.makedirs(outputDirectory, exist_ok=True)
     except Exception as e:
-        print(f"Error creating output directory '{OUTPUT_PATH + "/" + exec_path}': {e}")
+        print(f"Error creating output directory '{outputDirectory}': {e}")
         exit(1)
 
 
@@ -91,7 +89,7 @@ if __name__ == "__main__":
     number_of_cases = len(case_values)
 
     # Create text file with information about the analysis
-    with open(OUTPUT_PATH + "/" + exec_path + '/info.txt', 'a') as f:
+    with open(outputDirectory + '/info.txt', 'a') as f:
         f.write("Dataset path: {}\n".format(dataset_path))
         f.write("Dataset extension: {}\n".format(file_extension))
         f.write("Number of cases: {}\n".format(str(number_of_cases)))
@@ -112,15 +110,15 @@ if __name__ == "__main__":
     if export_formats:
         for export_format in export_formats:
             filename = "filtered_log" + "-numcases_" + str(number_of_cases) + "-" + filtered_info_str
-            filename = build_file_name(exec_path, filename, export_format)
+            filename = os.path.join(outputDirectory, filename + "." + export_format)
             filtering.export_filtered_log(filtered_log, filename, export_format)
 
     # Discover and save models
     if petri_net_enabled:
         print("Discovering Petri net...")
-        image_filename = build_file_name(exec_path, "petri_net", "png")
-        abstract_filename = build_file_name(exec_path, "abstract-petri_net", "txt")
-        pn_filename = build_file_name(exec_path, "petri_net", "pnml")
+        image_filename = os.path.join(outputDirectory, "petri_net.png")
+        abstract_filename = os.path.join(outputDirectory, "abstract-petri_net.txt")
+        pn_filename = os.path.join(outputDirectory, "petri_net.pnml")
 
         abstract_pn, net, im, fm = discovery.get_petri_net(
             filtered_log, image_filename, abstract_filename, pn_filename
@@ -128,24 +126,26 @@ if __name__ == "__main__":
 
     if dfg_enabled:
         print("Discovering DFG...")
-        image_filename = build_file_name(exec_path, "dfg", "png")
-        dfg_filename = build_file_name(exec_path, "dfg", "dfg")
-        abstract_filename = build_file_name(exec_path, "abstract-dfg", "txt")
+        image_filename = os.path.join(outputDirectory, "dfg.png")
+        dfg_filename = os.path.join(outputDirectory, "dfg.dfg")
+        abstract_filename = os.path.join(outputDirectory, "abstract-dfg.txt")
         abstract_dfg = discovery.get_dfg(
             filtered_log, image_filename, dfg_filename, abstract_filename
         )
-        performance_image_filename = build_file_name(exec_path, "performance-dfg", "png")
-        discovery.get_performance_dfg(filtered_log, performance_image_filename)
+
+        if performance_dfg_enabled:
+            performance_image_filename = os.path.join(outputDirectory, "performance-dfg.png")
+            discovery.get_performance_dfg(filtered_log, performance_image_filename)
 
     if bpmn_enabled:
         print("Discovering BPMN...")
-        image_filename = build_file_name(exec_path, "bpmn", "png")
+        image_filename = os.path.join(outputDirectory, "bpmn.png")
         discovery.get_bpmn(filtered_log, image_filename)
 
     if temporal_profile_enabled:
         print("Discovering temporal profile...")
-        filename = build_file_name(exec_path, "temporal_profile", "csv")
-        abstract_filename = build_file_name(exec_path, "abstract-temporal_profile", "txt")
+        filename = os.path.join(outputDirectory, "temporal_profile.csv")
+        abstract_filename = os.path.join(outputDirectory, "abstract-temporal_profile.txt")
         
         temporal_profile, abstract_tp = discovery.get_temporal_profile(
             filtered_log, filename, abstract_filename
@@ -153,13 +153,13 @@ if __name__ == "__main__":
 
     # LLM
     if petri_net_enabled and llm_config['petri_net']['enabled']:
-        filename = build_file_name(exec_path, "petri_net-analysis", "txt")
+        filename = os.path.join(outputDirectory, "petri_net-analysis.txt")
         llm.analyze_petri_net(abstract_pn, filename)
 
     if dfg_enabled and llm_config['dfg']['enabled']:
-        filename = build_file_name(exec_path, "dfg-analysis", "txt")
+        filename = os.path.join(outputDirectory, "dfg-analysis.txt")
         llm.analyze_dfg(abstract_dfg, filename)
 
     if temporal_profile_enabled and llm_config['temporal_profile']['enabled']:
-        filename = build_file_name(exec_path, "temporal_profile-analysis", "txt")
+        filename = os.path.join(outputDirectory, "temporal_profile-analysis.txt")
         llm.analyze_temporal_profile(abstract_tp, filename)

@@ -11,6 +11,12 @@ RUN pip install fastapi uvicorn
 
 ENV PATH="/usr/bin/python3:${PATH}"
 
+# Create a non-root user to run the application
+RUN useradd -ms /bin/bash appuser
+RUN mkdir -p /app && chown -R appuser:appuser /app
+
+USER appuser
+
 WORKDIR /app
 
 CMD ["uvicorn", "api_app:app", "--host", "0.0.0.0", "--port", "8001"]

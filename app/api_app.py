@@ -39,7 +39,7 @@ def run_script(request: PMAnalysisRequest):
             ],
             capture_output=True,
             text=True,
-            timeout=600
+            timeout=1800 # Timeout after 30 minutes
         )
         return {
             "stdout": result.stdout,

@@ -23,7 +23,7 @@ def verify_token(credentials: HTTPAuthorizationCredentials = Depends(security)):
 app = FastAPI()
 
 PM4PY_BASE_URL = "http://pm4py-llm-app-container:8001"
-CACHE_DIR = "/app/cache/"
+CACHE_DIR = "./cache/"
 CACHE_DURATION = timedelta(seconds=60 * 60 * 24)  # Cache duration in seconds (1 day)
 
 @app.get(

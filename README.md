@@ -8,6 +8,14 @@ This Python application uses [pm4py](https://pm4py.fit.fraunhofer.de/) to perfor
 
 # Instructions
 
+
+## Create .env file
+Create a `.env` file in the root directory of the project to specify environment variables for the application. This file is used to configure the API token for secure access to the API endpoints. Use the .env.example file as a template:
+
+```bash
+cp .env.example .env
+```
+
 ## Build the docker images and run the containers
 
 ```bash
@@ -25,14 +33,6 @@ cp app/config/config_template.json app/config/config.json
 ```
 
 Then, edit the `app/config/config.json` file to specify the parameters for the application. The configuration file is explained in the next section.
-
-
-## Create .env file
-Create a `.env` file in the root directory of the project to specify environment variables for the application. This file is used to configure the API token for secure access to the API endpoints. Use the .env.example file as a template:
-
-```bash
-cp .env.example .env
-```
 
 ## Run
 

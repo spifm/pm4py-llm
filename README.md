@@ -38,6 +38,12 @@ Then, edit the `app/config/config.json` file to specify the parameters for the a
 
 The system can be run using a command or using an API endpoint.
 
+The following permission change could be needed to run the Process Mining analysis:
+
+```bash
+chmod 777 app/output/
+```
+
 ### Using the script main.py
 
 ```bash

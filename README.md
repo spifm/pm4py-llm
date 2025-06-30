@@ -47,12 +47,12 @@ chmod 777 app/output/
 ### Using the script main.py
 
 ```bash
-docker exec -it pm4py-llm-container python3 main.py
+docker exec -it pm4py-llm-app-container python3 main.py
 ```
 
 ### Using the API endpoint
 
-The API is available at `http://localhost:8001` after the container `pm4py-llm-container` is started. The corresponding documentation is available at `http://localhost:8001/docs`.
+The API is available at `http://localhost:8001` after the container `pm4py-llm-app-container` is started. The corresponding documentation is available at `http://localhost:8001/docs`.
 
 ## Stop the container
 
@@ -62,7 +62,7 @@ docker compose down
 
 # API container
 
-The API documentation is available at `http://localhost:8000/docs` after the container `api-container` is started. The documentation is generated using [FastAPI] and it provides information about the available endpoints, request and response formats, and examples of how to use the API.
+The API documentation is available at `http://localhost:8000/docs` after the container `pm4py-llm-api-container` is started. The documentation is generated using [FastAPI] and it provides information about the available endpoints, request and response formats, and examples of how to use the API.
 
 # Configuration
 
@@ -125,7 +125,7 @@ The configuration file is located in the config folder. The file is called confi
 The application can generate a random sample of the log file indicated in the config file. The sample is generated using `random_sample_selection.py`, which is a script that must be run independently. When the script is run, the user is prompted to enter the number the number of cases to be sampled. The script will then generate a new log file with the sampled cases. The new log file will be saved in the output directory created with a timestamp. The script can be run using the following command:
 
 ```bash
-docker exec -it pm4py-llm-container python3 random_sample_selection.py
+docker exec -it pm4py-llm-app-container python3 random_sample_selection.py
 ```
 
 ## Merge abstract dfgs to json
@@ -133,7 +133,7 @@ docker exec -it pm4py-llm-container python3 random_sample_selection.py
 This script reads abstract DFG models from a directory structure, extracts user IDs and grades from folder names, and combines them into a single JSON file for later processing. The script is called `merge_abstract_dfgs_to_json.py` and it must be run independently. When the script is run, the user is prompted to enter the path to the base directory (e.g., output/my-dfg-folder) where the abstract DFGs are stored. The script will then generate a new json file with the merged abstract DFGs. The new log file will be saved in the output directory created with a timestamp. The script can be run using the following command:
 
 ```bash
-docker exec -it pm4py-llm-container python3 merge_abstract_dfgs_to_json.py
+docker exec -it pm4py-llm-app-container python3 merge_abstract_dfgs_to_json.py
 ```
 
 ## DFG to PNG
@@ -141,5 +141,5 @@ docker exec -it pm4py-llm-container python3 merge_abstract_dfgs_to_json.py
 This script reads a dfg model from a pm4py .dfg file and generates a PNG image of the model. The script is called `dfg_to_png.py` and it must be run independently. The dfg file path is directly set in the script. The script will then generate a new png file with the DFG model. The script can be run using the following command:
 
 ```bash
-docker exec -it pm4py-llm-container python3 dfg_to_png.py
+docker exec -it pm4py-llm-app-container python3 dfg_to_png.py
 ```

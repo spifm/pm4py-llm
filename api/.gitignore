@@ -119,5 +119,5 @@ dist
 # pycache
 __pycache__/
 
-# Temporary files
-tmp/
+# Cache files
+cache/

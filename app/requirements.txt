@@ -1,3 +1,5 @@
+pyarrow
+transformers
 fastapi
 uvicorn
 requests

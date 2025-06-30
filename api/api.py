@@ -1,10 +1,24 @@
-from fastapi import FastAPI, HTTPException, Query
+from fastapi import FastAPI, HTTPException, Query, status, Depends
+from fastapi.security import HTTPBearer, HTTPAuthorizationCredentials
 from fastapi.responses import JSONResponse
 from dtos import *
 import requests
 import os
 from datetime import datetime, timedelta
+from dotenv import load_dotenv
 import json
+
+security = HTTPBearer()
+
+load_dotenv()
+API_TOKEN = os.getenv("API_TOKEN")
+
+def verify_token(credentials: HTTPAuthorizationCredentials = Depends(security)):
+    if credentials.credentials != API_TOKEN:
+        raise HTTPException(
+            status_code=status.HTTP_401_UNAUTHORIZED,
+            detail="Invalid or missing token" + API_TOKEN,
+        )
 
 app = FastAPI()
 
@@ -15,7 +29,8 @@ CACHE_DURATION = timedelta(seconds=60 * 60 * 24)  # Cache duration in seconds (1
 @app.get(
         "/",
         summary="Check API status",
-        description="Returns a simple message to confirm the API container is up."
+        description="Returns a simple message to confirm the API container is up.",
+        dependencies=[Depends(verify_token)]
 )
 def read_root():
     return {"message": "API container is running"}
@@ -23,12 +38,14 @@ def read_root():
 @app.post(
     "/run-pm-analysis",
     summary="Run process mining analysis",
-    description="This endpoint sends the analysis request to the PM4PY container, forwarding dataset configuration parameters."
+    description="This endpoint sends the analysis request to the PM4PY container, forwarding dataset configuration parameters.",
+    dependencies=[Depends(verify_token)]
 )
 def run_pm_analysis(request: PMAnalysisRequest):
     url = f"{PM4PY_BASE_URL}/run"
+    headers = {"Authorization": f"Bearer {API_TOKEN}"}
     try:
-        response = requests.post(url, json=request.model_dump())
+        response = requests.post(url, json=request.model_dump(), headers=headers)
         response.raise_for_status()
         return {"output": response.json()}
     except requests.exceptions.RequestException as e:
@@ -38,24 +55,26 @@ def run_pm_analysis(request: PMAnalysisRequest):
         "/store-dataset",
         summary="Store json dataset as CSV",
         description=(
-        "This endpoint stores a JSON dataset as a CSV file in the PM4PY container.\n\n"
-        "The request must include:\n"
-        "- `filename`: the name of the CSV file.\n"
-        "- `data`: a JSON object where keys are column names and values are arrays of column values.\n\n"
-        "**Example:**\n"
-        "```json\n"
-        "{\n"
-        "  \"filename\": \"my_dataset.csv\",\n"
-        "  \"data\": {\n"
-        "    \"column1\": [\"value1\", \"value2\"],\n"
-        "    \"column2\": [10, 20]\n"
-        "  }\n"
-        "}\n"
-        "```"
-    )
+            "This endpoint stores a JSON dataset as a CSV file in the PM4PY container.\n\n"
+            "The request must include:\n"
+            "- `filename`: the name of the CSV file.\n"
+            "- `data`: a JSON object where keys are column names and values are arrays of column values.\n\n"
+            "**Example:**\n"
+            "```json\n"
+            "{\n"
+            "  \"filename\": \"my_dataset.csv\",\n"
+            "  \"data\": {\n"
+            "    \"column1\": [\"value1\", \"value2\"],\n"
+            "    \"column2\": [10, 20]\n"
+            "  }\n"
+            "}\n"
+            "```"
+        ),
+        dependencies=[Depends(verify_token)]
 )
 def store_dataset(request: DatasetToStoreRequest):
     url = f"{PM4PY_BASE_URL}/store-dataset"
+    headers = {"Authorization": f"Bearer {API_TOKEN}"}
 
     try:
     
@@ -64,7 +83,7 @@ def store_dataset(request: DatasetToStoreRequest):
         if len(set(lengths)) > 1:
             raise HTTPException(status_code=400, detail="All columns must have the same number of elements.")
         
-        res = requests.post(url, json=request.model_dump())
+        res = requests.post(url, json=request.model_dump(), headers=headers)
         return res.json()
     
     except HTTPException:
@@ -80,7 +99,8 @@ def store_dataset(request: DatasetToStoreRequest):
             "Retrieves the analysis results for a given filename.\n\n"
             "It first checks if a cached version exists and is still valid. If so, it returns the cached data.\n"
             "If not, it fetches the data from the PM4PY container and caches it for future requests."
-        )
+        ),
+        dependencies=[Depends(verify_token)]
 )
 def get_analysis(analysis_dir: str = Query(
                                     alias="analysis_dir",
@@ -99,8 +119,9 @@ def get_analysis(analysis_dir: str = Query(
 
     # If not cached or cache is expired, fetch from PM4PY container
     url = f"{PM4PY_BASE_URL}/get-analysis"
+    headers = {"Authorization": f"Bearer {API_TOKEN}"}
     try:
-        response = requests.get(url, params={"analysis_dir": analysis_dir})
+        response = requests.get(url, params={"analysis_dir": analysis_dir}, headers=headers)
 
         if response.status_code != 200:
             try:

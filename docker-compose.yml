@@ -4,10 +4,12 @@ services:
     build:
       context: ./app
     container_name: pm4py-llm-app-container
-    volumes:
-      - ./app:/app
     ports:
       - "8001:8001"
+    volumes:
+      - ./app:/app
+    env_file:
+      - .env
 
   api:
     image: pm4py-llm-api
@@ -16,7 +18,9 @@ services:
     container_name: pm4py-llm-api-container
     ports:
       - "8000:8000"
-    depends_on:
-      - app
     volumes:
       - ./api:/api
+    env_file:
+      - .env
+    depends_on:
+      - app

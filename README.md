@@ -38,9 +38,10 @@ Then, edit the `app/config/config.json` file to specify the parameters for the a
 
 The system can be run using a command or using an API endpoint.
 
-The following permission change could be needed to run the Process Mining analysis:
+The following permission change could be needed:
 
 ```bash
+chmod 777 app/dataset/
 chmod 777 app/output/
 ```
 
@@ -118,14 +119,14 @@ The configuration file is located in the config folder. The file is called confi
     - `max_tokens`: maximum number of tokens to be used in the analysis of the DFG
 
 
-# Additional functionalities
+# Additional utilities
 
 ## Random sample of the log
 
 The application can generate a random sample of the log file indicated in the config file. The sample is generated using `random_sample_selection.py`, which is a script that must be run independently. When the script is run, the user is prompted to enter the number the number of cases to be sampled. The script will then generate a new log file with the sampled cases. The new log file will be saved in the output directory created with a timestamp. The script can be run using the following command:
 
 ```bash
-docker exec -it pm4py-llm-app-container python3 random_sample_selection.py
+docker exec -it pm4py-llm-app-container python3 utils/random_sample_selection.py
 ```
 
 ## Merge abstract dfgs to json
@@ -133,7 +134,7 @@ docker exec -it pm4py-llm-app-container python3 random_sample_selection.py
 This script reads abstract DFG models from a directory structure, extracts user IDs and grades from folder names, and combines them into a single JSON file for later processing. The script is called `merge_abstract_dfgs_to_json.py` and it must be run independently. When the script is run, the user is prompted to enter the path to the base directory (e.g., output/my-dfg-folder) where the abstract DFGs are stored. The script will then generate a new json file with the merged abstract DFGs. The new log file will be saved in the output directory created with a timestamp. The script can be run using the following command:
 
 ```bash
-docker exec -it pm4py-llm-app-container python3 merge_abstract_dfgs_to_json.py
+docker exec -it pm4py-llm-app-container python3 utils/merge_abstract_dfgs_to_json.py
 ```
 
 ## DFG to PNG
@@ -141,5 +142,13 @@ docker exec -it pm4py-llm-app-container python3 merge_abstract_dfgs_to_json.py
 This script reads a dfg model from a pm4py .dfg file and generates a PNG image of the model. The script is called `dfg_to_png.py` and it must be run independently. The dfg file path is directly set in the script. The script will then generate a new png file with the DFG model. The script can be run using the following command:
 
 ```bash
-docker exec -it pm4py-llm-app-container python3 dfg_to_png.py
+docker exec -it pm4py-llm-app-container python3 utils/dfg_to_png.py
 ```
+
+## CSV to JSON conversion
+
+This script converts a CSV file to a custom JSON format. The script is called `csv_to_json.py` and it must be run independently. The CSV file path is directly set in the script. The script will then generate a new json file with the converted data. The script can be run using the following command:
+
+```bash
+docker exec -it pm4py-llm-app-container python3 utils/csv_to_json.py
+``` 

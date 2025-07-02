@@ -79,12 +79,11 @@ def simplify_dfg_endpoint(request: SimplifyDFGRequest):
         input_dir = os.path.dirname(request.dfg_file)
         output_file = os.path.join(input_dir, "simplified-dfg.txt")
 
-        result = simplifier.simplify(request.dfg_file, output_file)
+        simplifier.simplify(request.dfg_file, output_file)
 
         return {
             "message": "DFG simplified successfully",
-            "output_file": output_file,
-            "result": result
+            "output_file": output_file
         }
 
     except Exception as e:

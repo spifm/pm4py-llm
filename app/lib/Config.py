@@ -1,6 +1,5 @@
 import os
 import json
-import argparse
 
 class Config:
     _instance = None

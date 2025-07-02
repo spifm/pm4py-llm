@@ -3,7 +3,8 @@ from fastapi.security import HTTPBearer, HTTPAuthorizationCredentials
 from dotenv import load_dotenv
 from lib.dtos import *
 from config.constants import *
-from lib.api_lib.store_dataset_as_csv import store_json_dataset_as_csv
+from lib.store_dataset_as_csv import store_json_dataset_as_csv
+from lib.DFGSimplifier import DFGSimplifier
 import subprocess
 import os
 
@@ -59,7 +60,36 @@ def run_script(request: DatasetToStoreRequest):
         raise HTTPException(status_code=400, detail=str(ve))
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
-    
+
+
+@app.post(
+        "/simplify-dfg",
+        summary="Simplify DFG using LLM",
+        description=("Simplifies a Directly-Follows Graph (DFG) using a Large Language Model (LLM). "
+                     "The DFG file path is provided as a string, and the output is saved to a new file."),
+        dependencies=[Depends(verify_token)]
+)
+def simplify_dfg_endpoint(request: SimplifyDFGRequest):
+    try:
+        simplifier = DFGSimplifier()
+        
+        if not os.path.exists(request.dfg_file):
+            raise HTTPException(status_code=404, detail="DFG file not found.")
+        
+        input_dir = os.path.dirname(request.dfg_file)
+        output_file = os.path.join(input_dir, "simplified-dfg.txt")
+
+        result = simplifier.simplify(request.dfg_file, output_file)
+
+        return {
+            "message": "DFG simplified successfully",
+            "output_file": output_file,
+            "result": result
+        }
+
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
+
 
 @app.get(
         "/get-analysis",

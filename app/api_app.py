@@ -77,13 +77,17 @@ def simplify_dfg_endpoint(request: SimplifyDFGRequest):
             raise HTTPException(status_code=404, detail="DFG file not found.")
         
         input_dir = os.path.dirname(request.dfg_file)
-        output_file = os.path.join(input_dir, "simplified-dfg.txt")
+        
+        output_analysis_file = os.path.join(input_dir, "simplified-dfg-analysis.txt")
+        simplifier.simplify(request.dfg_file, output_analysis_file)
 
-        simplifier.simplify(request.dfg_file, output_file)
+        simplified_dfg_file = os.path.join(input_dir, "simplified-dfg.dfg")
+        simplifier.extract_and_save_dfg(output_analysis_file, simplified_dfg_file)
 
         return {
             "message": "DFG simplified successfully",
-            "output_file": output_file
+            "output_file": output_analysis_file,
+            "simplified_dfg_file": simplified_dfg_file
         }
 
     except Exception as e:

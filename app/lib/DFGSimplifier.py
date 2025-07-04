@@ -38,3 +38,29 @@ class DFGSimplifier:
 
         result = llm.exec_prompt(self.config['llm']['dfg'], prompt, output_file)
         return result
+    
+    def extract_and_save_dfg(self, input_filepath, output_filepath):
+        """
+        Extracts the simplified DFG from the input file using defined delimiters
+        and saves it to a new output file.
+        """
+        start_marker = "--- DFG BEGIN ---"
+        end_marker = "--- DFG END ---"
+        in_dfg_block = False
+        dfg_lines = []
+
+        with open(input_filepath, "r") as f:
+            for line in f:
+                if start_marker in line:
+                    in_dfg_block = True
+                    continue
+                elif end_marker in line:
+                    break
+                elif in_dfg_block:
+                    if line.strip():  # Ignore empty lines
+                        dfg_lines.append(line.rstrip())
+
+        with open(output_filepath, "w") as f_out:
+            f_out.write("\n".join(dfg_lines))
+
+        return "\n".join(dfg_lines)

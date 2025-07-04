@@ -92,6 +92,33 @@ def store_dataset(request: DatasetToStoreRequest):
         raise HTTPException(status_code=500, detail=str(e))
 
 
+@app.post(
+        "/simplify-dfg",
+        summary="Simplify DFG using LLM",
+        description=("Simplifies a Directly-Follows Graph (DFG) using a Large Language Model (LLM). "
+                     "The DFG file path is provided as a string, and the output is saved to a new file."
+                     "The request must include:\n"
+                     "- `dfg_file`: the full path name of the DFG file\n\n"
+                     "**Example:**\n"
+                     "```json\n"
+                     "{\n"
+                     "  \"dfg_file\": \"output/analysis_dir/dfg.dfg\",\n"
+                     "}\n"
+                     "```"
+                    ),
+        dependencies=[Depends(verify_token)]
+)
+def simplify_dfg_endpoint(request: SimplifyDFGRequest):
+    url = f"{PM4PY_BASE_URL}/simplify-dfg"
+    headers = {"Authorization": f"Bearer {API_TOKEN}"}
+    try:
+        response = requests.post(url, json=request.model_dump(), headers=headers)
+        response.raise_for_status()
+        return {"output": response.json()}
+    except requests.exceptions.RequestException as e:
+        return {"error": str(e)}
+
+
 @app.get(
         "/get-analysis",
         summary="Get analysis results",

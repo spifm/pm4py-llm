@@ -9,3 +9,6 @@ class PMAnalysisRequest(BaseModel):
 class DatasetToStoreRequest(BaseModel):
     filename: str
     data: Dict[str, List]
+
+class SimplifyDFGRequest(BaseModel):
+    dfg_file: str

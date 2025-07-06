@@ -7,11 +7,24 @@ from lib.store_dataset_as_csv import store_json_dataset_as_csv
 from lib.DFGSimplifier import DFGSimplifier
 import subprocess
 import os
-
-security = HTTPBearer()
+import logging
+import sys
 
 load_dotenv()
 API_TOKEN = os.getenv("API_TOKEN")
+LOG_LEVEL = os.getenv("LOG_LEVEL", "INFO").upper()
+
+logging.basicConfig(
+    level=getattr(logging, LOG_LEVEL, logging.INFO),
+    format="%(asctime)s - %(levelname)s - %(message)s",
+    handlers=[logging.StreamHandler(sys.stdout)]
+)
+
+logger = logging.getLogger(__name__)
+
+
+security = HTTPBearer()
+
 
 def verify_token(credentials: HTTPAuthorizationCredentials = Depends(security)):
     if credentials.credentials != API_TOKEN:
@@ -78,16 +91,23 @@ def simplify_dfg_endpoint(request: SimplifyDFGRequest):
         
         input_dir = os.path.dirname(request.dfg_file)
         
-        output_analysis_file = os.path.join(input_dir, "simplified-dfg-analysis.txt")
-        simplifier.simplify(request.dfg_file, output_analysis_file)
+        output_analysis = os.path.join(input_dir, "simplified-dfg-analysis.txt")
+        simplifier.simplify(request.dfg_file, output_analysis)
 
-        simplified_dfg_file = os.path.join(input_dir, "simplified-dfg.dfg")
-        simplifier.extract_and_save_dfg(output_analysis_file, simplified_dfg_file)
+        llm_simplified_dfg = os.path.join(input_dir, "llm-simplified-dfg.dfg")
+        simplifier.extract_and_save_dfg(output_analysis, llm_simplified_dfg)
+
+        simplified_dfg = os.path.join(input_dir, "simplified-dfg.dfg")
+        simplifier.rewrite_dfg_with_original_indices(request.dfg_file, llm_simplified_dfg, simplified_dfg)
+
+        simplified_dfg_image = os.path.join(input_dir, "simplified-dfg.png")
+        simplifier.convert_dfg_to_image(simplified_dfg, simplified_dfg_image)
 
         return {
             "message": "DFG simplified successfully",
-            "output_file": output_analysis_file,
-            "simplified_dfg_file": simplified_dfg_file
+            "output_analysis": output_analysis,
+            "simplified_dfg": simplified_dfg,
+            "simplified_dfg_image": simplified_dfg_image
         }
 
     except Exception as e:

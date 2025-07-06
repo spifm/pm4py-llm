@@ -6,7 +6,7 @@ import argparse
 from config.constants import *
 from lib.Config import Config
 import lib.filtering as filtering
-import lib.discovery as discovery
+import lib.Discovery as Discovery
 import lib.llm as llm
 
 
@@ -114,6 +114,8 @@ if __name__ == "__main__":
             filtering.export_filtered_log(filtered_log, filename, export_format)
 
     # Discover and save models
+    discovery = Discovery.Discovery(filtered_log)
+
     if petri_net_enabled:
         print("Discovering Petri net...")
         image_filename = os.path.join(outputDirectory, "petri_net.png")
@@ -121,7 +123,7 @@ if __name__ == "__main__":
         pn_filename = os.path.join(outputDirectory, "petri_net.pnml")
 
         abstract_pn, net, im, fm = discovery.get_petri_net(
-            filtered_log, image_filename, abstract_filename, pn_filename
+            image_filename, abstract_filename, pn_filename
         )
 
     if dfg_enabled:
@@ -130,17 +132,17 @@ if __name__ == "__main__":
         dfg_filename = os.path.join(outputDirectory, "dfg.dfg")
         abstract_filename = os.path.join(outputDirectory, "abstract-dfg.txt")
         abstract_dfg = discovery.get_dfg(
-            filtered_log, image_filename, dfg_filename, abstract_filename
+            image_filename, dfg_filename, abstract_filename
         )
 
         if performance_dfg_enabled:
             performance_image_filename = os.path.join(outputDirectory, "performance-dfg.png")
-            discovery.get_performance_dfg(filtered_log, performance_image_filename)
+            discovery.get_performance_dfg(performance_image_filename)
 
     if bpmn_enabled:
         print("Discovering BPMN...")
         image_filename = os.path.join(outputDirectory, "bpmn.png")
-        discovery.get_bpmn(filtered_log, image_filename)
+        discovery.get_bpmn(image_filename)
 
     if temporal_profile_enabled:
         print("Discovering temporal profile...")
@@ -148,7 +150,7 @@ if __name__ == "__main__":
         abstract_filename = os.path.join(outputDirectory, "abstract-temporal_profile.txt")
         
         temporal_profile, abstract_tp = discovery.get_temporal_profile(
-            filtered_log, filename, abstract_filename
+            filename, abstract_filename
         )
 
     # LLM

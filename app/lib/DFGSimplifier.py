@@ -1,5 +1,10 @@
+import pm4py
 from lib.Config import Config
 import lib.llm as llm
+import re
+import logging
+
+logger = logging.getLogger(__name__)
 
 class DFGSimplifier:
     def __init__(self):
@@ -64,3 +69,173 @@ class DFGSimplifier:
             f_out.write("\n".join(dfg_lines))
 
         return "\n".join(dfg_lines)
+    
+
+    def _map_activity_labels_to_indices(self, dfg_file_path):
+        """
+        Read the original DFG file and returns a dictionary mapping
+        each activity label to its original index.
+        """    
+        mapping = {}
+        with open(dfg_file_path, 'r') as f:
+            num_activities = int(f.readline().strip())
+            for idx in range(num_activities):
+                label = f.readline().rstrip()
+                mapping[label] = idx
+        return mapping
+
+
+    def rewrite_dfg_with_original_indices(self, dfg_file_path, simplified_dfg_path, output_path):
+        """
+        This function reads the simplified DFG, maps the activity labels to their original indices,
+        and rewrites the DFG with the original indices, preserving the structure of start and end activities.
+        """
+
+        original_mapping = self._map_activity_labels_to_indices(dfg_file_path)
+
+        logger.debug(f"Original indices: {original_mapping}")
+
+        with open(simplified_dfg_path, 'r') as f:
+            lines = [line.strip() for line in f if line.strip()]
+        
+        # Read number of activities and their names from the simplified DFG
+        num_activities = int(lines[0])
+        simplified_labels = lines[1:num_activities + 1]
+
+        # New mapping: original index -> new index
+        index_translation = {
+            original_mapping.get(label, -1): new_idx
+            for new_idx, label in enumerate(simplified_labels)
+        }
+
+        logger.debug("Simplified labels: %s", simplified_labels)
+        logger.debug("Index translation (original -> new): %s", index_translation)
+
+
+        ### Rebuild the file using the new indices
+        output_lines = []
+        output_lines.append(str(num_activities))
+        output_lines.extend(simplified_labels)
+
+        # Add a variable to keep track of the number of processed lines in the LLM simplified DFG
+        num_of_processed_lines = num_activities + 1
+
+        ### Process start activities
+        total_start_activities_line = len(output_lines) + 1
+        num_starts = 0
+        output_lines.append(str(num_starts))
+        num_of_processed_lines += 1
+
+        logger.debug(f"total_start_activities_line: {total_start_activities_line}, num activities: {num_activities}, num_of_processed_lines: {num_of_processed_lines}")
+
+        for line in lines[num_of_processed_lines:]:
+
+            line = line.strip()
+            logger.debug(f"Line: '{line}'")
+            
+            if not re.compile(r"^\d+x\d+$").match(line):
+                logger.debug("Invalid format 'numberxnumber' for start activities, breaking the loop")
+                break
+
+            num_of_processed_lines += 1
+
+            old_idx, freq = line.split("x")
+            new_idx = index_translation.get(int(old_idx), -1)
+            logger.debug(f"Old activity index: {old_idx}, Frequency: {freq}, New activity index: {new_idx}")
+
+            if new_idx == -1:
+                logger.debug(f"Skipping start activity {old_idx} as it is not in the simplified DFG")
+                continue
+
+            logger.debug(f"Adding start activity: {new_idx}x{freq}")
+            num_starts += 1
+            output_lines.append(f"{new_idx}x{freq}")
+
+        # Update the total number of start activities
+        output_lines[total_start_activities_line - 1] = str(num_starts)
+
+
+        ### Process end activities
+        total_end_activities_line = len(output_lines) + 1
+        num_ends = 0
+        output_lines.append(str(num_ends))
+        num_of_processed_lines += 1
+
+        logger.debug(f"total_end_activities_line: {total_end_activities_line}, num ends: {num_ends}, num_of_processed_lines: {num_of_processed_lines}")
+
+        for line in lines[num_of_processed_lines:]:
+
+            line = line.strip()
+            logger.debug(f"Line: '{line}'")
+            if not re.compile(r"^\d+x\d+$").match(line):
+                logger.debug("Invalid format 'numberxnumber' for end activities, breaking the loop")
+                break
+
+            num_of_processed_lines += 1
+
+            old_idx, freq = line.split("x")
+            new_idx = index_translation.get(int(old_idx), -1)
+            logger.debug(f"Old activity index: {old_idx}, Frequency: {freq}, New activity index: {new_idx}")
+
+            if new_idx == -1:
+                logger.debug(f"Skipping end activity {old_idx} as it is not in the simplified DFG")
+                continue
+
+            logger.debug(f"Adding end activity: {new_idx}x{freq}")
+            num_ends += 1
+            output_lines.append(f"{new_idx}x{freq}")
+
+        # Update the total number of end activities
+        output_lines[total_end_activities_line - 1] = str(num_ends)
+
+
+        ### Process transitions
+        logger.debug(f"Process activity transitions starting from line {num_of_processed_lines} in the LLM simplified DFG file")
+
+        for line in lines[num_of_processed_lines:]:
+
+            line = line.strip()
+            logger.debug(f"Line: '{line}'")
+            num_of_processed_lines += 1
+
+            source, rest = line.split(">")
+            target, freq = rest.split("x")
+            new_source = index_translation.get(int(source), -1)
+            new_target = index_translation.get(int(target), -1)
+            logger.debug(f"Source: {source}, Target: {target}, Frequency: {freq}")
+            logger.debug(f"New Source: {new_source}, New Target: {new_target}")
+
+            if new_source == -1 or new_target == -1:
+                logger.debug(f"Skipping transition from {source} to {target} as one of the activities is not in the simplified DFG")
+                continue
+
+            transition = f"{new_source}>{new_target}x{freq}"
+            logger.debug(f"Adding transition: {transition}")
+            output_lines.append(f"{transition}")
+
+        logger.debug(f"{num_of_processed_lines} lines processed of {len(lines)} lines in the LLM simplified DFG file")
+
+        ### Write the output to the specified file
+        with open(output_path, "w") as f_out:
+            f_out.write("\n".join(output_lines))
+        
+        return output_lines
+
+
+    def convert_dfg_to_image(self, dfg_file, output_path):
+        """
+        Converts the DFG to a PNG image
+        """
+
+        logger.debug(f"Converting DFG from {dfg_file} to image {output_path}")
+        
+        dfg, start_activities, end_activities = pm4py.read_dfg(dfg_file)
+
+        pm4py.save_vis_dfg(
+            dfg,
+            start_activities,
+            end_activities,
+            file_path=output_path,
+            bgcolor="white",     # White background
+            rankdir="LR"         # Directed graph from left to right
+        )

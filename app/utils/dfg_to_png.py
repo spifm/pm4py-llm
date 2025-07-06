@@ -1,7 +1,10 @@
 import pm4py
 
-input_path = "output/TEEM-2025/p100-TEEM-2025/p100-dfg-chatgpt.dfg"
-output_path = "output/TEEM-2025/p100-TEEM-2025/p100-dfg-chatgpt_dfg.png"
+#input_path = "output/TEEM-2025/p100-TEEM-2025/p100-dfg-chatgpt.dfg"
+#output_path = "output/TEEM-2025/p100-TEEM-2025/p100-dfg-chatgpt_dfg.png"
+
+input_path = "output/bd-p25/simplified-dfg.dfg"
+output_path = "output/bd-p25/simplified-dfg.png"
 
 dfg, start_activities, end_activities = pm4py.read_dfg(input_path)
 

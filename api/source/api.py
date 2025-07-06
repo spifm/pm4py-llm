@@ -94,15 +94,19 @@ def store_dataset(request: DatasetToStoreRequest):
 
 @app.post(
         "/simplify-dfg",
-        summary="Simplify DFG using LLM",
+        summary="Simplify DFG using LLM. A previous process mining analysis that obtains a DFG is required",
         description=("Simplifies a Directly-Follows Graph (DFG) using a Large Language Model (LLM). "
+                     "A PREVIOUS PROCESS MINING ANALYSIS THAT OBTAINS A DFG IS REQUIRED.\n\n"
                      "The DFG file path is provided as a string, and the output is saved to a new file."
                      "The request must include:\n"
                      "- `dfg_file`: the full path name of the DFG file\n\n"
                      "**Example:**\n"
                      "```json\n"
                      "{\n"
-                     "  \"dfg_file\": \"output/analysis_dir/dfg.dfg\",\n"
+                     "  \"message\": \"DFG simplified successfully\",\n"
+                     "  \"output_analysis\": \"output/simplified-dfg-analysis.txt\",\n"
+                     "  \"simplified_dfg\": \"output/simplified-dfg.dfg\",\n"
+                     "  \"simplified_dfg_image\": \"output/simplified-dfg.png\",\n"
                      "}\n"
                      "```"
                     ),

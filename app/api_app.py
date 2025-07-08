@@ -12,7 +12,7 @@ import sys
 
 load_dotenv()
 API_TOKEN = os.getenv("API_TOKEN")
-LOG_LEVEL = os.getenv("LOG_LEVEL", "INFO").upper()
+LOG_LEVEL = os.getenv("LOG_LEVEL", "DEBUG").upper()
 
 logging.basicConfig(
     level=getattr(logging, LOG_LEVEL, logging.INFO),

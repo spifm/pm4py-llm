@@ -30,7 +30,7 @@ class DFGSimplifier:
         Creates a prompt for the LLM based on the DFG and the provided prompt template.
         """
         prompt_template = "\n".join(self.config['llm']['dfg']['simplify_dfg']['prompt'])
-        return f"{prompt_template}\n\n{dfg}"
+        return f"{prompt_template}\n### DFG ###\n{dfg}"
 
     def simplify(self, dfg_file, output_file):
         """
@@ -97,12 +97,44 @@ class DFGSimplifier:
 
         with open(simplified_dfg_path, 'r') as f:
             lines = [line.strip() for line in f if line.strip()]
+
+        # Add a variable to keep track of the number of processed lines in the LLM simplified DFG
+        num_of_processed_lines = 0
         
-        # Read number of activities and their names from the simplified DFG
-        num_activities = int(lines[0])
-        simplified_labels = lines[1:num_activities + 1]
+        ### Process the list of activities from the simplified DFG
+        # The first line contains the number of activities, followed by the activity labels.
+        # But we will not use the first line because the LLM could not have provided the correct number of activities.
+        # Rebuild the file using the new indices
+        output_lines = []
+        num_activities = 0
+        output_lines.append(str(num_activities))
+        num_of_processed_lines += 1
+
+        logger.debug(f"Processing simplified activity labels")
+
+        for line in lines[1:]:
+
+            logger.debug(f"Line: '{line}'")
+            
+            if re.compile(r"^\d+x\d+$").match(line.strip()):
+                logger.debug("Start activities format 'numberxnumber' found: list of activities finished, breaking the loop")
+                break
+
+            num_of_processed_lines += 1
+
+            logger.debug(f"Adding activity")
+            num_activities += 1
+            output_lines.append(f"{line}")
+
+        # The last added line is the number of start activities, not an activity, so we subtract 1
+        num_activities -= 1
+        output_lines[0] = str(num_activities)
+        logger.debug(f"Number of activities: {num_activities}")
+        output_lines.pop(-1) # Remove the last line which is not an activity
+
 
         # New mapping: original index -> new index
+        simplified_labels = output_lines[1:]  # Skip the first line which is the number of activities
         index_translation = {
             original_mapping.get(label, -1): new_idx
             for new_idx, label in enumerate(simplified_labels)
@@ -112,21 +144,12 @@ class DFGSimplifier:
         logger.debug("Index translation (original -> new): %s", index_translation)
 
 
-        ### Rebuild the file using the new indices
-        output_lines = []
-        output_lines.append(str(num_activities))
-        output_lines.extend(simplified_labels)
-
-        # Add a variable to keep track of the number of processed lines in the LLM simplified DFG
-        num_of_processed_lines = num_activities + 1
-
         ### Process start activities
-        total_start_activities_line = len(output_lines) + 1
+        num_start_activities_line = num_activities + 2 # +2 because the first line is the number of activities and the second line is the number of start activities
         num_starts = 0
         output_lines.append(str(num_starts))
-        num_of_processed_lines += 1
 
-        logger.debug(f"total_start_activities_line: {total_start_activities_line}, num activities: {num_activities}, num_of_processed_lines: {num_of_processed_lines}")
+        logger.debug(f"num_start_activities_line: {num_start_activities_line}, num_of_processed_lines: {num_of_processed_lines}")
 
         for line in lines[num_of_processed_lines:]:
 
@@ -152,11 +175,11 @@ class DFGSimplifier:
             output_lines.append(f"{new_idx}x{freq}")
 
         # Update the total number of start activities
-        output_lines[total_start_activities_line - 1] = str(num_starts)
+        output_lines[num_start_activities_line - 1] = str(num_starts)
 
 
         ### Process end activities
-        total_end_activities_line = len(output_lines) + 1
+        total_end_activities_line = num_start_activities_line + num_starts + 1 # +1 because the next line is the number of end activities
         num_ends = 0
         output_lines.append(str(num_ends))
         num_of_processed_lines += 1
@@ -197,6 +220,10 @@ class DFGSimplifier:
             line = line.strip()
             logger.debug(f"Line: '{line}'")
             num_of_processed_lines += 1
+
+            if not re.compile(r"^\d+>\d+x\d+$").match(line):
+                logger.debug("Invalid format 'source>targetxfrequency' for transitions, skipping line")
+                continue
 
             source, rest = line.split(">")
             target, freq = rest.split("x")

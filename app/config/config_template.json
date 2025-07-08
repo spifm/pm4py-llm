@@ -54,7 +54,46 @@
         "dfg": {
             "enabled": false,
             "prompt": "Model used is a DFG.",
-            "max_tokens": 30000
+            "max_tokens": 30000,
+            "simplify_dfg": {
+                "enabled": true,
+                "prompt": [
+                    "### CONTEXT ###\n",
+                    "You are an expert in process mining and data analysis, specializing in educational data.",
+                    "I'm sharing with you a Directly-Follows Graph (DFG) model in PM4Py format, extracted from Moodle logs.",
+                    "The DFG corresponds to XXX",
+                    "\nFile structure:",
+                    "Number of activities",
+                    "List of activities (one per line, their position is their index starting from 0)",
+                    "Number of start activities",
+                    "Start activities (activity_index x frequency)",
+                    "Number of end activities",
+                    "End activities (activity_index x frequency)",
+                    "Transitions (one per line): source_index>target_index x frequency. Do not include the total number of transitions.",
+                    "\n### INSTRUCTIONS ###\n",
+                    "What I need:",
+                    "Simplify the model to make it more interpretable and then analyze the student's behavior:",
+                    "- Keep only the most relevant events and transitions (e.g., high-frequency, common paths, important cycles).",
+                    "- Remove low-frequency or less relevant events/transitions.",
+                    "- Start, end activities, and transitions only can contain events that are present in the simplified list of activities",
+                    "- Test different criteria and choose the most appropriate one, explaining and justifying your choice",
+                    "- The simplified Directly-Follows Graph (DFG) has to be included between the following markers:",
+                    "--- DFG BEGIN ---",
+                    "...your simplified DFG here...",
+                    "--- DFG END ---",
+                    "- Return the simplified DFG using the same PM4Py format. Do not add any additional text or explanations.",
+                    "\nProvide the following explanations about your simplified file:",
+                    "- Justify why you kept certain events/transitions (what criteria you used).",
+                    "- Analyze the implications of the simplified DFG for understanding XXX and answer the following questions:",
+                    "- What frequent patterns or paths can be observed?",
+                    "- Which modules seem most used?",
+                    "- Are there cycles, repeated paths, or possible bottlenecks?",
+                    "- What does this suggest about XXX?",
+                    "\n### IMPORTANT ###\n",
+                    "Ignore any previous context or messages. Use only the information explicitly provided in this prompt.",
+                    "Do not remove any activity that is referenced in the start activities, end activities, or transitions."
+                ]
+            }
         },
         "temporal_profile": {
             "enabled": false,

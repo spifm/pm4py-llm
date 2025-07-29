@@ -155,7 +155,18 @@ def simplify_dfg_endpoint(request: SimplifyDFGRequest):
 @app.get(
         "/get-analysis",
         summary="Get analysis results",
-        description=("Retrieves the analysis results for a given output directory."),
+        description=(
+            "Retrieves the analysis results for a given output directory. Includes simplified DFG information if exists.\n\n"
+            "**Example response:**\n"
+            "```json\n"
+            "{\n"
+            "  \"analysis\": \"XXX\",\n"
+            "  \"dfg_image\": \"XXX\",\n"
+            "  \"simplified_dfg_analysis\": \"XXX\",\n"
+            "  \"simplified_dfg_image\": \"XXX\"\n"
+            "}\n"
+            "```"
+        ),
         dependencies=[Depends(verify_token)]
 )
 def get_analysis(analysis_dir: str = Query(

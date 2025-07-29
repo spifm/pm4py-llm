@@ -150,7 +150,16 @@ def simplify_dfg_endpoint(request: SimplifyDFGRequest):
         description=(
             "Retrieves the analysis results for a given filename.\n\n"
             "It first checks if a cached version exists and is still valid. If so, it returns the cached data.\n"
-            "If not, it fetches the data from the PM4PY container and caches it for future requests."
+            "If not, it fetches the data from the PM4PY container and caches it for future requests.\n\n"
+            "**Example response:**\n"
+            "```json\n"
+            "{\n"
+            "  \"analysis\": \"XXX\",\n"
+            "  \"dfg_image\": \"XXX\",\n"
+            "  \"simplified_dfg_analysis\": \"XXX\",\n"
+            "  \"simplified_dfg_image\": \"XXX\"\n"
+            "}\n"
+            "```"
         ),
         dependencies=[Depends(verify_token)]
 )

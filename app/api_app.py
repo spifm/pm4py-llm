@@ -171,6 +171,8 @@ def get_analysis(analysis_dir: str = Query(
     
     dfgBasepath = os.path.join(basepath, "dfg.png")
     dfgAnalysisBasepath = os.path.join(basepath, "dfg-analysis.txt")
+    simplifiedDfgBasepath = os.path.join(basepath, "simplified-dfg.png")
+    simplifiedDfgAnalysisBasepath = os.path.join(basepath, "simplified-dfg-analysis.txt")
     
     if not os.path.isfile(dfgBasepath) or not os.path.isfile(dfgAnalysisBasepath):
         raise HTTPException(status_code=404, detail=dfgBasepath + " or " + dfgAnalysisBasepath + " not found")
@@ -181,10 +183,22 @@ def get_analysis(analysis_dir: str = Query(
         with open(dfgBasepath, "rb") as f:
             dfgImageBytes = f.read()
 
-        return {
-            "text": dfgAnalysisText,
-            "image": dfgImageBytes.hex()
+        result = {
+            "analysis": dfgAnalysisText,
+            "dfg_image": dfgImageBytes.hex()
         }
+
+        if os.path.isfile(simplifiedDfgAnalysisBasepath):
+            with open(simplifiedDfgAnalysisBasepath, "r") as f:
+                simplifiedDfgAnalysisText = f.read()
+            result["simplified_dfg_analysis"] = simplifiedDfgAnalysisText
+
+        if os.path.isfile(simplifiedDfgBasepath):
+            with open(simplifiedDfgBasepath, "rb") as f:
+                simplifiedDfgImageBytes = f.read()
+            result["simplified_dfg_image"] = simplifiedDfgImageBytes.hex()
+
+        return result
 
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))

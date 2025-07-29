@@ -13,3 +13,5 @@ class DatasetToStoreRequest(BaseModel):
 
 class SimplifyDFGRequest(BaseModel):
     dfg_file: str
+    prompt_context: Optional[List[str]] = None
+

@@ -114,7 +114,9 @@ The configuration file is located in the config folder. The file is called confi
     - `prompt`: prompt to be used for the analysis joined with the context
     - `max_tokens`: maximum number of tokens to be used in the analysis of the DFG
     - `simplify_dfg.enabled`: boolean to enable/disable the simplification of the DFG using true/false
-    - `simplify_dfg.prompt`: prompt to be used for the simplification of the DFG joined with the context
+    - `simplify_dfg.simplification_context_prompt`: context prompt to be used for the simplification of the DFG
+    - `simplify_dfg.simplification_instructions_prompt`: prompt joined with the context to be used for the simplification of the DFG
+    - `simplify_dfg.simplification_analysis_prompt`: prompt joined with the context to be used to analyze the simplified DFG
 - `llm.temporal_profile`: configuration for analyzing an abstraction of Temporal Profile. If empty, analysis will not be performed
     - `enabled`: boolean to enable/disable the analysis using true/false
     - `prompt`: prompt to be used for the analysis joined with the context

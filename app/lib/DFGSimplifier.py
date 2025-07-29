@@ -10,6 +10,7 @@ class DFGSimplifier:
     def __init__(self):
         self.config = self._load_config()
 
+
     def _load_config(self):
         """
         Initializes and returns the configuration instance.
@@ -18,58 +19,14 @@ class DFGSimplifier:
         config_instance.initialize()
         return config_instance.get()
 
+
     def _read_dfg(self, dfg_file):
         """
         Reads the Directly-Follows Graph (DFG) from a file.
         """
         with open(dfg_file, 'r') as file:
             return file.read()
-
-    def _create_prompt(self, dfg):
-        """
-        Creates a prompt for the LLM based on the DFG and the provided prompt template.
-        """
-        prompt_template = "\n".join(self.config['llm']['dfg']['simplify_dfg']['prompt'])
-        return f"{prompt_template}\n### DFG ###\n{dfg}"
-
-    def simplify(self, dfg_file, output_file):
-        """
-        Simplifies the Directly-Follows Graph (DFG) using an LLM.
-        """
-        print("\n\n-------------------\nSimplifying DFG\n-------------------\n\n")
-
-        dfg = self._read_dfg(dfg_file)
-        prompt = self._create_prompt(dfg)
-
-        result = llm.exec_prompt(self.config['llm']['dfg'], prompt, output_file)
-        return result
-    
-    def extract_and_save_dfg(self, input_filepath, output_filepath):
-        """
-        Extracts the simplified DFG from the input file using defined delimiters
-        and saves it to a new output file.
-        """
-        start_marker = "--- DFG BEGIN ---"
-        end_marker = "--- DFG END ---"
-        in_dfg_block = False
-        dfg_lines = []
-
-        with open(input_filepath, "r") as f:
-            for line in f:
-                if start_marker in line:
-                    in_dfg_block = True
-                    continue
-                elif end_marker in line:
-                    break
-                elif in_dfg_block:
-                    if line.strip():  # Ignore empty lines
-                        dfg_lines.append(line.rstrip())
-
-        with open(output_filepath, "w") as f_out:
-            f_out.write("\n".join(dfg_lines))
-
-        return "\n".join(dfg_lines)
-    
+        
 
     def _map_activity_labels_to_indices(self, dfg_file_path):
         """
@@ -85,13 +42,73 @@ class DFGSimplifier:
         return mapping
 
 
-    def rewrite_dfg_with_original_indices(self, dfg_file_path, simplified_dfg_path, output_path):
+    def get_context_prompt(self):
         """
-        This function reads the simplified DFG, maps the activity labels to their original indices,
+        Returns the context prompt for the simplifier.
+        """
+        return self.config['llm']['dfg']['simplify_dfg']['simplification_context_prompt']
+    
+
+    def get_simplification_prompt(self):
+        """
+        Returns the instructions for the simplification prompt for the simplifier.
+        """
+        return self.config['llm']['dfg']['simplify_dfg']['simplification_instructions_prompt']
+    
+
+    def get_analysis_prompt(self):
+        """
+        Returns the analysis prompt for the simplifier.
+        """
+        return self.config['llm']['dfg']['simplify_dfg']['simplification_analysis_prompt']
+    
+
+    def set_context_prompt(self, context_prompt):
+        """
+        Sets the context prompt for the simplifier.
+        """
+        self.config['llm']['dfg']['simplify_dfg']['simplification_context_prompt'] = context_prompt
+
+
+    def simplify_dfg(self, dfg_file, output_file):
+        """
+        Simplifies the Directly-Follows Graph (DFG) using an LLM.
+        """
+        print("\n\n-------------------\nSimplifying DFG\n-------------------\n\n")
+
+        dfg = self._read_dfg(dfg_file)
+
+        prompt_context = "\n".join(self.get_context_prompt())
+        prompt_instructions = "\n".join(self.get_simplification_prompt())
+        prompt = f"{prompt_context}{prompt_instructions}{dfg}"
+
+        result = llm.exec_prompt(self.config['llm']['dfg'], prompt, output_file)
+        return result
+    
+
+    def analyze_simplified_dfg(self, dfg_file, output_analysis):
+        """
+        Analyze simplified Directly-Follows Graph (DFG) using an LLM.
+        """
+        print("\n\n-------------------\nAnalyzing Simplified DFG\n-------------------\n\n")
+               
+        simplified_dfg = self._read_dfg(dfg_file)
+
+        prompt_context = "\n".join(self.get_context_prompt())
+        prompt_instructions = "\n".join(self.get_analysis_prompt())
+        prompt = f"{prompt_context}{prompt_instructions}{simplified_dfg}"
+
+        result = llm.exec_prompt(self.config['llm']['dfg'], prompt, output_analysis)
+        return result
+
+
+    def clean_dfg(self, original_dfg_path, simplified_dfg_path, output_path):
+        """
+        This function reads a DFG simplified by LLM, maps the activity labels to their original indices,
         and rewrites the DFG with the original indices, preserving the structure of start and end activities.
         """
 
-        original_mapping = self._map_activity_labels_to_indices(dfg_file_path)
+        original_mapping = self._map_activity_labels_to_indices(original_dfg_path)
 
         logger.debug(f"Original indices: {original_mapping}")
 

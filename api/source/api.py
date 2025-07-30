@@ -1,4 +1,4 @@
-from fastapi import FastAPI, HTTPException, Query, status, Depends
+from fastapi import FastAPI, HTTPException, Query, status, Depends, Body
 from fastapi.security import HTTPBearer, HTTPAuthorizationCredentials
 from fastapi.responses import JSONResponse
 from dtos import *
@@ -7,11 +7,24 @@ import os
 from datetime import datetime, timedelta
 from dotenv import load_dotenv
 import json
-
-security = HTTPBearer()
+import logging
+import sys
 
 load_dotenv()
 API_TOKEN = os.getenv("API_TOKEN")
+LOG_LEVEL = os.getenv("LOG_LEVEL", "DEBUG").upper()
+
+logging.basicConfig(
+    level=getattr(logging, LOG_LEVEL, logging.INFO),
+    format="%(asctime)s - %(levelname)s - %(message)s",
+    handlers=[logging.StreamHandler(sys.stdout)]
+)
+
+logger = logging.getLogger(__name__)
+
+
+security = HTTPBearer()
+
 
 def verify_token(credentials: HTTPAuthorizationCredentials = Depends(security)):
     if credentials.credentials != API_TOKEN:
@@ -35,14 +48,105 @@ CACHE_DURATION = timedelta(seconds=60 * 60 * 24)  # Cache duration in seconds (1
 def read_root():
     return {"message": "API container is running"}
 
+
+
 @app.post(
-    "/run-pm-analysis",
+    "/run-full-analysis",
+    summary="Execute full analysis pipeline: process mining analysis, simplification and get results",
+    description=(
+        "Runs the full pipeline: pm-analysis → simplify-dfg → get-analysis\n\n"
+        "**Required input:**\n"
+        "- `datasetPath` (str): Full path to the dataset file (CSV format) to analyze.\n"
+        "- `outputPath` (str): Directory where the analysis results will be stored.\n"
+        "\n**Optional input:**\n"
+        "- `datasetCsvDelimiter` (Optional[str]): CSV delimiter used in the dataset.\n"
+        "- `prompt_context` (Optional[List[str]]): list of prompt context lines to replace the default context. Useful for customizing the LLM behavior.\n\n"
+        "**Example input:**\n"
+        "```json\n"
+        "{\n"
+        "  \"datasetPath\": \"data/my_dataset.csv\",\n"
+        "  \"datasetCsvDelimiter\": \",\",\n"
+        "  \"outputPath\": \"output/my-folder\",\n"
+        "  \"prompt_context\": [\n"
+        "    \"### CONTEXT ###\\n\",\n"
+        "    \"You are an expert in process mining and data analysis, with a focus on educational data.\",\n"
+        "    \"The section ### DFG MODEL ### contains a Directly-Follows Graph (DFG) model in PM4Py format, extracted from Moodle logs.\",\n"
+        "    \"This model represents the activity behavior of students.\",\n"
+        "    \"The structure and format of the DFG are described in the section ### DFG FORMAT ### above.\"\n"
+        "  ]\n"
+        "}\n"
+        "```"
+        "\n\n"
+        "**Example response:**\n"
+        "```json\n"
+        "{\n"
+        "  \"analysis\": \"XXX\",\n"
+        "  \"dfg_image\": \"XXX\",\n"
+        "  \"simplified_dfg_analysis\": \"XXX\",\n"
+        "  \"simplified_dfg_image\": \"XXX\"\n"
+        "}\n"
+        "```"
+    ),
+    dependencies=[Depends(verify_token)]
+)
+def full_analysis(
+    request: FullAnalysisRequest = Body(..., description="Request body for full analysis")
+):
+    logger.debug(f"Running full analysis with request: {request}")
+
+    # Step 1: Execute pm_analysis
+    pm_analysis_request = PMAnalysisRequest(
+        datasetPath=request.datasetPath,
+        outputPath=request.outputPath
+    )
+
+    if request.datasetCsvDelimiter is not None:
+        pm_analysis_request.datasetCsvDelimiter = request.datasetCsvDelimiter
+
+    pm_result = pm_analysis(pm_analysis_request)
+
+    logger.debug(f"Step 1: PM Analysis output: {pm_result}")
+
+    if "error" in pm_result:
+        return {"step": "pm-analysis", "error": pm_result["error"]}
+
+
+    # Step 2: Execute simplify_dfg_endpoint
+    simplify_request = SimplifyDFGRequest(
+        dfg_file="output/" + request.outputPath + "/dfg.dfg"
+    )
+
+    if request.prompt_context is not None:
+        simplify_request.prompt_context = request.prompt_context
+
+    simplify_result = simplify_dfg_endpoint(simplify_request)
+
+    logger.debug(f"Step 2: Simplify DFG output: {simplify_result}")
+
+    if "error" in simplify_result:
+        return {"step": "simplify-dfg", "error": simplify_result["error"]}
+
+
+    # Step 3: Execute get_analysis
+    try:
+        analysis_result = get_analysis(analysis_dir=request.outputPath)
+
+        logger.debug(f"Step 3: Get Analysis output: {analysis_result}")
+
+    except Exception as e:
+        return {"step": "get-analysis", "error": str(e)}
+
+    return analysis_result
+
+
+@app.post(
+    "/pm-analysis",
     summary="Run process mining analysis",
     description="This endpoint sends the analysis request to the PM4PY container, forwarding dataset configuration parameters.",
     dependencies=[Depends(verify_token)]
 )
-def run_pm_analysis(request: PMAnalysisRequest):
-    url = f"{PM4PY_BASE_URL}/run"
+def pm_analysis(request: PMAnalysisRequest):
+    url = f"{PM4PY_BASE_URL}/pm-analysis"
     headers = {"Authorization": f"Bearer {API_TOKEN}"}
     try:
         response = requests.post(url, json=request.model_dump(), headers=headers)

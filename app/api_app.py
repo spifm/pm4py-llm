@@ -35,7 +35,7 @@ def verify_token(credentials: HTTPAuthorizationCredentials = Depends(security)):
 
 app = FastAPI()
 
-@app.post("/run", dependencies=[Depends(verify_token)])
+@app.post("/pm-analysis", dependencies=[Depends(verify_token)])
 def run_script(request: PMAnalysisRequest):
     script_path = os.path.join("/app", request.script)
     if not os.path.isfile(script_path):

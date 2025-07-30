@@ -13,3 +13,9 @@ class DatasetToStoreRequest(BaseModel):
 class SimplifyDFGRequest(BaseModel):
     dfg_file: str
     prompt_context: Optional[List[str]] = None
+
+class FullAnalysisRequest(BaseModel):
+    datasetPath: str
+    datasetCsvDelimiter: Optional[str] = ","
+    outputPath: Optional[str] = ""
+    prompt_context: Optional[List[str]] = None

@@ -156,3 +156,11 @@ This script converts a CSV file to a custom JSON format. The script is called `c
 ```bash
 docker exec -it pm4py-llm-app-container python3 -m utils.csv_to_json.py
 ``` 
+
+## XES to Histogram
+
+This script generates histograms from XES log files. The script is called `xes_to_histogram.py` and it must be run independently. The XES file path is directly set in the script. The script will then generate histogram plots and data files. The script can be run using the following command:
+
+```bash
+docker exec -it pm4py-llm-app-container python3 -m utils.xes_to_histogram
+```

@@ -95,9 +95,7 @@ def exec_prompt_for_openai(prompt, output_file):
             response = client.responses.create(
                 model=openai_config['model_name'],
                 input=prompt,
-                reasoning={
-                    "effort": "medium"
-                }
+                reasoning=openai_config['reasoning']
             )
         else:
             response = client.responses.create(

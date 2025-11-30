@@ -1,5 +1,7 @@
 import requests
 from lib.Config import Config
+from openai import OpenAI
+from openai.types.responses import ResponseOutputMessage, ResponseOutputText
 from huggingface_hub import InferenceClient
 
 
@@ -38,6 +40,8 @@ def exec_prompt(llm_model_config, prompt, output_file):
         exec_prompt_for_ollama(prompt, output_file)
     elif config["llm"]['llm_provider'] == 'huggingface':
         exec_prompt_for_huggingface(llm_model_config, prompt, output_file)
+    elif config["llm"]['llm_provider'] == 'openai':
+        exec_prompt_for_openai(prompt, output_file)
     else:
         print("Model type not supported")
 
@@ -78,6 +82,53 @@ def exec_prompt_for_ollama(prompt, output_file):
     with open(output_file, 'a') as f:
         f.write(result + "\n\n")
 
+    return result
+
+def exec_prompt_for_openai(prompt, output_file):
+
+    config = get_config()
+    openai_config = config["llm"]['openai']
+    client = OpenAI(api_key=openai_config["openai_api_key"])
+
+    try:
+        if openai_config['reasoning']:
+            response = client.responses.create(
+                model=openai_config['model_name'],
+                input=prompt,
+                reasoning={
+                    "effort": "medium"
+                }
+            )
+        else:
+            response = client.responses.create(
+                model=openai_config['model_name'],
+                input=prompt
+            )
+
+    except Exception as e:
+        print(f"Error during OpenAI request: {e}")
+        return None
+
+    if config["debug"] > 0:
+        print(f"OpenAI response: {response}")
+
+    # Search for the output that is a message
+    message_output = next(
+        o for o in response.output 
+        if isinstance(o, ResponseOutputMessage) or getattr(o, "type", "") == "message"
+    )
+
+    # Extract text chunks
+    text_chunks = []
+    for c in message_output.content:
+        if isinstance(c, ResponseOutputText) or hasattr(c, "text"):
+            text_chunks.append(c.text)
+
+    result = "\n".join(text_chunks)
+
+    with open(output_file, 'a') as f:
+        f.write(result + "\n\n")
+    
     return result
 
 def exec_prompt_for_huggingface(llm_model_config, prompt, output_file):

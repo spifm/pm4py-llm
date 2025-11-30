@@ -6,6 +6,7 @@ WORKDIR /app
 
 COPY requirements.txt .
 
+RUN pip install --no-cache-dir --upgrade "openai==2.8.1"
 RUN pip install --no-cache-dir -r /app/requirements.txt
 
 USER root

@@ -75,13 +75,10 @@ class DFGSimplifier:
         Simplifies the Directly-Follows Graph (DFG) using an LLM.
         """
         print("\n\n-------------------\nSimplifying DFG\n-------------------\n\n")
-
         dfg = self._read_dfg(dfg_file)
-
         prompt_context = "\n".join(self.get_context_prompt())
         prompt_instructions = "\n".join(self.get_simplification_prompt())
         prompt = f"{prompt_context}{prompt_instructions}{dfg}"
-
         result = llm.exec_prompt(self.config['llm']['dfg'], prompt, output_file)
         return result
     

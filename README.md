@@ -95,6 +95,7 @@ The configuration file is located in the config folder. The file is called confi
 - `llm.llm_provider`: provider of the LLM model to be used. Possible values are:
     - `hugging_face` --> to use a model from Hugging Face
     - `ollama` --> to use a model from Ollama
+    - `openai` --> to use a model from OpenAI
 - If hugging_face is selected as the LLM provider, the following parameters must be specified:
     - `llm.huggingface.hugging_face_api_key`: API key to use the Hugging Face API for the LLM model
     - `llm.huggingface.model_name`: name of the LLM model to use
@@ -104,6 +105,14 @@ The configuration file is located in the config folder. The file is called confi
     - `llm.ollama.api_url`: URL (including port) of the Ollama API to use the LLM model
     - `llm.ollama.api_endpoint`: endpoint of the Ollama API to use the LLM model
     - `llm.ollama.model_name`: name of the LLM model to use
+- If openai is selected as the LLM provider, the following parameters must be specified:
+    - `llm.openai.openai_api_key`: API key to use the OpenAI API for the LLM model
+    - `llm.openai.model_name`: name of the LLM model to use
+    - `llm.openai.reasoning`: reasoning effort level for the OpenAI model. Possible values are:
+        - `false` --> to skip this option in requests
+        - `{"effort": "low"}` --> to enable low reasoning effort
+        - `{"effort": "medium"}` --> to enable medium reasoning effort
+        - `{"effort": "high"}` --> to enable high reasoning effort
 - `llm.context`: context to be used for the LLM model
 - `llm.petri_net`: configuration for analyzing an abstraction of Petri Net
     - `enabled`: boolean to enable/disable the analysis using true/false

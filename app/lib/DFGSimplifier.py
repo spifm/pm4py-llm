@@ -78,7 +78,10 @@ class DFGSimplifier:
         dfg = self._read_dfg(dfg_file)
         prompt_context = "\n".join(self.get_context_prompt())
         prompt_instructions = "\n".join(self.get_simplification_prompt())
-        prompt = f"{prompt_context}{prompt_instructions}{dfg}"
+        prompt = f"{prompt_context}\n\n{prompt_instructions}\n\n{dfg}"
+        max_len = 500
+        prompt_preview = prompt if len(prompt) <= max_len else prompt[:max_len] + "..."
+        logger.debug(f"Simplification prompt (truncated to {max_len} chars): {prompt_preview}")
         result = llm.exec_prompt(self.config['llm']['dfg'], prompt, output_file)
         return result
     
@@ -94,13 +97,14 @@ class DFGSimplifier:
         prompt_context = "\n".join(self.get_context_prompt())
         prompt_instructions = "\n".join(self.get_analysis_prompt())
         prompt = f"{prompt_context}{prompt_instructions}{simplified_dfg}"
-
+        logger.debug(f"Analysis prompt: {prompt}")
         result = llm.exec_prompt(self.config['llm']['dfg'], prompt, output_analysis)
         return result
-
+    
 
     def clean_dfg(self, original_dfg_path, simplified_dfg_path, output_path):
         """
+        DEPRECATED
         This function reads a DFG simplified by LLM, maps the activity labels to their original indices,
         and rewrites the DFG with the original indices, preserving the structure of start and end activities.
         """

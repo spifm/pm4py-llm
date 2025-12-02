@@ -105,6 +105,11 @@ The configuration file is located in the config folder. The file is called confi
     - `llm.ollama.api_url`: URL (including port) of the Ollama API to use the LLM model
     - `llm.ollama.api_endpoint`: endpoint of the Ollama API to use the LLM model
     - `llm.ollama.model_name`: name of the LLM model to use
+    - `llm.ollama.options`: options to be used for the Ollama LLM model. Example:
+        - options: {
+              "temperature": 0.5
+          }
+        - An empty options object `{}` can be used to skip this option in ollama requests
 - If openai is selected as the LLM provider, the following parameters must be specified:
     - `llm.openai.openai_api_key`: API key to use the OpenAI API for the LLM model
     - `llm.openai.model_name`: name of the LLM model to use

@@ -5,8 +5,10 @@ import os
 import argparse
 from config.constants import *
 from lib.Config import Config
+from lib.Filename import Filename
 import lib.filtering as filtering
 import lib.Discovery as Discovery
+import lib.DFGTransformer as DFGTransformer
 import lib.llm as llm
 
 
@@ -21,6 +23,7 @@ def parse_args():
 if __name__ == "__main__":
 
     # Load configuration parameters
+    fn = Filename()
     configInstance = Config()
     configInstance.initialize(parse_args())
     config = configInstance.get()
@@ -118,9 +121,10 @@ if __name__ == "__main__":
 
     if petri_net_enabled:
         print("Discovering Petri net...")
-        image_filename = os.path.join(outputDirectory, "petri_net.png")
-        abstract_filename = os.path.join(outputDirectory, "abstract-petri_net.txt")
-        pn_filename = os.path.join(outputDirectory, "petri_net.pnml")
+
+        image_filename = fn.get_filename_path(outputDirectory, "petri_net.image")
+        abstract_filename = fn.get_filename_path(outputDirectory, "petri_net.abstract")
+        pn_filename = fn.get_filename_path(outputDirectory, "petri_net.raw")
 
         abstract_pn, net, im, fm = discovery.get_petri_net(
             image_filename, abstract_filename, pn_filename
@@ -128,20 +132,27 @@ if __name__ == "__main__":
 
     if dfg_enabled:
         print("Discovering DFG...")
-        image_filename = os.path.join(outputDirectory, "dfg.png")
-        dfg_filename = os.path.join(outputDirectory, "dfg.dfg")
-        abstract_filename = os.path.join(outputDirectory, "abstract-dfg.txt")
+        image_filename = fn.get_filename_path("dfg.image", outputDirectory)
+        dfg_filename = fn.get_filename_path("dfg.raw", outputDirectory)
+        abstract_filename = fn.get_filename_path("dfg.abstract", outputDirectory)
         abstract_dfg = discovery.get_dfg(
             image_filename, dfg_filename, abstract_filename
         )
 
+        # Store DFG as json
+        transformer = DFGTransformer.DFGTransformer()
+        transformer.dfg_pm4py_to_json(
+            dfg_filename,
+            fn.get_filename_path("dfg.json", outputDirectory)
+        )
+
         if performance_dfg_enabled:
-            performance_image_filename = os.path.join(outputDirectory, "performance-dfg.png")
+            performance_image_filename = fn.get_filename_path("dfg.performance_image", outputDirectory)
             discovery.get_performance_dfg(performance_image_filename)
 
     if bpmn_enabled:
         print("Discovering BPMN...")
-        image_filename = os.path.join(outputDirectory, "bpmn.png")
+        image_filename = fn.get_filename_path("bpmn.image", outputDirectory)
         discovery.get_bpmn(image_filename)
 
     if temporal_profile_enabled:

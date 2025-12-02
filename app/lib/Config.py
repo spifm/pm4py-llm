@@ -10,6 +10,7 @@ class Config:
             cls._instance._initialized = False
         return cls._instance
 
+
     def initialize(self, cliArgs=None):
         if self._initialized:
             return
@@ -30,5 +31,7 @@ class Config:
 
         self._initialized = True
 
+
     def get(self):
         return self.config
+    

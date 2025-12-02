@@ -11,7 +11,7 @@ class DatasetToStoreRequest(BaseModel):
     data: Dict[str, List]
 
 class SimplifyDFGRequest(BaseModel):
-    dfg_file: str
+    outputPath: str
     prompt_context: Optional[List[str]] = None
 
 class FullAnalysisRequest(BaseModel):

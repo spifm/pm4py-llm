@@ -37,7 +37,7 @@ def exec_prompt(llm_model_config, prompt, output_file):
     config = get_config()
 
     if config["llm"]['llm_provider'] == 'ollama':
-        exec_prompt_for_ollama(prompt, output_file)
+        exec_prompt_for_ollama(prompt, output_file, options=config["llm"]["ollama"]["options"])
     elif config["llm"]['llm_provider'] == 'huggingface':
         exec_prompt_for_huggingface(llm_model_config, prompt, output_file)
     elif config["llm"]['llm_provider'] == 'openai':
@@ -45,7 +45,7 @@ def exec_prompt(llm_model_config, prompt, output_file):
     else:
         print("Model type not supported")
 
-def exec_prompt_for_ollama(prompt, output_file):
+def exec_prompt_for_ollama(prompt, output_file, options={}):
 
     config = get_config()
 
@@ -57,7 +57,8 @@ def exec_prompt_for_ollama(prompt, output_file):
         "messages": [
             {"role": "user", "content": prompt},
         ],
-        "stream": False
+        "stream": False,
+        "options": options
     }
 
     if config["debug"] > 0:

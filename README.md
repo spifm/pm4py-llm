@@ -113,8 +113,8 @@ The configuration file is located in the config folder. The file is called confi
 - If openai is selected as the LLM provider, the following parameters must be specified:
     - `llm.openai.openai_api_key`: API key to use the OpenAI API for the LLM model
     - `llm.openai.model_name`: name of the LLM model to use
-    - `llm.openai.reasoning`: reasoning effort level for the OpenAI model. Possible values are:
-        - `false` --> to skip this option in requests
+    - `llm.openai.reasoning`: reasoning effort level for the OpenAI model. Example values are:
+        - `false` --> to skip this option in requests and use the default reasoning effort of the model
         - `{"effort": "low"}` --> to enable low reasoning effort
         - `{"effort": "medium"}` --> to enable medium reasoning effort
         - `{"effort": "high"}` --> to enable high reasoning effort

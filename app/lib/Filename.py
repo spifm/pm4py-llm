@@ -4,6 +4,7 @@ import os
 class Filename:
 
     FILENAMES = {
+        "info": "info.txt",
         "petri_net": {
             "image": "petri_net.png",
             "raw": "petri_net.pnml",

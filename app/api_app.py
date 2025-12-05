@@ -178,6 +178,11 @@ def simplify_dfg_endpoint(request: SimplifyDFGRequest):
         simplified_dfg_image = fn.get_filename_path("dfg.simplified_image", input_dir)
         simplifier.convert_dfg_to_image(simplified_dfg_file, simplified_dfg_image)
 
+        simplifier.compute_simplification_info(
+            original_dfg_path=os.path.join(input_dir, fn.get_filename("dfg.raw")),
+            simplified_dfg_path=simplified_dfg_file
+        )
+
         return {
             "message": "DFG simplified successfully",
             "output_analysis": output_analysis,

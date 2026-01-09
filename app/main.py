@@ -2,6 +2,7 @@ import pandas
 import pm4py
 import time
 import os
+import json
 import argparse
 from config.constants import *
 from lib.Config import Config
@@ -10,6 +11,7 @@ import lib.filtering as filtering
 import lib.Discovery as Discovery
 import lib.DFGTransformer as DFGTransformer
 import lib.llm as llm
+from lib.Preprocessor import Preprocessor
 
 
 def parse_args():
@@ -91,12 +93,12 @@ if __name__ == "__main__":
     case_values = pm4py.stats.get_trace_attribute_values(filtered_log, case_id)
     number_of_cases = len(case_values)
 
-    # Create text file with information about the analysis
-    with open(outputDirectory + '/info.txt', 'a') as f:
-        f.write("Dataset path: {}\n".format(dataset_path))
-        f.write("Dataset extension: {}\n".format(file_extension))
-        f.write("Number of cases: {}\n".format(str(number_of_cases)))
-        f.write("Filter information: {}\n".format(filtered_info_str))
+    # Export filtered log if enabled
+    if export_formats:
+        for export_format in export_formats:
+            filename = "filtered_log" + "-numcases_" + str(number_of_cases) + "-" + filtered_info_str
+            filename = os.path.join(outputDirectory, filename + "." + export_format)
+            filtering.export_filtered_log(filtered_log, filename, export_format)
 
     # Show info if debug is enabled
     if debug:
@@ -109,12 +111,23 @@ if __name__ == "__main__":
         print("Case IDs: {}".format(case_values))
         print("Number of cases: {}\n".format(number_of_cases))
 
-    # Export filtered log if enabled
-    if export_formats:
-        for export_format in export_formats:
-            filename = "filtered_log" + "-numcases_" + str(number_of_cases) + "-" + filtered_info_str
-            filename = os.path.join(outputDirectory, filename + "." + export_format)
-            filtering.export_filtered_log(filtered_log, filename, export_format)
+    # Preprocess log
+    if config['preprocess']['enabled']:
+        print("Preprocessing log...")
+        mapping_activity_json_path = config.get("preprocess", {}).get("mapping_activity_json_path", "")
+        with open(mapping_activity_json_path, 'r', encoding='utf-8') as f:
+            mapping_json = json.load(f)
+        preprocessor = Preprocessor(mapping_activity_json=mapping_json, col_to_map=activity_key)
+        filtered_log = preprocessor.map_activities(filtered_log)
+
+    # Create text file with information about the analysis
+    with open(outputDirectory + '/info.txt', 'a') as f:
+        f.write("Dataset path: {}\n".format(dataset_path))
+        f.write("Dataset extension: {}\n".format(file_extension))
+        f.write("Number of cases: {}\n".format(str(number_of_cases)))
+        f.write("Filter information: {}\n".format(filtered_info_str))
+        if config['preprocess']['enabled']:
+            f.write("Preprocessing. Using activity mapping from: {}\n".format(mapping_activity_json_path))
 
     # Discover and save models
     discovery = Discovery.Discovery(filtered_log)

@@ -82,6 +82,8 @@ The configuration file is located in the config folder. The file is called confi
 - `filter.export_formats`: list of export formats to be used. If empty, no export will be performed. Possible values are:
     - `csv` --> to export the filtered log in CSV format
     - `xes` --> to export the filtered log in XES format
+- `preprocess.enabled`: boolean to enable/disable the preprocessing of the log using true/false
+- `preprocess.mapping_activity_json_path`: path to the JSON file containing the activity mapping to be used in the preprocessing step
 - `discovery.petri_net`: configuration for discovering a Petri Net
     - `enabled`: boolean to enable/disable the discovery using true/false
     - `infrequent_ratio`: ratio of infrequent activities to be removed from the Petri Net (0-100). If set to 0.00, no infrequent activities will be remove

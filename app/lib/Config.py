@@ -1,6 +1,7 @@
 import os
 import json
 
+
 class Config:
     _instance = None
 
@@ -9,9 +10,13 @@ class Config:
             cls._instance = super(Config, cls).__new__(cls)
             cls._instance._initialized = False
         return cls._instance
-
-
-    def initialize(self, cliArgs=None):
+    
+    def initialize(
+        self,
+        dataset_path: str | None = None,
+        dataset_csv_delimiter: str | None = None,
+        output_path: str | None = None
+    ):
         if self._initialized:
             return
 
@@ -21,16 +26,14 @@ class Config:
 
         self.config['output_path'] = ""
 
-        if cliArgs:
-            if cliArgs.dataset_path:
-                self.config['dataset']['path'] = cliArgs.dataset_path
-            if cliArgs.dataset_csv_delimiter:
-                self.config['dataset']['csv_delimiter'] = cliArgs.dataset_csv_delimiter
-            if cliArgs.output_path:
-                self.config['output_path'] = cliArgs.output_path
+        if dataset_path is not None:
+            self.config['dataset']['path'] = dataset_path
+        if dataset_csv_delimiter is not None:
+            self.config['dataset']['csv_delimiter'] = dataset_csv_delimiter
+        if output_path is not None:
+            self.config['output_path'] = output_path
 
         self._initialized = True
-
 
     def get(self):
         return self.config

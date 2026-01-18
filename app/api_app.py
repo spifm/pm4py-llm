@@ -1,13 +1,13 @@
 from fastapi import FastAPI, HTTPException, Query, status, Depends
 from fastapi.security import HTTPBearer, HTTPAuthorizationCredentials
 from dotenv import load_dotenv
+from lib.run_pm_analysis import run_pm_analysis
 from lib.dtos import *
 from config.constants import *
 from lib.store_dataset_as_csv import store_json_dataset_as_csv
 from lib.DFGSimplifier import DFGSimplifier
 from lib.DFGTransformer import DFGTransformer
 from lib.Filename import Filename
-import subprocess
 import os
 import logging
 import sys
@@ -42,33 +42,18 @@ def verify_token(credentials: HTTPAuthorizationCredentials = Depends(security)):
 
 app = FastAPI()
 
-@app.post("/pm-analysis", dependencies=[Depends(verify_token)])
-def run_script(request: PMAnalysisRequest):
-    script_path = os.path.join("/app", request.script)
-    if not os.path.isfile(script_path):
-        return {"error": f"Script not found: {script_path}"}
 
+@app.post("/pm-analysis", dependencies=[Depends(verify_token)])
+def pm_analysis(request: PMAnalysisRequest):
     try:
-        # Run the script as a subprocess and capture the output
-        result = subprocess.run(
-            [
-                "python3",
-                script_path,
-                "--dataset-path", request.datasetPath,
-                "--dataset-csv_delimiter", request.datasetCsvDelimiter,
-                "--output_path", request.outputPath
-            ],
-            capture_output=True,
-            text=True,
-            timeout=1800 # Timeout after 30 minutes
+        result = run_pm_analysis(
+            dataset_path=request.datasetPath,
+            dataset_csv_delimiter=request.datasetCsvDelimiter,
+            output_path=request.outputPath
         )
-        return {
-            "stdout": result.stdout,
-            "stderr": result.stderr,
-            "returncode": result.returncode
-        }
+        return result
     except Exception as e:
-        return {"error": str(e)}
+        raise HTTPException(status_code=500, detail=str(e))
 
 
 @app.post("/store-dataset", dependencies=[Depends(verify_token)])

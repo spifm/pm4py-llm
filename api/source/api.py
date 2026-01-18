@@ -154,9 +154,10 @@ def pm_analysis(request: PMAnalysisRequest):
     try:
         response = requests.post(url, json=request.model_dump(), headers=headers)
         response.raise_for_status()
-        return {"output": response.json()}
+        return response.json()
     except requests.exceptions.RequestException as e:
         return {"error": str(e)}
+    
 
 @app.post(
         "/store-dataset",

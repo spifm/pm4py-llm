@@ -156,8 +156,8 @@ def exec_prompt_for_huggingface_text_generation_inference(llm_model_config, prom
                 max_tokens=llm_model_config['max_tokens'],
                 stream=True,
             ):
-                if config['debug'] > 0:
-                    print(message.choices[0].delta.content, end="")
+                # TODO: include in logger
+                print(message.choices[0].delta.content, end="")
 
                 f.write(message.choices[0].delta.content)
         f.write("\n\n")

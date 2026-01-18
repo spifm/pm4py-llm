@@ -1,14 +1,11 @@
 {
     "dataset": {
-        "path": "dataset/dataset-example.csv",
-        "csv_delimiter": ",",
         "columns": {
             "case_id": "case_id",
             "activity": "concept:name",
             "timestamp": "time:timestamp"
         }
     },
-    "debug": true,
     "filter": {
         "enabled": true,
         "level": "trace",

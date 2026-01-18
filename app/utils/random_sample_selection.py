@@ -3,22 +3,33 @@ from config.constants import *
 from lib.Config import Config
 import os
 import time
+import argparse
+
+def parse_args():
+    parser = argparse.ArgumentParser()
+    parser.add_argument("--dataset-path")
+    parser.add_argument("--dataset-csv_delimiter")
+    parser.add_argument("--output_path")
+    return parser.parse_args()
+
+args = parse_args()
 
 configInstance = Config()
-configInstance.initialize()
+configInstance.initialize(
+    dataset_path=args.dataset_path,
+    dataset_csv_delimiter=args.dataset_csv_delimiter
+)
 config = configInstance.get()
-debug = config['debug']
-dataset_path = config['dataset']['path']
 case_id = config['dataset']['columns']['case_id']
 
-file_extension = os.path.splitext(dataset_path)[1]
+file_extension = os.path.splitext(args.dataset_path)[1]
 
 if file_extension != ".csv":
     print("Unsupported file extension, please provide a .csv file")
     exit(1)
 
 # Read the dataset
-dataset = pd.read_csv(dataset_path, sep=config['dataset']['csv_delimiter'])
+dataset = pd.read_csv(args.dataset_path, sep=args.dataset_csv_delimiter)
 
 # Input for sample size
 sample_size = int(input("Insert the size of the random sample (number of caseid groups): "))
@@ -33,8 +44,7 @@ unique_caseids = dataset[case_id].unique()
 # Select random sample of caseid groups
 sampled_caseids = pd.Series(unique_caseids).sample(n=sample_size, random_state=42).values
 
-if debug > 0:
-    print(f"Sampled caseids: {sampled_caseids}")
+print(f"Sampled caseids: {sampled_caseids}")
 
 # Filter the dataset to include only the sampled caseids
 sample = dataset[dataset[case_id].isin(sampled_caseids)]

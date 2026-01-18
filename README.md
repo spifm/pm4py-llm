@@ -36,7 +36,7 @@ Then, edit the `app/config/config.json` file to specify the parameters for the a
 
 ## Run
 
-The system can be run using a command or using an API endpoint.
+The system can be run using an API endpoint.
 
 The following permission change could be needed:
 
@@ -45,15 +45,8 @@ chmod 777 app/dataset/
 chmod 777 app/output/
 ```
 
-### Using the script main.py
-
-```bash
-docker exec -it pm4py-llm-app-container python3 main.py
-```
-
-### Using the API endpoint
-
 The API is available at `http://localhost:8001` after the container `pm4py-llm-app-container` is started. The corresponding documentation is available at `http://localhost:8001/docs`.
+
 
 ## Stop the container
 
@@ -68,13 +61,10 @@ The API documentation is available at `http://localhost:8000/docs` after the con
 # Configuration
 
 The configuration file is located in the config folder. The file is called config.json and it contains the following parameters:
-- `dataset.path`: path to the log file to be analyzed
-- `dataset.csv_delimiter`: separator used in the CSV file (ignored if the file is not in CSV format)
 - `dataset.columns`: list of columns to be used in the log file. The columns must be present in the log file:
     - `case_id` --> field for case identifier
     - `activity` --> field for activity name
     - `timestamp` --> field for timestamp of the activity
-- `debug`: boolean to enable debug mode
 - `filter.level`: filter level to be used. Possible values are:
     - `trace` --> to filter by trace attributes
     - `event` --> to filter by event attributes
@@ -143,10 +133,10 @@ The configuration file is located in the config folder. The file is called confi
 
 ## Random sample of the log
 
-The application can generate a random sample of the log file indicated in the config file. The sample is generated using `random_sample_selection.py`, which is a script that must be run independently. When the script is run, the user is prompted to enter the number the number of cases to be sampled. The script will then generate a new log file with the sampled cases. The new log file will be saved in the output directory created with a timestamp. The script can be run using the following command:
+The application can generate a random sample of the log file indicated in the config file. The sample is generated using `random_sample_selection.py`, which is a script that must be run independently. When the script is run, the user is prompted to enter the number the number of cases to be sampled. The script will then generate a new log file with the sampled cases. The new log file will be saved in the output directory created with a timestamp. Flags indicate the dataset path and the csv delimiter. An example of how to run the script is shown below:
 
 ```bash
-docker exec -it pm4py-llm-app-container python3 -m utils.random_sample_selection
+docker exec -it pm4py-llm-app-container python3 -m utils.random_sample_selection --dataset-path="dataset/dataset.csv" --dataset-csv_delimiter=","
 ```
 
 ## Merge abstract dfgs to json

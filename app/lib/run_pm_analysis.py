@@ -74,8 +74,8 @@ def run_pm_analysis(
         exit(1)
 
 
-    logger.debug("Columns of the log:\n", log.columns.tolist())
-    logger.debug("First row of the log:\n", log.iloc[0])
+    logger.debug("Columns of the log:\n%s", log.columns.tolist())
+    logger.debug("First row of the log:\n%s", log.iloc[0])
 
 
     # Create output directory

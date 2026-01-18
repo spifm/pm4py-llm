@@ -61,9 +61,9 @@ def exec_prompt_for_ollama(prompt, output_file, options={}):
         "options": options
     }
 
-    if config["debug"] > 0:
-        print(f"URL: {url}")
-        print(f"prompt: {prompt}")
+    # TODO: Include debug prints in logger
+    print(f"URL: {url}")
+    print(f"prompt: {prompt}")
 
     try:
         response = requests.post(url, json=payload)
@@ -72,13 +72,14 @@ def exec_prompt_for_ollama(prompt, output_file, options={}):
         print(f"Error in Ollama request: {e}")
         return None
 
-    if config["debug"] > 0:
-        print(f"Response status code: {response.status_code}")
-        print(f"Response content: {response.content}")
+    # TODO: Include debug prints in logger
+    print(f"Response status code: {response.status_code}")
+    print(f"Response content: {response.content}")
 
     result = response.json()["message"]["content"]
-    if config["debug"] > 0:
-        print(f"Response content result: {result}")
+
+    # TODO: Include debug prints in logger
+    print(f"Response content result: {result}")
 
     with open(output_file, 'a') as f:
         f.write(result + "\n\n")
@@ -108,8 +109,8 @@ def exec_prompt_for_openai(prompt, output_file):
         print(f"Error during OpenAI request: {e}")
         return None
 
-    if config["debug"] > 0:
-        print(f"OpenAI response: {response}")
+    # TODO: Include debug prints in logger
+    print(f"OpenAI response: {response}")
 
     # Search for the output that is a message
     message_output = next(
@@ -156,10 +157,7 @@ def exec_prompt_for_huggingface_text_generation_inference(llm_model_config, prom
                 max_tokens=llm_model_config['max_tokens'],
                 stream=True,
             ):
-                # TODO: include in logger
-                print(message.choices[0].delta.content, end="")
-
-                f.write(message.choices[0].delta.content)
+            f.write(message.choices[0].delta.content)
         f.write("\n\n")
 
 

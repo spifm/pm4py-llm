@@ -4,13 +4,13 @@ import time
 import os
 import json
 from config.constants import *
-from lib.Config import Config
-from lib.Filename import Filename
-import lib.filtering as filtering
-import lib.Discovery as Discovery
-import lib.DFGTransformer as DFGTransformer
-import lib.llm as llm
-from lib.Preprocessor import Preprocessor
+from source.Config import Config
+from source.Filename import Filename
+import source.filtering as filtering
+from source.Discovery import Discovery
+from source.DFGTransformer import DFGTransformer
+from source.Llm import Llm
+from source.Preprocessor import Preprocessor
 import logging
 
 
@@ -137,7 +137,7 @@ def run_pm_analysis(
             f.write("Preprocessing. Using activity mapping from: {}\n".format(mapping_activity_json_path))
 
     # Discover and save models
-    discovery = Discovery.Discovery(filtered_log)
+    discovery = Discovery(filtered_log)
 
     if petri_net_enabled:
         logger.info("Discovering Petri net...")
@@ -160,7 +160,7 @@ def run_pm_analysis(
         )
 
         # Store DFG as json
-        transformer = DFGTransformer.DFGTransformer()
+        transformer = DFGTransformer()
         transformer.dfg_pm4py_to_json(
             dfg_filename,
             fn.get_filename_path("dfg.json", output_directory)
@@ -185,18 +185,22 @@ def run_pm_analysis(
         )
 
     # LLM
+    logger.info("Starting LLM analysis...")
+    llm_instance = Llm()
+    
     if petri_net_enabled and llm_config['petri_net']['enabled']:
+        logger.debug("LLM analysis for Petri net...")
         filename = os.path.join(output_directory, "petri_net-analysis.txt")
-        llm.analyze_petri_net(abstract_pn, filename)
-
+        llm_instance.analyze_petri_net(abstract_pn, filename)
     if dfg_enabled and llm_config['dfg']['enabled']:
+        logger.debug("LLM analysis for DFG...")
         filename = os.path.join(output_directory, "dfg-analysis.txt")
-        llm.analyze_dfg(abstract_dfg, filename)
+        llm_instance.analyze_dfg(abstract_dfg, filename)
 
     if temporal_profile_enabled and llm_config['temporal_profile']['enabled']:
+        logger.debug("LLM analysis for Temporal profile...")
         filename = os.path.join(output_directory, "temporal_profile-analysis.txt")
-        llm.analyze_temporal_profile(abstract_tp, filename)
-
+        llm_instance.analyze_temporal_profile(abstract_tp, filename)
     return {
         "message": "PM analysis completed",
         "output_directory": output_directory

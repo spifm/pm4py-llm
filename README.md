@@ -93,6 +93,7 @@ The configuration file is located in the config folder. The file is called confi
     - `llm.huggingface.model_name`: name of the LLM model to use
     - `llm.huggingface.model_type`: type of the LLM model to use, possible values are:
         - `text-generation-inference` --> to use a text generation model
+    - `llm.huggingface.max_tokens`: maximum number of tokens to be used in the analysis of the models
 - If ollama is selected as the LLM provider, the following parameters must be specified:
     - `llm.ollama.api_url`: URL (including port) of the Ollama API to use the LLM model
     - `llm.ollama.api_endpoint`: endpoint of the Ollama API to use the LLM model
@@ -102,6 +103,7 @@ The configuration file is located in the config folder. The file is called confi
               "temperature": 0.5
           }
         - An empty options object `{}` can be used to skip this option in ollama requests
+    - `llm.ollama.max_tokens`: maximum number of tokens to be used in the analysis of the models
 - If openai is selected as the LLM provider, the following parameters must be specified:
     - `llm.openai.openai_api_key`: API key to use the OpenAI API for the LLM model
     - `llm.openai.model_name`: name of the LLM model to use
@@ -110,15 +112,14 @@ The configuration file is located in the config folder. The file is called confi
         - `{"effort": "low"}` --> to enable low reasoning effort
         - `{"effort": "medium"}` --> to enable medium reasoning effort
         - `{"effort": "high"}` --> to enable high reasoning effort
+    - `llm.openai.max_tokens`: maximum number of tokens to be used in the analysis of the models
 - `llm.context`: context to be used for the LLM model
 - `llm.petri_net`: configuration for analyzing an abstraction of Petri Net
     - `enabled`: boolean to enable/disable the analysis using true/false
     - `prompt`: prompt to be used for the analysis joined with the context
-    - `max_tokens`: maximum number of tokens to be used in the analysis of the Petri Net
 - `llm.dfg`: configuration for analyzing an abstraction of Petri Net. If empty, analysis will not be performed
     - `enabled`: boolean to enable/disable the analysis using true/false
     - `prompt`: prompt to be used for the analysis joined with the context
-    - `max_tokens`: maximum number of tokens to be used in the analysis of the DFG
     - `simplify_dfg.enabled`: boolean to enable/disable the simplification of the DFG using true/false
     - `simplify_dfg.simplification_context_prompt`: context prompt to be used for the simplification of the DFG
     - `simplify_dfg.simplification_instructions_prompt`: prompt joined with the context to be used for the simplification of the DFG
@@ -126,7 +127,6 @@ The configuration file is located in the config folder. The file is called confi
 - `llm.temporal_profile`: configuration for analyzing an abstraction of Temporal Profile. If empty, analysis will not be performed
     - `enabled`: boolean to enable/disable the analysis using true/false
     - `prompt`: prompt to be used for the analysis joined with the context
-    - `max_tokens`: maximum number of tokens to be used in the analysis of the DFG
 
 
 # Additional utilities

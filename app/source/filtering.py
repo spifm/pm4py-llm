@@ -3,7 +3,7 @@ import pm4py
 import pandas as pd
 from pm4py.algo.filtering.log.attributes import attributes_filter
 from config.constants import *
-from lib.Config import Config
+from source.Config import Config
 
 
 def get_config():

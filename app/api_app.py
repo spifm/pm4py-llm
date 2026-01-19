@@ -1,13 +1,13 @@
 from fastapi import FastAPI, HTTPException, Query, status, Depends
 from fastapi.security import HTTPBearer, HTTPAuthorizationCredentials
 from dotenv import load_dotenv
-from lib.run_pm_analysis import run_pm_analysis
-from lib.dtos import *
+from source.run_pm_analysis import run_pm_analysis
+from source.dtos import *
 from config.constants import *
-from lib.store_dataset_as_csv import store_json_dataset_as_csv
-from lib.DFGSimplifier import DFGSimplifier
-from lib.DFGTransformer import DFGTransformer
-from lib.Filename import Filename
+from source.store_dataset_as_csv import store_json_dataset_as_csv
+from source.DFGSimplifier import DFGSimplifier
+from source.DFGTransformer import DFGTransformer
+from source.Filename import Filename
 import os
 import logging
 import sys

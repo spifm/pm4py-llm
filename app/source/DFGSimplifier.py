@@ -1,7 +1,7 @@
 import pm4py
-from lib.Config import Config
-from lib.Filename import Filename
-import lib.llm as llm
+from source.Config import Config
+from source.Filename import Filename
+from source.Llm import Llm
 import os
 import logging
 
@@ -11,6 +11,7 @@ class DFGSimplifier:
     def __init__(self):
         self.config = self._load_config()
         self.fn = Filename()
+        self.llm = Llm()
 
 
     def _load_config(self):
@@ -77,15 +78,19 @@ class DFGSimplifier:
         Simplifies the Directly-Follows Graph (DFG) using an LLM.
         """
         print("\n\n-------------------\nSimplifying DFG\n-------------------\n\n")
-        dfg = self._read_dfg(dfg_file)
-        prompt_context = "\n".join(self.get_context_prompt())
-        prompt_instructions = "\n".join(self.get_simplification_prompt())
-        prompt = f"{prompt_context}\n\n{prompt_instructions}\n\n{dfg}"
-        max_len = 500
-        prompt_preview = prompt if len(prompt) <= max_len else prompt[:max_len] + "..."
-        logger.debug(f"Simplification prompt (truncated to {max_len} chars): {prompt_preview}")
-        result = llm.exec_prompt(self.config['llm']['dfg'], prompt, output_file)
-        return result
+        try:
+            dfg = self._read_dfg(dfg_file)
+            prompt_context = "\n".join(self.get_context_prompt())
+            prompt_instructions = "\n".join(self.get_simplification_prompt())
+            prompt = f"{prompt_context}\n\n{prompt_instructions}\n\n{dfg}"
+            max_len = 500
+            prompt_preview = prompt if len(prompt) <= max_len else prompt[:max_len] + "..."
+            logger.debug(f"Simplification prompt (truncated to {max_len} chars): {prompt_preview}")
+            result = self.llm.client.exec_prompt(prompt, output_file)
+            return result
+        except Exception as e:
+            logger.exception(f"Error simplifying DFG: {e}")
+            raise
     
 
     def analyze_simplified_dfg(self, dfg_file, output_analysis):
@@ -93,15 +98,18 @@ class DFGSimplifier:
         Analyze simplified Directly-Follows Graph (DFG) using an LLM.
         """
         print("\n\n-------------------\nAnalyzing Simplified DFG\n-------------------\n\n")
-               
-        simplified_dfg = self._read_dfg(dfg_file)
+        try:       
+            simplified_dfg = self._read_dfg(dfg_file)
+            prompt_context = "\n".join(self.get_context_prompt())
+            prompt_instructions = "\n".join(self.get_analysis_prompt())
+            prompt = f"{prompt_context}{prompt_instructions}{simplified_dfg}"
+            logger.debug(f"Analysis prompt: {prompt}")
+            result = self.llm.client.exec_prompt(prompt, output_analysis)
+            return result
+        except Exception as e:
+            logger.exception(f"Error analyzing simplified DFG: {e}")
+            raise
 
-        prompt_context = "\n".join(self.get_context_prompt())
-        prompt_instructions = "\n".join(self.get_analysis_prompt())
-        prompt = f"{prompt_context}{prompt_instructions}{simplified_dfg}"
-        logger.debug(f"Analysis prompt: {prompt}")
-        result = llm.exec_prompt(self.config['llm']['dfg'], prompt, output_analysis)
-        return result
 
     def convert_dfg_to_image(self, dfg_file, output_path):
         """
@@ -235,13 +243,17 @@ class DFGSimplifier:
             out.write(f"Original DFG:    {original_dfg_path}\n")
             out.write(f"Simplified DFG:  {simplified_dfg_path}\n\n")
 
+            out.write("LLM\n")
+            out.write(f"  - Provider:    {self.config['llm']['llm_provider']}\n")
+            out.write(f"  - Model:       {self.config['llm'][self.config['llm']['llm_provider']]['model_name']}\n\n")
+
             out.write("Activities (nodes)\n")
-            out.write(f"  - Original:     {orig_activities}\n")
-            out.write(f"  - Simplified:   {simp_activities}\n\n")
+            out.write(f"  - Original:    {orig_activities}\n")
+            out.write(f"  - Simplified:  {simp_activities}\n\n")
 
             out.write("Transitions (edges)\n")
-            out.write(f"  - Original:     {num_orig_transitions}\n")
-            out.write(f"  - Simplified:   {num_simp_transitions}\n\n")
+            out.write(f"  - Original:    {num_orig_transitions}\n")
+            out.write(f"  - Simplified:  {num_simp_transitions}\n\n")
 
             out.write("Reduction with respect to the original model\n")
             out.write(f"  - Activity reduction (%):   {activity_reduction:.2f}\n")

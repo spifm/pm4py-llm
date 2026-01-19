@@ -1,6 +1,6 @@
 import pandas as pd
 from config.constants import *
-from lib.Config import Config
+from source.Config import Config
 import os
 import time
 import argparse

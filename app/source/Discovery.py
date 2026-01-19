@@ -1,6 +1,6 @@
 import pm4py
 import csv
-from lib.Config import Config
+from source.Config import Config
 
 class Discovery:
     def __init__(self, filtered_log):

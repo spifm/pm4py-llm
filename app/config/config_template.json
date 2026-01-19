@@ -35,8 +35,9 @@
         "llm_provider": "ollama",
         "huggingface": {
             "hugging_face_api_key": "your_hugging_face_api_key",
-            "model_name": "mistralai/Mistral-7B-Instruct-v0.3",
-            "model_type": "text-generation-inference"
+            "model_name": "mistralai/Mistral-7B-Instruct-v0.2",
+            "model_type": "text-generation-inference",
+            "max_tokens": 3000
         },
         "ollama": {
             "api_url": "http://myurl.es:11434",
@@ -44,12 +45,14 @@
             "model_name": "gemma3:27b-it-qat",
             "options": {
                 "temperature": 0.5
-            }
+            },
+            "max_tokens": 3000
         },
         "openai": {
             "openai_api_key": "your_openai_api_key",
             "model_name": "gpt-5-mini",
-            "reasoning": {"effort": "medium"}
+            "reasoning": {"effort": "medium"},
+            "max_tokens": 3000
         },
         "context": [
             "Context for the next prompts:",
@@ -57,13 +60,11 @@
         ],
         "petri_net": {
             "enabled": false,
-            "prompt": "Model used is a Petri Net.",
-            "max_tokens": 3000
+            "prompt": "Model used is a Petri Net."
         },
         "dfg": {
             "enabled": false,
             "prompt": "Model used is a DFG.",
-            "max_tokens": 3000,
             "simplify_dfg": {
                 "enabled": true,
                 "simplification_instructions_prompt":[
@@ -168,8 +169,7 @@
         },
         "temporal_profile": {
             "enabled": false,
-            "prompt": "Model used is a Temporal Profile.",
-            "max_tokens": 32768
+            "prompt": "Model used is a Temporal Profile."
         }
     }
 }

@@ -18,6 +18,9 @@ load_dotenv()
 API_TOKEN = os.getenv("API_TOKEN")
 LOG_LEVEL = os.getenv("LOG_LEVEL", "DEBUG").upper()
 
+if not API_TOKEN:
+    raise RuntimeError("API_TOKEN is not set in environment variables")
+
 logging.basicConfig(
     level=getattr(logging, LOG_LEVEL, logging.INFO),
     format="%(asctime)s - %(levelname)s - %(message)s",
@@ -34,7 +37,8 @@ fn = Filename()
 
 
 def verify_token(credentials: HTTPAuthorizationCredentials = Depends(security)):
-    if credentials.credentials != API_TOKEN:
+    token = credentials.credentials
+    if not token or token != API_TOKEN:
         raise HTTPException(
             status_code=status.HTTP_401_UNAUTHORIZED,
             detail="Invalid or missing token" + API_TOKEN,

@@ -24,3 +24,18 @@ services:
       - .env
     depends_on:
       - app
+
+  moodle-data-service:
+    image: moodle-data-service
+    build:
+      context: ./moodle-data-service
+    container_name: moodle-data-service-container
+    ports:
+      - "8002:8002"
+    volumes:
+      - ./moodle-data-service/source:/app/source
+      - ./data/moodle-exports:/data
+    env_file:
+      - .env
+
+

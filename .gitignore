@@ -118,3 +118,6 @@ dist
 
 # pycache
 __pycache__/
+
+# moodle data exports
+data

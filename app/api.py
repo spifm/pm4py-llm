@@ -1,13 +1,11 @@
 from fastapi import FastAPI, HTTPException, Query, status, Depends
 from fastapi.security import HTTPBearer, HTTPAuthorizationCredentials
 from dotenv import load_dotenv
-from source.run_pm_analysis import run_pm_analysis
-from source.dtos import *
+from source.models.schemas import *
 from config.constants import *
-from source.store_dataset_as_csv import store_json_dataset_as_csv
-from source.DFGSimplifier import DFGSimplifier
-from source.DFGTransformer import DFGTransformer
-from source.Filename import Filename
+from source.services.run_pm_analysis import PmAnalysisService
+from source.services.store_dataset_as_csv import StoreDatasetAsCsvService
+from source.services.simplify_dfg import SimplifyDFGService
 import os
 import logging
 import sys
@@ -33,9 +31,6 @@ logger = logging.getLogger(__name__)
 security = HTTPBearer()
 
 
-fn = Filename()
-
-
 def verify_token(credentials: HTTPAuthorizationCredentials = Depends(security)):
     token = credentials.credentials
     if not token or token != API_TOKEN:
@@ -50,11 +45,13 @@ app = FastAPI()
 @app.post("/pm-analysis", dependencies=[Depends(verify_token)])
 def pm_analysis(request: PMAnalysisRequest):
     try:
-        result = run_pm_analysis(
-            dataset_path=request.datasetPath,
-            dataset_csv_delimiter=request.datasetCsvDelimiter,
-            output_path=request.outputPath
+        service = PmAnalysisService(
+            dataset_path=request.dataset_path,
+            dataset_csv_delimiter=request.dataset_csv_delimiter,
+            output_path=request.output_path
         )
+        result = service.run_pm_analysis()
+        
         return result
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
@@ -63,7 +60,7 @@ def pm_analysis(request: PMAnalysisRequest):
 @app.post("/store-dataset", dependencies=[Depends(verify_token)])
 def run_script(request: DatasetToStoreRequest):
     try:
-        output_path = store_json_dataset_as_csv(request.filename, request.data)
+        output_path = StoreDatasetAsCsvService.store_json_dataset_as_csv(request.filename, request.data)
         return {"success": True, "file": output_path}
     except ValueError as ve:
         raise HTTPException(status_code=400, detail=str(ve))
@@ -78,13 +75,13 @@ def run_script(request: DatasetToStoreRequest):
         "Simplifies a Directly-Follows Graph (DFG) using a Large Language Model (LLM). "
         "This endpoint requires a **previous process mining analysis** that has generated a DFG file in PM4Py format.\n\n"
         "**Required input:**\n"
-        "- `outputPath` (str): Path where the DFG file to simplify is located.\n"
+        "- `output_path` (str): Path where the DFG file to simplify is located.\n"
         "\n**Optional input:**\n"
         "- `prompt_context` (Optional[List[str]]): list of prompt context lines to replace the default context. Useful for customizing the LLM behavior.\n\n"
         "**Example input:**\n"
         "```json\n"
         "{\n"
-        "  \"outputPath\": \"my-folder\",\n"
+        "  \"output_path\": \"my-folder\",\n"
         "  \"prompt_context\": [\n"
         "    \"### CONTEXT ###\\n\",\n"
         "    \"You are an expert in process mining and data analysis, with a focus on educational data.\",\n"
@@ -116,68 +113,18 @@ def run_script(request: DatasetToStoreRequest):
 )
 def simplify_dfg_endpoint(request: SimplifyDFGRequest):
     try:
-        simplifier = DFGSimplifier()
-        transformer = DFGTransformer()
         
-        input_dir = os.path.join(OUTPUT_PATH, request.outputPath)
-        dfg_file = os.path.join(input_dir, fn.get_filename("dfg.json"))
-
-        if not os.path.exists(dfg_file):
-            raise HTTPException(status_code=404, detail="DFG file not found.")
-        
-        if request.prompt_context is not None:
-            simplifier.set_context_prompt(request.prompt_context)
-            logger.debug(f"Context prompt updated: {simplifier.get_context_prompt()}")
-
-
-        print("Transforming DFG JSON to use generic activity names...")
-        json_dfg_file = fn.get_filename_path("dfg.json", input_dir)
-        json_dfg_generics_file = fn.get_filename_path("dfg.json_generic_act", input_dir)
-        json_activity_mapping_file = fn.get_filename_path("dfg.json_activity_mapping_from_dfg", input_dir)
-
-        transformer.dfg_json_replace_activities_with_generics(
-            input_json_path=json_dfg_file,
-            output_json_path=json_dfg_generics_file,
-            mapping_output_path=json_activity_mapping_file
-        )
-
-        print(f"Simplifying DFG in json ({json_dfg_generics_file}) using LLM...")
-        llm_simplified_dfg_file = fn.get_filename_path("dfg.json_llm_simplified", input_dir)
-        simplifier.simplify_dfg(json_dfg_generics_file, llm_simplified_dfg_file)
-        
-        print("Restoring simplified DFG in json to use original activity names...")
-        llm_restored_simplified_dfg_file = fn.get_filename_path("dfg.json_llm_restored_simplified", input_dir)
-
-        transformer.dfg_json_restore_activity_names(
-            act_json_path=llm_simplified_dfg_file,
-            mapping_path=json_activity_mapping_file,
-            output_json_path=llm_restored_simplified_dfg_file
-        )
-
-        print("Restoring simplified DFG in json to pm4py DFG format...")
-        simplified_dfg_file = fn.get_filename_path("dfg.simplified", input_dir)
-        transformer.dfg_named_json_to_pm4py(
-            named_json_path=llm_restored_simplified_dfg_file,
-            dfg_output_path=simplified_dfg_file
-        )
-
-        output_analysis = fn.get_filename_path("dfg.simplified_analysis", input_dir)
-        simplifier.analyze_simplified_dfg(llm_restored_simplified_dfg_file, output_analysis)
-
-        simplified_dfg_image = fn.get_filename_path("dfg.simplified_image", input_dir)
-        simplifier.convert_dfg_to_image(simplified_dfg_file, simplified_dfg_image)
-
-        simplifier.compute_simplification_info(
-            original_dfg_path=os.path.join(input_dir, fn.get_filename("dfg.raw")),
-            simplified_dfg_path=simplified_dfg_file
+        result = SimplifyDFGService.simplify_dfg(
+            output_path=request.output_path,
+            prompt_context=request.prompt_context
         )
 
         return {
             "message": "DFG simplified successfully",
-            "output_analysis": output_analysis,
-            "llm_simplified_dfg": llm_restored_simplified_dfg_file,
-            "simplified_dfg": simplified_dfg_file,
-            "simplified_dfg_image": simplified_dfg_image
+            "output_analysis": result["output_analysis"],
+            "llm_simplified_dfg": result["llm_simplified_dfg"],
+            "simplified_dfg": result["simplified_dfg"],
+            "simplified_dfg_image": result["simplified_dfg_image"]
         }
 
     except Exception as e:
@@ -212,18 +159,18 @@ def get_analysis(analysis_dir: str = Query(
     if not os.path.isdir(basepath):
         raise HTTPException(status_code=404, detail="Analysis directory not found")
     
-    dfgBasepath = os.path.join(basepath, "dfg.png")
-    dfgAnalysisBasepath = os.path.join(basepath, "dfg-analysis.txt")
-    simplifiedDfgBasepath = os.path.join(basepath, "simplified-dfg.png")
-    simplifiedDfgAnalysisBasepath = os.path.join(basepath, "simplified-dfg-analysis.txt")
+    dfg_base_path = os.path.join(basepath, "dfg.png")
+    dfg_analysis_base_path = os.path.join(basepath, "dfg-analysis.txt")
+    simplified_dfg_base_path = os.path.join(basepath, "simplified-dfg.png")
+    simplified_dfg_analysis_base_path = os.path.join(basepath, "simplified-dfg-analysis.txt")
     
-    if not os.path.isfile(dfgBasepath) or not os.path.isfile(dfgAnalysisBasepath):
-        raise HTTPException(status_code=404, detail=dfgBasepath + " or " + dfgAnalysisBasepath + " not found")
+    if not os.path.isfile(dfg_base_path) or not os.path.isfile(dfg_analysis_base_path):
+        raise HTTPException(status_code=404, detail=dfg_base_path + " or " + dfg_analysis_base_path + " not found")
 
     try:
-        with open(dfgAnalysisBasepath, "r") as f:
+        with open(dfg_analysis_base_path, "r") as f:
             dfgAnalysisText = f.read()
-        with open(dfgBasepath, "rb") as f:
+        with open(dfg_base_path, "rb") as f:
             dfgImageBytes = f.read()
 
         result = {
@@ -231,15 +178,15 @@ def get_analysis(analysis_dir: str = Query(
             "dfg_image": dfgImageBytes.hex()
         }
 
-        if os.path.isfile(simplifiedDfgAnalysisBasepath):
-            with open(simplifiedDfgAnalysisBasepath, "r") as f:
-                simplifiedDfgAnalysisText = f.read()
-            result["simplified_dfg_analysis"] = simplifiedDfgAnalysisText
+        if os.path.isfile(simplified_dfg_analysis_base_path):
+            with open(simplified_dfg_analysis_base_path, "r") as f:
+                simplified_dfg_analysis_text = f.read()
+            result["simplified_dfg_analysis"] = simplified_dfg_analysis_text
 
-        if os.path.isfile(simplifiedDfgBasepath):
-            with open(simplifiedDfgBasepath, "rb") as f:
-                simplifiedDfgImageBytes = f.read()
-            result["simplified_dfg_image"] = simplifiedDfgImageBytes.hex()
+        if os.path.isfile(simplified_dfg_base_path):
+            with open(simplified_dfg_base_path, "rb") as f:
+                simplified_dfg_image_bytes = f.read()
+            result["simplified_dfg_image"] = simplified_dfg_image_bytes.hex()
 
         return result
 

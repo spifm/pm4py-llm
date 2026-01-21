@@ -83,7 +83,8 @@ The configuration file is located in the config folder. The file is called confi
 - `discovery.dfg`: configuration for discovering a DFG
     - `enabled`: boolean to enable/disable the discovery using true/false
     - `performance-enabled`: boolean to enable/disable an additional performance analysis using true/false
-- `discovery.temporal_profile`: boolean to enable/disable the discovery of the temporal profile using true/false
+- `discovery.temporal_profile`: configuration for discovering a Temporal Profile
+    - `enabled`: boolean to enable/disable the discovery of the temporal profile using true/false
 - `llm.llm_provider`: provider of the LLM model to be used. Possible values are:
     - `hugging_face` --> to use a model from Hugging Face
     - `ollama` --> to use a model from Ollama

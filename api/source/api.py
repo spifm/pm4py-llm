@@ -1,7 +1,7 @@
 from fastapi import FastAPI, HTTPException, Query, status, Depends, Body
 from fastapi.security import HTTPBearer, HTTPAuthorizationCredentials
 from fastapi.responses import JSONResponse
-from dtos import *
+from models.schemas import *
 import requests
 import os
 from datetime import datetime, timedelta
@@ -63,17 +63,17 @@ def read_root():
     description=(
         "Runs the full pipeline: pm-analysis → simplify-dfg → get-analysis\n\n"
         "**Required input:**\n"
-        "- `datasetPath` (str): Full path to the dataset file (CSV format) to analyze.\n"
-        "- `outputPath` (str): Directory where the analysis results will be stored.\n"
+        "- `dataset_path` (str): Full path to the dataset file (CSV format) to analyze.\n"
+        "- `output_path` (str): Directory where the analysis results will be stored.\n"
         "\n**Optional input:**\n"
-        "- `datasetCsvDelimiter` (Optional[str]): CSV delimiter used in the dataset.\n"
+        "- `dataset_csv_delimiter` (Optional[str]): CSV delimiter used in the dataset.\n"
         "- `prompt_context` (Optional[List[str]]): list of prompt context lines to replace the default context. Useful for customizing the LLM behavior.\n\n"
         "**Example input:**\n"
         "```json\n"
         "{\n"
-        "  \"datasetPath\": \"data/my_dataset.csv\",\n"
-        "  \"datasetCsvDelimiter\": \",\",\n"
-        "  \"outputPath\": \"output/my-folder\",\n"
+        "  \"dataset_path\": \"data/my_dataset.csv\",\n"
+        "  \"dataset_csv_delimiter\": \",\",\n"
+        "  \"output_path\": \"output/my-folder\",\n"
         "  \"prompt_context\": [\n"
         "    \"### CONTEXT ###\\n\",\n"
         "    \"You are an expert in process mining and data analysis, with a focus on educational data.\",\n"
@@ -103,12 +103,12 @@ def full_analysis(
 
     # Step 1: Execute pm_analysis
     pm_analysis_request = PMAnalysisRequest(
-        datasetPath=request.datasetPath,
-        outputPath=request.outputPath
+        dataset_path=request.dataset_path,
+        output_path=request.output_path
     )
 
-    if request.datasetCsvDelimiter is not None:
-        pm_analysis_request.datasetCsvDelimiter = request.datasetCsvDelimiter
+    if request.dataset_csv_delimiter is not None:
+        pm_analysis_request.dataset_csv_delimiter = request.dataset_csv_delimiter
 
     pm_result = pm_analysis(pm_analysis_request)
 
@@ -120,7 +120,7 @@ def full_analysis(
 
     # Step 2: Execute simplify_dfg_endpoint
     simplify_request = SimplifyDFGRequest(
-        outputPath = request.outputPath
+        output_path = request.output_path
     )
 
     if request.prompt_context is not None:
@@ -136,7 +136,7 @@ def full_analysis(
 
     # Step 3: Execute get_analysis
     try:
-        analysis_result = get_analysis(analysis_dir=request.outputPath)
+        analysis_result = get_analysis(analysis_dir=request.output_path)
 
         logger.debug(f"Step 3: Get Analysis output: {analysis_result}")
 
@@ -211,13 +211,13 @@ def store_dataset(request: DatasetToStoreRequest):
         "Simplifies a Directly-Follows Graph (DFG) using a Large Language Model (LLM). "
         "This endpoint requires a **previous process mining analysis** that has generated a DFG file in PM4Py format.\n\n"
         "**Required input:**\n"
-        "- `outputPath` (str): Path where the DFG file to simplify is located.\n"
+        "- `output_path` (str): Path where the DFG file to simplify is located.\n"
         "\n**Optional input:**\n"
         "- `prompt_context` (Optional[List[str]]): list of prompt context lines to replace the default context. Useful for customizing the LLM behavior.\n\n"
         "**Example input:**\n"
         "```json\n"
         "{\n"
-        "  \"outputPath\": \"my-folder\",\n"
+        "  \"output_path\": \"my-folder\",\n"
         "  \"prompt_context\": [\n"
         "    \"### CONTEXT ###\\n\",\n"
         "    \"You are an expert in process mining and data analysis, with a focus on educational data.\",\n"

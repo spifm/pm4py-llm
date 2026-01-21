@@ -29,7 +29,9 @@
             "enabled": true,
             "performance-enabled": true
         },
-        "temporal_profile": true
+        "temporal_profile": {
+            "enabled": true
+        }
     },
     "llm": {
         "llm_provider": "ollama",

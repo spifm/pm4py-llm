@@ -1,4 +1,3 @@
-import pm4py
 from pandas import DataFrame
 import logging
 

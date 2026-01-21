@@ -19,17 +19,17 @@ services:
     ports:
       - "8000:8000"
     volumes:
-      - ./api/source:/app
+      - ./api/source:/app/source
     env_file:
       - .env
     depends_on:
       - app
 
   moodle-data-service:
-    image: moodle-data-service
+    image: pm4py-moodle-data-service
     build:
       context: ./moodle-data-service
-    container_name: moodle-data-service-container
+    container_name: pm4py-moodle-data-service-container
     ports:
       - "8002:8002"
     volumes:

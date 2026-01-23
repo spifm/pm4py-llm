@@ -14,4 +14,9 @@ class ExportEventLogResponse(BaseModel):
     message: str
     output_file: str
     rows_exported: int
-    course: CourseInfo
+    course_info: CourseInfo
+
+class AsyncExportEventLogResponse(BaseModel):
+    message: str
+    expected_output_file: str
+    course_info: CourseInfo

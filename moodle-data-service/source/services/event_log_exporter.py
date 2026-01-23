@@ -6,6 +6,7 @@ from psycopg2 import sql
 from db import MoodleDatabase
 import csv
 import re
+from models.schemas import CourseInfo
 
 logger = logging.getLogger(__name__)
 
@@ -35,26 +36,6 @@ class EventLogExporter:
         name = re.sub(r"[^a-z0-9_\-]", "", name)
         return name or "dataset"
 
-    def _get_course_info(self, course_id: int) -> dict | None:
-        """
-        Returns a `dict` course info (id, fullname, shortname)
-        or None if the course does not exist.
-        """
-        with self.db.get_connection() as conn:
-            with conn.cursor(cursor_factory=RealDictCursor) as cur:
-                query = sql.SQL(
-                    """
-                    SELECT id, fullname, shortname
-                    FROM {course_table}
-                    WHERE id = %s
-                    """
-                ).format(
-                    course_table=sql.Identifier(f"{self.db.table_prefix}course")
-                )
-
-                cur.execute(query, (course_id,))
-                row = cur.fetchone()
-                return row # {"id": ..., "fullname": ..., ...} or None
 
     def _fetch_logs(self, course_id: int) -> Tuple[List[str], List[tuple]]:
         """
@@ -97,38 +78,74 @@ class EventLogExporter:
                 colnames = [desc[0] for desc in cur.description]
 
         return colnames, rows
+    
+
+    def get_course_info(self, course_id: int) -> CourseInfo | None:
+        """
+        Returns a `dict` course info (id, fullname, shortname)
+        or None if the course does not exist.
+        """
+        with self.db.get_connection() as conn:
+            with conn.cursor(cursor_factory=RealDictCursor) as cur:
+                query = sql.SQL(
+                    """
+                    SELECT id, fullname, shortname
+                    FROM {course_table}
+                    WHERE id = %s
+                    """
+                ).format(
+                    course_table=sql.Identifier(f"{self.db.table_prefix}course")
+                )
+
+                cur.execute(query, (course_id,))
+                row = cur.fetchone()
+                return CourseInfo(**row) if row else None
+                # Type conversion dict -> Pydantic model
+
+
+    def get_output_path(
+        self,
+        course_id: int,
+        dataset_name: str | None = None,
+    ) -> str:
+        """
+        Returns the expected dataset filename for a given course_id and optional dataset_name.
+        """
+        if dataset_name:
+            safe_name = self._sanitize_filename(dataset_name)
+        else:
+            safe_name = f"dataset-{course_id}"
+        return os.path.join(self.output_dir, f"{safe_name}.csv")
 
 
     def export_course_event_log(
         self,
         course_id: int,
         dataset_name: str | None = None,
-    ) -> tuple[str, int, dict]:
+    ) -> tuple[str, int, CourseInfo]:
         """
         Exports the event log of a course to CSV.
-        If dataet_name is provided, it is used to name the file.
+        If dataset_name is provided, it is used to name the file.
         Returns (file_path, number_of_rows, course_info).
         """
-        course_info = self._get_course_info(course_id)
+        course_info = self.get_course_info(course_id)
         if course_info is None:
             logger.warning("Course %s not found", course_id)
             raise ValueError(f"Course with id {course_id} not found")
 
         logger.info(
             "Exporting event log for course_id=%s (%s)",
-            course_info["id"],
-            course_info["fullname"],
+            course_info.id,
+            course_info.fullname,
         )
-
 
         colnames, rows = self._fetch_logs(course_id)
 
-        if dataset_name:
-            safe_name = self._sanitize_filename(dataset_name)
-        else:
-            safe_name = f"dataset-{course_id}"
+        output_path = self.get_output_path(
+            course_id=course_id,
+            dataset_name=dataset_name,
+        )
 
-        output_path = os.path.join(self.output_dir, f"{safe_name}.csv")
         logger.info("Writing %s rows to %s", len(rows), output_path)
 
         with open(output_path, "w", newline="", encoding="utf-8") as f:

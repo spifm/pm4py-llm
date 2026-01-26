@@ -121,3 +121,6 @@ __pycache__/
 
 # moodle data exports
 data
+
+# Directory for LLM Training
+llm-training

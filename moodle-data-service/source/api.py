@@ -10,9 +10,10 @@ from models.schemas import (
     ExportEventLogRequest,
     ExportEventLogResponse,
     AsyncExportEventLogResponse,
-    CourseInfo,
 )
 from tasks.export_event_log_task import export_event_log_task
+import redis
+from rq import Queue
 
 
 # ─── Config .env and logging ─────────────────────────────────
@@ -52,6 +53,10 @@ def verify_token(credentials: HTTPAuthorizationCredentials = Depends(security)):
 db = MoodleDatabase.from_env()
 output_dir = os.getenv("EXPORT_OUTPUT_DIR", "/data")
 event_log_exporter = EventLogExporter(db=db, output_dir=output_dir)
+
+REDIS_URL = os.getenv("REDIS_URL", "redis://redis:6379/0")
+redis_conn = redis.from_url(REDIS_URL)
+task_queue = Queue("default", connection=redis_conn)
 
 # ─── FastAPI app ──────────────────────────────────────────────
 
@@ -188,15 +193,22 @@ async def export_event_log_async(
     )
 
     # Execute export task in background
-    background_tasks.add_task(
+    job = task_queue.enqueue(
         export_event_log_task,
         event_log_exporter=event_log_exporter,
         course_id=course_id,
         dataset_name=dataset_name,
     )
+    #background_tasks.add_task(
+    #    export_event_log_task,
+    #    event_log_exporter=event_log_exporter,
+    #    course_id=course_id,
+    #    dataset_name=dataset_name,
+    #)
 
     return AsyncExportEventLogResponse(
         message="Event log export started",
+        job_id=job.id,
         expected_output_file=expected_output_file,
         course_info=course_info,
     )

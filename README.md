@@ -22,9 +22,14 @@ cp .env.example .env
 docker compose up -d
 ```
 
-Two containers will be created:
-- `pm4py-llm-container`: the container that runs the Python application. It includes the necessary libraries and scripts to run the process mining application. The container will also run the API server to expose the functionalities of the application through a generic endpoint
-- `api-container`: the container with the client API. In case of integration with other systems, this API can be used to communicate with the Python application
+The following containers will be created:
+- `pm4py-llm-app`: the container that runs the Python application. It includes the necessary libraries and scripts to run the process mining application. The container will also run the API server to expose the functionalities of the application through a generic endpoint
+- `pm4py-llm-api`: the container with the client API. In case of integration with other systems, this API can be used to communicate with the Python application
+- `pm4py-moodle-data-service`: the container that runs a Moodle data service. This service is used to fetch data from a Moodle instance
+- `pm4py-moodle-data-service-worker`: the container that runs a worker for the Moodle data service. This worker is used to process tasks in a redis queue
+- `pm4py-redis`: the container that runs a Redis server. This server is used as a message broker for the Moodle data service
+- `pm4py-rq-dashboard`: the container that runs a dashboard for monitoring the Redis queues. This dashboard is used to monitor the tasks in the Redis queue
+
 
 ## Create a config file called config.json using the template to specify configuration parameters
 
@@ -45,7 +50,7 @@ chmod 777 app/dataset/
 chmod 777 app/output/
 ```
 
-The API is available at `http://localhost:8001` after the container `pm4py-llm-app-container` is started. The corresponding documentation is available at `http://localhost:8001/docs`.
+The API is available at `http://localhost:8001` after the container `pm4py-llm-app"` is started. The corresponding documentation is available at `http://localhost:8001/docs`.
 
 
 ## Stop the container
@@ -56,7 +61,7 @@ docker compose down
 
 # API container
 
-The API documentation is available at `http://localhost:8000/docs` after the container `pm4py-llm-api-container` is started. The documentation is generated using [FastAPI] and it provides information about the available endpoints, request and response formats, and examples of how to use the API.
+The API documentation is available at `http://localhost:8000/docs` after the container `pm4py-llm-api"` is started. The documentation is generated using [FastAPI] and it provides information about the available endpoints, request and response formats, and examples of how to use the API.
 
 # Configuration
 
@@ -137,7 +142,7 @@ The configuration file is located in the config folder. The file is called confi
 The application can generate a random sample of the log file indicated in the config file. The sample is generated using `random_sample_selection.py`, which is a script that must be run independently. When the script is run, the user is prompted to enter the number the number of cases to be sampled. The script will then generate a new log file with the sampled cases. The new log file will be saved in the output directory created with a timestamp. Flags indicate the dataset path and the csv delimiter. An example of how to run the script is shown below:
 
 ```bash
-docker exec -it pm4py-llm-app-container python3 -m utils.random_sample_selection --dataset-path="dataset/dataset.csv" --dataset-csv_delimiter=","
+docker exec -it pm4py-llm-app" python3 -m utils.random_sample_selection --dataset-path="dataset/dataset.csv" --dataset-csv_delimiter=","
 ```
 
 ## Merge abstract dfgs to json
@@ -145,7 +150,7 @@ docker exec -it pm4py-llm-app-container python3 -m utils.random_sample_selection
 This script reads abstract DFG models from a directory structure, extracts user IDs and grades from folder names, and combines them into a single JSON file for later processing. The script is called `merge_abstract_dfgs_to_json.py` and it must be run independently. When the script is run, the user is prompted to enter the path to the base directory (e.g., output/my-dfg-folder) where the abstract DFGs are stored. The script will then generate a new json file with the merged abstract DFGs. The new log file will be saved in the output directory created with a timestamp. The script can be run using the following command:
 
 ```bash
-docker exec -it pm4py-llm-app-container python3 -m utils.merge_abstract_dfgs_to_json
+docker exec -it pm4py-llm-app" python3 -m utils.merge_abstract_dfgs_to_json
 ```
 
 ## DFG to PNG
@@ -153,7 +158,7 @@ docker exec -it pm4py-llm-app-container python3 -m utils.merge_abstract_dfgs_to_
 This script reads a dfg model from a pm4py .dfg file and generates a PNG image of the model. The script is called `dfg_to_png.py` and it must be run independently. The dfg file path is directly set in the script. The script will then generate a new png file with the DFG model. The script can be run using the following command:
 
 ```bash
-docker exec -it pm4py-llm-app-container python3 -m utils.dfg_to_png
+docker exec -it pm4py-llm-app" python3 -m utils.dfg_to_png
 ```
 
 ## CSV to JSON conversion
@@ -161,7 +166,7 @@ docker exec -it pm4py-llm-app-container python3 -m utils.dfg_to_png
 This script converts a CSV file to a custom JSON format. The script is called `csv_to_json.py` and it must be run independently. The CSV file path is directly set in the script. The script will then generate a new json file with the converted data. The script can be run using the following command:
 
 ```bash
-docker exec -it pm4py-llm-app-container python3 -m utils.csv_to_json
+docker exec -it pm4py-llm-app" python3 -m utils.csv_to_json
 ``` 
 
 ## XES to Histogram
@@ -169,5 +174,18 @@ docker exec -it pm4py-llm-app-container python3 -m utils.csv_to_json
 This script generates histograms from XES log files. The script is called `xes_to_histogram.py` and it must be run independently. The XES file path is directly set in the script. The script will then generate histogram plots and data files. The script can be run using the following command:
 
 ```bash
-docker exec -it pm4py-llm-app-container python3 -m utils.xes_to_histogram
+docker exec -it pm4py-llm-app" python3 -m utils.xes_to_histogram
+```
+
+# Build training JSONL for LLM fine-tuning
+This script builds a JSONL file for training a Large Language Model (LLM) using prompt-completion pairs based on Directly-Follows Graphs (DFGs). The script is called `build-train-jsonl.py` and it must be run independently. When the script is run, it reads a prompt template from a specified file and processes multiple example directories containing input and output JSON files representing DFGs. It replaces a placeholder in the prompt template with the content of the input JSON files and pairs it with the corresponding output JSON files to create training examples. The resulting prompt-completion pairs are saved in a JSONL file for LLM fine-tuning. The script can be run using the following command:
+
+```bash
+docker exec -it pm4py-llm-app python3 -m utils.build-train-jsonl \
+  --base-dir llm-training \
+  --prompt-file prompt.txt \
+  --examples-dir training \
+  --output-file train.jsonl \
+  --input-filename dfg-generic-activities.json \
+  --output-filename llm-simplified-dfg.json
 ```

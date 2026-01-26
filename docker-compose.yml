@@ -3,7 +3,7 @@ services:
     image: pm4py-llm-app
     build:
       context: ./app
-    container_name: pm4py-llm-app-container
+    container_name: pm4py-llm-app
     ports:
       - "8001:8001"
     volumes:
@@ -15,7 +15,7 @@ services:
     image: pm4py-llm-api
     build:
       context: ./api
-    container_name: pm4py-llm-api-container
+    container_name: pm4py-llm-api
     ports:
       - "8000:8000"
     volumes:
@@ -29,7 +29,7 @@ services:
     image: pm4py-moodle-data-service
     build:
       context: ./moodle-data-service
-    container_name: pm4py-moodle-data-service-container
+    container_name: pm4py-moodle-data-service
     ports:
       - "8002:8002"
     volumes:
@@ -37,5 +37,34 @@ services:
       - ./data/moodle-exports:/data
     env_file:
       - .env
+
+  moodle-data-service-worker:
+    build:
+      context: ./moodle-data-service
+    container_name: pm4py-moodle-data-service-worker
+    command: ["rq", "worker", "-u", "redis://redis:6379/0", "default"]
+    volumes:
+      - ./moodle-data-service/source:/app/source
+      - ./data/moodle-exports:/data
+    env_file:
+      - .env
+    depends_on:
+      - redis
+
+  redis:
+    image: redis:7-alpine
+    container_name: pm4py-redis
+    ports:
+      - "6379:6379"
+
+  rq-dashboard:
+    image: eoranged/rq-dashboard
+    container_name: pm4py-rq-dashboard
+    environment:
+      - RQ_DASHBOARD_REDIS_URL=redis://redis:6379/0
+    ports:
+      - "9181:9181"
+    depends_on:
+      - redis
 
 

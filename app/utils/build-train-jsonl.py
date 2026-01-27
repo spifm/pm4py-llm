@@ -78,25 +78,32 @@ def build_train_jsonl(
                 continue
 
             # Read input JSON (Original DFG)
-            input_json_str = in_path.read_text(encoding="utf-8").strip()
+            input_text = in_path.read_text(encoding="utf-8").strip()
 
-            # Optional: validate that it is JSON, just in case
+            # Validate that it is JSON
             try:
-                _ = json.loads(input_json_str)
+                input_obj = json.loads(input_text)
             except json.JSONDecodeError as e:
                 print(f"[WARN] Invalid JSON in {in_path}: {e}. Skipping.")
                 continue
+
+            # Minify input JSON string
+            input_json_str = json.dumps(input_obj, ensure_ascii=False, separators=(",", ":"))
 
             # Build the "input" field: prompt + JSON
             full_input = prompt_template.replace(placeholder, input_json_str)
 
             # Read simplified JSON (output)
-            output_json_str = out_json_path.read_text(encoding="utf-8").strip()
+            output_text = out_json_path.read_text(encoding="utf-8").strip()
+            
             try:
-                _ = json.loads(output_json_str)
+                output_obj = json.loads(output_text)
             except json.JSONDecodeError as e:
                 print(f"[WARN] Invalid JSON in {out_json_path}: {e}. Skipping.")
                 continue
+
+            # Minify output JSON string
+            output_json_str = json.dumps(output_obj, ensure_ascii=False, separators=(",", ":"))
 
             record = {
                 "input": full_input,

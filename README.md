@@ -109,7 +109,7 @@ The configuration file is located in the config folder. The file is called confi
               "temperature": 0.5
           }
         - An empty options object `{}` can be used to skip this option in ollama requests
-    - `llm.ollama.max_tokens`: maximum number of tokens to be used in the analysis of the models
+    - `llm.ollama.json_prompt_config`: configuration for DFG simplification prompts. If it does not exist, the main ollama configuration will be used. It contains the same parameters as the main ollama configuration.
 - If openai is selected as the LLM provider, the following parameters must be specified:
     - `llm.openai.openai_api_key`: API key to use the OpenAI API for the LLM model
     - `llm.openai.model_name`: name of the LLM model to use

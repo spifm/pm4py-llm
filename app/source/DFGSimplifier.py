@@ -86,7 +86,7 @@ class DFGSimplifier:
             max_len = 500
             prompt_preview = prompt if len(prompt) <= max_len else prompt[:max_len] + "..."
             logger.debug(f"Simplification prompt (truncated to {max_len} chars): {prompt_preview}")
-            result = self.llm.client.exec_prompt(prompt, output_file)
+            result = self.llm.client.exec_json_prompt(prompt, output_file)
             return result
         except Exception as e:
             logger.exception(f"Error simplifying DFG: {e}")

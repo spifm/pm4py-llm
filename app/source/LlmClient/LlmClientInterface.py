@@ -10,3 +10,7 @@ class LlmClientInterface(ABC):
     @abstractmethod
     def exec_prompt(self, prompt: str, output_file: str) -> str | None:
         ...
+
+    @abstractmethod
+    def exec_json_prompt(self, prompt: str, output_file: str) -> str | None:
+        ...

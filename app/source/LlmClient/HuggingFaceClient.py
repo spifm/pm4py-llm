@@ -34,3 +34,7 @@ class HuggingFaceClient(LlmClientInterface):
     def _exec_prompt_for_huggingface_vllm(self, prompt, output_file):
         # TODO: Implement VLLM
         pass
+
+    
+    def exec_json_prompt(self, prompt: str, output_file: str) -> str | None:
+        return self.exec_prompt(prompt, output_file)

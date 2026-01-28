@@ -46,3 +46,6 @@ class OpenAIClient(LlmClientInterface):
             f.write(result + "\n\n")
         
         return result
+    
+    def exec_json_prompt(self, prompt: str, output_file: str) -> str | None:
+        return self.exec_prompt(prompt, output_file)

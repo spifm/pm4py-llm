@@ -40,7 +40,7 @@ def verify_token(credentials: HTTPAuthorizationCredentials = Depends(security)):
 
 app = FastAPI()
 
-PM4PY_BASE_URL = "http://pm4py-llm-app-container:8001"
+PM4PY_BASE_URL = "http://pm4py-llm-app:8001"
 CACHE_DIR = "./cache/"
 CACHE_DURATION = timedelta(seconds=60 * 60 * 24)  # Cache duration in seconds (1 day)
 SIMPLIFY_FILE = "dfg-generic-activities.json"

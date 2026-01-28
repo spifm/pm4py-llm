@@ -43,12 +43,23 @@
         },
         "ollama": {
             "api_url": "http://myurl.es:11434",
-            "": "/api/chat",
+            "api_endpoint": "/api/chat",
             "model_name": "gemma3:27b-it-qat",
             "options": {
-                "temperature": 0.5
+                "num_ctx": 16384,
+                "num_predict": 6144,
+                "temperature": 0.2,
+                "top_p": 0.95
             },
-            "max_tokens": 3000
+            "json_prompt_config": {
+                "api_url": "http://genialle.uca.es:11434",
+                "api_endpoint": "/api/generate",
+                "model_name": "dfg-simplifier-mistral-7b",
+                "options": {
+                    "temperature": 0.1,
+                    "top_p": 0.95
+                }
+            }
         },
         "openai": {
             "openai_api_key": "your_openai_api_key",

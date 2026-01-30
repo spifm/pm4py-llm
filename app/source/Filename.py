@@ -24,6 +24,7 @@ class Filename:
             "simplified_analysis": "simplified-dfg-analysis.txt",
             "json": "dfg.json",
             "json_activity_mapping_from_dfg": "dfg-activity_mapping.json",
+            "json_generic_act_filtered_by_freq": "dfg-generic-activities-filtered-by-freq.json",
             "json_generic_act": "dfg-generic-activities.json",
             "json_llm_simplified": "llm-simplified-dfg.json",
             "json_llm_restored_simplified": "llm-restored-simplified-dfg.json",

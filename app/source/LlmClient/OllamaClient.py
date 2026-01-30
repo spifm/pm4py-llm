@@ -1,9 +1,56 @@
 import requests
 from .LlmClientInterface import LlmClientInterface
+from typing import Dict, Any
+from source.helpers.info_writer import InfoWriter
 
 class OllamaClient(LlmClientInterface):
 
-    def _exec_ollama_prompt(self, prompt: str, output_file: str, payload: dict, url: str) -> str | None:
+    def _init_config(self) -> None:
+        config = self.config["llm"]['ollama']
+        self.url = f"{config['api_url']}{config['api_endpoint']}"
+        self.model_name = config['model_name']
+        self.options = config['options']
+        self.max_prompt_tokens = config.get('max_prompt_tokens', 0)
+
+        json_config = config.get('json_prompt_config', config)
+        json_url_domain = json_config.get('api_url', config['api_url'])
+        json_endpoint = json_config.get('api_endpoint', config['api_endpoint'])
+        self.json_url = f"{json_url_domain}{json_endpoint}"
+        self.json_model_name = json_config.get('model_name', config['model_name'])
+        self.json_options = json_config.get('options', config['options'])
+        self.json_max_prompt_tokens = json_config.get('max_prompt_tokens', self.max_prompt_tokens)
+
+
+    def _get_json_prompt_tokens(self, prompt: str) -> int:
+
+        payload = {
+            "format": "json",
+            "model": self.json_model_name,
+            "stream": False,
+            "options": self.json_options,
+            "messages": [
+                {"role": "user", "content": prompt},
+            ],
+            "prompt": prompt
+        }
+
+        payload["num_predict"] = 0
+
+        response = requests.post(self.json_url, json=payload)
+
+        try:
+            response.raise_for_status()
+        except requests.exceptions.RequestException as e:
+            self.logger.exception(f"Error in Ollama request: {e}")
+            return None
+
+        json_response = response.json()
+        self.logger.debug(f"get_json_prompt_tokens, prompt_eval_count: {json_response.get('prompt_eval_count', 'N/A')}")
+
+        return int(json_response["prompt_eval_count"])
+
+
+    def _exec_ollama_prompt(self, prompt: str, output_file: str, payload: dict, url: str) -> Dict [str, Any] | None:
 
         self.logger.debug(f"URL: {url}")
 
@@ -27,51 +74,58 @@ class OllamaClient(LlmClientInterface):
         elif "response" in json_response:
             result = json_response["response"]
         else:
-            self.logger.error("Unexpected response format from Ollama API.")
             raise ValueError(f"Unexpected response format from Ollama API.")
-            
 
         self.logger.debug(f"Response content result: {result}")
 
         with open(output_file, 'a') as f:
             f.write(result + "\n\n")
 
-        return result
+        # Get metrics to return them
+        return {
+            "prompt_eval_count": json_response.get("prompt_eval_count", 0),
+            "eval_count": json_response.get("eval_count", 0),
+            "load_duration": json_response.get("load_duration", 0.0),
+            "prompt_eval_duration": json_response.get("prompt_eval_duration", 0),
+            "eval_duration": json_response.get("eval_duration", 0),
+            "total_duration": json_response.get("total_duration", 0.0),
+        }
+    
 
-
-    def exec_json_prompt(self, prompt: str, output_file: str) -> str | None:
-        ollama_config = self.config["llm"]['ollama']
-        ollama_json_prompt_config = ollama_config.get('json_prompt_config', {})
-
-        url_domain = ollama_json_prompt_config.get('api_url', ollama_config['api_url'])
-        endpoint = ollama_json_prompt_config.get('api_endpoint', ollama_config['api_endpoint'])
-        url = f"{url_domain}{endpoint}"
+    def exec_json_prompt(self, prompt: str, output_file: str) -> Dict [str, Any] | None:
 
         payload = {
             "format": "json",
-            "model": ollama_json_prompt_config.get('model_name', ollama_config['model_name']),
+            "model": self.json_model_name,
             "stream": False,
-            "options": ollama_json_prompt_config.get('options', ollama_config['options']),
+            "options": self.json_options,
             "messages": [
                 {"role": "user", "content": prompt},
             ],
             "prompt": prompt
         }
 
-        return self._exec_ollama_prompt(prompt, output_file, payload, url)
+        return self._exec_ollama_prompt(prompt, output_file, payload, self.json_url)
 
-    def exec_prompt(self, prompt: str, output_file: str) -> str | None:
-        ollama_config = self.config["llm"]['ollama']
-        url = f"{ollama_config['api_url']}{ollama_config['api_endpoint']}"
+
+    def exec_prompt(self, prompt: str, output_file: str) -> Dict [str, Any] | None:
 
         payload = {
-            "model": ollama_config['model_name'],
+            "model": self.model_name,
             "stream": False,
-            "options": ollama_config['options'],
+            "options": self.options,
             "messages": [
                 {"role": "user", "content": prompt},
             ],
             "prompt": prompt
         }
 
-        return self._exec_ollama_prompt(prompt, output_file, payload, url)
+        return self._exec_ollama_prompt(prompt, output_file, payload, self.url)
+
+
+    def eval_max_tokens_for_json_prompt(self, prompt: str) -> bool:
+        if self.json_max_prompt_tokens == 0:
+            self.logger.warning("Ollama: Maximum prompt tokens for JSON not set; assuming no limit.")
+            return True
+        else:
+            return self.json_max_prompt_tokens >= self._get_json_prompt_tokens(prompt)

@@ -123,15 +123,4 @@ output/*
 
 # Configuration
 config/config.*
-# pycache
-config/__pycache__/
-lib/__pycache__/
-__pycache__/
 
-# dataset
-dataset/*
-!dataset/anon.csv
-!dataset/anon.xes
-!dataset/dataset-example.csv
-!dataset/running-example.csv
-!dataset/running-example.xes

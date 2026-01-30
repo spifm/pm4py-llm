@@ -50,9 +50,7 @@ def verify_token(credentials: HTTPAuthorizationCredentials = Depends(security)):
 
 # ─── Service instances ────────────────────────────────────────
 
-db = MoodleDatabase.from_env()
 output_dir = os.getenv("EXPORT_OUTPUT_DIR", "/data")
-event_log_exporter = EventLogExporter(db=db, output_dir=output_dir)
 
 REDIS_URL = os.getenv("REDIS_URL", "redis://redis:6379/0")
 redis_conn = redis.from_url(REDIS_URL)
@@ -80,11 +78,13 @@ def read_root():
         "**Required input:**\n"
         "- `course_id` (int): ID of the Moodle course to export the event log from.\n"
         "\n**Optional input:**\n"
+        "- `dbname` (str): Name of the Moodle database to connect to. If not provided, the default from environment variables will be used.\n"
         "- `dataset_name` (str): Name to use for the exported dataset file without extension. If not provided, a default name will be used.\n"
         "**Example input:**\n"
         "```json\n"
         "{\n"
         "  \"course_id\": 123,\n"
+        "  \"dbname\": \"my_dbname\"\n"
         "  \"dataset_name\": \"my_dataset\"\n"
         "}\n"
         "```"
@@ -107,10 +107,16 @@ def read_root():
 )
 def export_event_log(request: ExportEventLogRequest):
     course_id = request.course_id
+    dbname = request.dbname
     dataset_name = request.dataset_name
     logger.info("Exporting event log for course_id=%s", course_id)
 
     try:
+        db = MoodleDatabase.from_env()
+        if dbname:
+            db.set_dbname(dbname)
+        event_log_exporter = EventLogExporter(db=db, output_dir=output_dir)
+
         output_file, rows_exported, course_info = event_log_exporter.export_course_event_log(
             course_id=course_id,
             dataset_name=dataset_name,
@@ -140,11 +146,13 @@ def export_event_log(request: ExportEventLogRequest):
         "**Required input:**\n"
         "- `course_id` (int): ID of the Moodle course to export the event log from.\n"
         "\n**Optional input:**\n"
+        "- `dbname` (str): Name of the Moodle database to connect to. If not provided, the default from environment variables will be used.\n"
         "- `dataset_name` (str): Name to use for the exported dataset file without extension. If not provided, a default name will be used.\n"
         "**Example input:**\n"
         "```json\n"
         "{\n"
         "  \"course_id\": 123,\n"
+        "  \"dbname\": \"my_dbname\"\n"
         "  \"dataset_name\": \"my_dataset\"\n"
         "}\n"
         "```"
@@ -169,11 +177,17 @@ async def export_event_log_async(
     background_tasks: BackgroundTasks,
 ):
     course_id = request.course_id
+    dbname = request.dbname
     dataset_name = request.dataset_name
     logger.info("Received async export request for course_id=%s", course_id)
 
     # Check course exists and get its info
     try:
+        db = MoodleDatabase.from_env()
+        if dbname:
+            db.set_dbname(dbname)
+        event_log_exporter = EventLogExporter(db=db, output_dir=output_dir)
+
         course_info = event_log_exporter.get_course_info(course_id)
         if course_info is None:
             raise ValueError(f"Course with id {course_id} not found")
@@ -199,12 +213,6 @@ async def export_event_log_async(
         course_id=course_id,
         dataset_name=dataset_name,
     )
-    #background_tasks.add_task(
-    #    export_event_log_task,
-    #    event_log_exporter=event_log_exporter,
-    #    course_id=course_id,
-    #    dataset_name=dataset_name,
-    #)
 
     return AsyncExportEventLogResponse(
         message="Event log export started",

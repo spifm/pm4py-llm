@@ -119,8 +119,16 @@ dist
 # pycache
 __pycache__/
 
-# moodle data exports
-data
+# data folder
+data/*
+!data/dataset/
+data/dataset/*
+!data/dataset/anon.csv
+!data/dataset/anon.xes
+!data/dataset/dataset-example.csv
+!data/dataset/running-example.csv
+!data/dataset/running-example.xes
+
 
 # Directory for LLM Training
 llm-training

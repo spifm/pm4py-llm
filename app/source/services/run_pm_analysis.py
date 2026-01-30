@@ -8,11 +8,12 @@ from source.Config import Config
 from source.Filename import Filename
 import source.filtering as filtering
 from source.Discovery import Discovery
-from source.DFGTransformer import DFGTransformer
+from source.dfg.dfg_transformer import DFGTransformer
 from source.Llm import Llm
 from source.Preprocessor import Preprocessor
 import logging
 from typing import Any
+from source.helpers.info_writer import InfoWriter
 
 
 logger = logging.getLogger(__name__)
@@ -112,13 +113,12 @@ class PmAnalysisService:
         case_id=self.config['dataset']['columns']['case_id']
         activity_key=self.config['dataset']['columns']['activity']
 
-
         # Read log
         try:
             raw_log, file_extension = self._read_log()
         except Exception as e:
-            raise ValueError(f"Error reading log from '{self.dataset_path}': {e}")
-
+            logger.exception("Error reading log", exc_info=e)
+            raise
 
         # Create output directory
         try:
@@ -128,8 +128,8 @@ class PmAnalysisService:
                 output_directory = OUTPUT_PATH + "/" + str(int(time.time()))
             os.makedirs(output_directory, exist_ok=True)
         except Exception as e:
-            raise ValueError(f"Error creating output directory '{output_directory}': {e}")
-
+            logger.exception("Error creating output directory", exc_info=e)
+            raise
 
         # Filter log by config parameters if enabled
         try:
@@ -157,13 +157,14 @@ class PmAnalysisService:
             log = preprocessor.map_activities(log)
 
         # Create text file with information about the analysis
-        with open(output_directory + '/info.txt', 'a') as f:
-            f.write("Dataset path: {}\n".format(self.dataset_path))
-            f.write("Dataset extension: {}\n".format(file_extension))
-            f.write("Number of cases: {}\n".format(str(number_of_cases)))
-            f.write("Filter information: {}\n".format(filtered_info_str))
-            if self.config['preprocess']['enabled']:
-                f.write("Preprocessing. Using activity mapping from: {}\n".format(mapping_activity_json_path))
+        info_writer = InfoWriter(output_directory)
+        info_writer.write("Analysis Date and Time: {}\n".format(time.strftime("%Y-%m-%d %H:%M:%S", time.localtime())))
+        info_writer.write("Dataset path: {}\n".format(self.dataset_path))
+        info_writer.write("Dataset extension: {}\n".format(file_extension))
+        info_writer.write("Number of cases: {}\n".format(str(number_of_cases)))
+        info_writer.write("Filter information: {}\n".format(filtered_info_str))
+        if self.config['preprocess']['enabled']:
+            info_writer.write("Preprocessing. Using activity mapping from: {}\n".format(mapping_activity_json_path))
 
         # Discover and save models
         discovery = Discovery(log)

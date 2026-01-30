@@ -1,30 +1,36 @@
 from openai import OpenAI
 from openai.types.responses import ResponseOutputMessage, ResponseOutputText
 from .LlmClientInterface import LlmClientInterface
+from typing import Dict, Any
 
 class OpenAIClient(LlmClientInterface):
 
-    def exec_prompt(self, prompt: str, output_file: str) -> str | None:
+    def _init_config(self) -> None:
+        config = self.config["llm"]['openai']
+        self.model_name = config['model_name']
+        self.reasoning = config['reasoning']
+        self.api_key = config['openai_api_key']
 
-        openai_config = self.config["llm"]['openai']
-        client = OpenAI(api_key=openai_config["openai_api_key"])
+    def exec_prompt(self, prompt: str, output_file: str) -> Dict [str, Any] | None:
+
+        client = OpenAI(api_key=self.api_key)
 
         try:
-            if openai_config['reasoning']:
+            if self.reasoning:
                 response = client.responses.create(
-                    model=openai_config['model_name'],
+                    model=self.model_name,
                     input=prompt,
-                    reasoning=openai_config['reasoning']
+                    reasoning=self.reasoning
                 )
             else:
                 response = client.responses.create(
-                    model=openai_config['model_name'],
+                    model=self.model_name,
                     input=prompt
                 )
 
         except Exception as e:
             self.logger.error(f"Error during OpenAI request: {e}")
-            return None
+            raise
 
         self.logger.debug(f"OpenAI response: {response}")
 
@@ -44,8 +50,11 @@ class OpenAIClient(LlmClientInterface):
 
         with open(output_file, 'a') as f:
             f.write(result + "\n\n")
-        
-        return result
     
-    def exec_json_prompt(self, prompt: str, output_file: str) -> str | None:
+    def exec_json_prompt(self, prompt: str, output_file: str) -> Dict [str, Any] | None:
         return self.exec_prompt(prompt, output_file)
+    
+    
+    def eval_max_tokens_for_json_prompt(self, prompt: str) -> bool:
+        self.logger.warning("Token counting not implemented for OpenAIClient.")
+        return True

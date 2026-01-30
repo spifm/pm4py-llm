@@ -14,7 +14,7 @@
     },
     "preprocess": {
         "enabled": true,
-        "mapping_activity_json_path": "dataset/activity_mappings/moodle_activity_mapping.json"
+        "mapping_activity_json_path": "/data/dataset/activity_mappings/moodle_activity_mapping.json"
     },
     "discovery": {
         "petri_net": {
@@ -51,6 +51,7 @@
                 "temperature": 0.2,
                 "top_p": 0.95
             },
+            "max_prompt_tokens": 14000,
             "json_prompt_config": {
                 "api_url": "http://genialle.uca.es:11434",
                 "api_endpoint": "/api/generate",
@@ -58,7 +59,8 @@
                 "options": {
                     "temperature": 0.1,
                     "top_p": 0.95
-                }
+                },
+                "max_prompt_tokens": 14000
             }
         },
         "openai": {
@@ -80,6 +82,8 @@
             "prompt": "Model used is a DFG.",
             "simplify_dfg": {
                 "enabled": true,
+                "removing_transitions_ratio": 50,
+                "retaining_transitions_ratio": 20,
                 "simplification_instructions_prompt":[
                     "### DFG FORMAT ###",
                     "The DFG is expressed as a single JSON object with the following structure:",
@@ -105,8 +109,8 @@
                     "### INSTRUCTIONS ###",
                     "Simplify the model to make it significantly more interpretable:",
                     "- Keep only the most relevant activities and transitions (high-frequency, common paths, important cycles).",
-                    "- You MUST remove at least 50% of the transitions compared to the original model.",
-                    "- You MUST retain at least 20% of the original transitions.",
+                    "- You MUST remove at least {{removing_transitions_ratio}}% of the transitions compared to the original model.",
+                    "- You MUST retain at least {{retaining_transitions_ratio}}% of the original transitions.",
                     "- For every retained activity you MUST keep at least its most relevant incoming and outgoing transitions.",
                     "- You MUST NOT invent new activities: only use activity identifiers that already appear in the input.",
                     "- You MUST NOT invent new transitions: any transition you keep MUST already exist in the input with the same src and tgt.",

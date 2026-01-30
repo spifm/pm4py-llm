@@ -3,6 +3,7 @@ from typing import Optional
 
 class ExportEventLogRequest(BaseModel):
     course_id: int
+    dbname: Optional[str] = None
     dataset_name: Optional[str] = None
 
 class CourseInfo(BaseModel):

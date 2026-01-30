@@ -15,9 +15,8 @@ class StoreDatasetAsCsvService:
 
         # Create a DataFrame from the data
         df = pd.DataFrame(data)
-        output_path = os.path.join("dataset", filename)
 
-        os.makedirs(os.path.dirname(output_path), exist_ok=True)
-        df.to_csv(output_path, index=False)
+        os.makedirs(os.path.dirname(filename), exist_ok=True)
+        df.to_csv(filename, index=False)
 
-        return output_path
+        return filename

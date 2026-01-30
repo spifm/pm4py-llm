@@ -32,6 +32,10 @@ class MoodleDatabase:
             raise RuntimeError("Moodle DB config is incomplete. Check MOODLE_DB_* env vars.")
 
         return cls(host=host, port=port, user=user, password=password, dbname=dbname, table_prefix=table_prefix)
+    
+    def set_dbname(self, dbname: str):
+        """Set the database name."""
+        self.dbname = dbname
 
     @contextmanager
     def get_connection(self):

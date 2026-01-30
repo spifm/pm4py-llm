@@ -30,10 +30,10 @@ def csv_to_custom_json(csv_path, filename):
 
 if __name__ == "__main__":
     # Path to the CSV file
-    csv_file = "dataset/bd-all-events-grades-p25-22students-30711.csv"
+    csv_file = "/data/dataset/bd-all-events-grades-p25-22students-30711.csv"
 
     # Path to save the JSON file
-    json_file = "dataset/bd-p25.json"
+    json_file = "/data/dataset/bd-p25.json"
 
     # Convert CSV to JSON and save it
     result = csv_to_custom_json(csv_file, json_file)

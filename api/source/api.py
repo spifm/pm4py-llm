@@ -9,6 +9,7 @@ from dotenv import load_dotenv
 import json
 import logging
 import sys
+from pathlib import Path
 
 
 load_dotenv()
@@ -73,7 +74,7 @@ def read_root():
         "{\n"
         "  \"dataset_path\": \"data/my_dataset.csv\",\n"
         "  \"dataset_csv_delimiter\": \",\",\n"
-        "  \"output_path\": \"output/my-folder\",\n"
+        "  \"output_path\": \"my-folder\",\n"
         "  \"prompt_context\": [\n"
         "    \"### CONTEXT ###\\n\",\n"
         "    \"You are an expert in process mining and data analysis, with a focus on educational data.\",\n"
@@ -116,11 +117,12 @@ def full_analysis(
 
     if "error" in pm_result:
         return {"step": "pm-analysis", "error": pm_result["error"]}
-
-
+    
+    output_directory = Path(pm_result["output_directory"]).name
+    
     # Step 2: Execute simplify_dfg_endpoint
     simplify_request = SimplifyDFGRequest(
-        output_path = request.output_path
+        output_path = output_directory
     )
 
     if request.prompt_context is not None:
@@ -136,7 +138,7 @@ def full_analysis(
 
     # Step 3: Execute get_analysis
     try:
-        analysis_result = get_analysis(analysis_dir=request.output_path)
+        analysis_result = get_analysis(analysis_dir=output_directory)
 
         logger.debug(f"Step 3: Get Analysis output: {analysis_result}")
 

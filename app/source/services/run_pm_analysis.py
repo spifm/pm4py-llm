@@ -2,6 +2,7 @@ import pandas
 import pm4py
 import time
 import os
+from pathlib import Path
 import json
 from config.constants import *
 from source.Config import Config
@@ -101,6 +102,24 @@ class PmAnalysisService:
             logger.debug("\nTrace values ({}): {}".format(filter_attr, trace_values))
 
         return filtered_log, filtered_info_str
+    
+    def _make_unique_dir(self, base_dir: str) -> str:
+        base_path = Path(base_dir)
+
+        try:
+            base_path.mkdir(parents=True, exist_ok=False)
+            return str(base_path)
+        except FileExistsError:
+            pass
+
+        i = 1
+        while True:
+            candidate = Path(f"{base_dir}_{i}")
+            try:
+                candidate.mkdir(parents=True, exist_ok=False)
+                return str(candidate)
+            except FileExistsError:
+                i += 1
 
 
     def run_pm_analysis(self):
@@ -123,10 +142,10 @@ class PmAnalysisService:
         # Create output directory
         try:
             if self.output_path != "":
-                output_directory = OUTPUT_PATH + "/" + self.output_path
+                base_output_directory = OUTPUT_PATH + "/" + self.output_path
             else:
-                output_directory = OUTPUT_PATH + "/" + str(int(time.time()))
-            os.makedirs(output_directory, exist_ok=True)
+                base_output_directory = OUTPUT_PATH + "/" + str(int(time.time()))
+            output_directory = self._make_unique_dir(base_output_directory)
         except Exception as e:
             logger.exception("Error creating output directory", exc_info=e)
             raise

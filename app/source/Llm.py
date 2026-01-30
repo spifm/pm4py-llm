@@ -1,6 +1,8 @@
 import logging
+import os
 from source.Config import Config
 from source.LlmClient import llm_factory
+from source.helpers.info_writer import InfoWriter
 
 class Llm:
     def __init__(self):
@@ -21,7 +23,13 @@ class Llm:
                 f"{self.config['llm']['petri_net']['prompt']}\n\n"
                 f"{abstract_model}"
             )
-            self.client.exec_prompt(prompt, file_name)
+            metrics = self.client.exec_prompt(prompt, file_name)
+            if metrics is not None:
+                out_dir = os.path.dirname(os.path.abspath(file_name))
+                info_writer = InfoWriter(out_dir)
+                info_writer.write("\n\n=== Petri Net Analysis LLM Request Metrics ===\n\n")
+                for key, value in metrics.items():
+                    info_writer.write(f"{key}: {value}\n")
         except Exception as e:
             self.logger.error(f"Error constructing Petri net analysis prompt: {e}")
             raise
@@ -35,7 +43,13 @@ class Llm:
                 f"{abstract_model}"
             )
             self.logger.debug("Executing DFG analysis prompt.")
-            self.client.exec_prompt(prompt, file_name)
+            metrics = self.client.exec_prompt(prompt, file_name)
+            if metrics is not None:
+                out_dir = os.path.dirname(os.path.abspath(file_name))
+                info_writer = InfoWriter(out_dir)
+                info_writer.write("\n\n=== DFG Analysis LLM Request Metrics ===\n\n")
+                for key, value in metrics.items():
+                    info_writer.write(f"{key}: {value}\n")
         except Exception as e:
             self.logger.error(f"Error constructing DFG analysis prompt: {e}")
             raise
@@ -48,7 +62,13 @@ class Llm:
                 f"{self.config['llm']['temporal_profile']['prompt']}\n\n"
                 f"{abstract_model}"
             )
-            self.client.exec_prompt(prompt, file_name)
+            metrics = self.client.exec_prompt(prompt, file_name)
+            if metrics is not None:
+                out_dir = os.path.dirname(os.path.abspath(file_name))
+                info_writer = InfoWriter(out_dir)
+                info_writer.write("\n\n=== Temporal Profile Analysis LLM Request Metrics ===\n\n")
+                for key, value in metrics.items():
+                    info_writer.write(f"{key}: {value}\n")
         except Exception as e:
             self.logger.error(f"Error constructing Temporal profile analysis prompt: {e}")
             raise

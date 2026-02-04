@@ -21,7 +21,7 @@ class MakeOutputDir:
             except FileExistsError:
                 pass
 
-            i = 1
+            i = 2
             while True:
                 candidate = Path(f"{base_output_directory}_{i}")
                 try:

@@ -8,6 +8,52 @@ class LlmClientInterface(ABC):
         self.logger = logger
         self._init_config()
 
+    def _get_dfg_json_schema(self) -> Dict[str, Any]:
+        return {
+            "type": "object",
+            "properties": {
+                "start_activities": {
+                "type": "array",
+                "items": {
+                    "type": "object",
+                    "properties": {
+                        "activity": {"type": "string"},
+                        "freq": {"type": "integer", "minimum": 1}
+                    },
+                    "required": ["activity", "freq"],
+                    "additionalProperties": False
+                }
+                },
+                "end_activities": {
+                "type": "array",
+                "items": {
+                    "type": "object",
+                    "properties": {
+                        "activity": {"type": "string"},
+                        "freq": {"type": "integer", "minimum": 1}
+                    },
+                    "required": ["activity", "freq"],
+                    "additionalProperties": False
+                }
+                },
+                "transitions": {
+                "type": "array",
+                "items": {
+                    "type": "object",
+                    "properties": {
+                        "src": {"type": "string"},
+                        "tgt": {"type": "string"},
+                        "freq": {"type": "integer", "minimum": 1}
+                    },
+                    "required": ["src", "tgt", "freq"],
+                    "additionalProperties": False
+                }
+                }
+            },
+            "required": ["start_activities", "end_activities", "transitions"],
+            "additionalProperties": False
+        }
+    
     @abstractmethod
     def _init_config(self) -> None:
         ...

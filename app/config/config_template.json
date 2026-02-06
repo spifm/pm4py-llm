@@ -52,6 +52,7 @@
                 "top_p": 0.95
             },
             "max_prompt_tokens": 14000,
+            "think": false,
             "json_prompt_config": {
                 "api_url": "http://genialle.uca.es:11434",
                 "api_endpoint": "/api/generate",
@@ -60,7 +61,8 @@
                     "temperature": 0.1,
                     "top_p": 0.95
                 },
-                "max_prompt_tokens": 14000
+                "max_prompt_tokens": 14000,
+                "think": false
             }
         },
         "openai": {

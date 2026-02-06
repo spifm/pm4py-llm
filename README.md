@@ -110,6 +110,11 @@ The configuration file is located in the config folder. The file is called confi
           }
         - An empty options object `{}` can be used to skip this option in ollama requests
     - `llm.ollama.max_prompt_tokens`: maximum number of tokens to be used inside the prompt for the request to the model. If not specified (or 0), no limit will be applied.
+    - `llm.ollama.think`: reasoning thinking level for the Ollama model. Example values are:
+        - `false` --> to skip this option in requests and use the default thinking effort of the model
+        - `"low"` --> to enable low thinking effort
+        - `"medium"` --> to enable medium thinking effort
+        - `"high"` --> to enable high thinking effort
     - `llm.ollama.json_prompt_config`: configuration for DFG simplification prompts. If it does not exist, the main ollama configuration will be used. It contains the same parameters as the main ollama configuration.
 - If openai is selected as the LLM provider, the following parameters must be specified:
     - `llm.openai.openai_api_key`: API key to use the OpenAI API for the LLM model

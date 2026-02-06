@@ -11,6 +11,7 @@ class OllamaClient(LlmClientInterface):
         self.model_name = config['model_name']
         self.options = config['options']
         self.max_prompt_tokens = config.get('max_prompt_tokens', 0)
+        self.think = config.get('think', False)
 
         json_config = config.get('json_prompt_config', config)
         json_url_domain = json_config.get('api_url', config['api_url'])
@@ -19,12 +20,12 @@ class OllamaClient(LlmClientInterface):
         self.json_model_name = json_config.get('model_name', config['model_name'])
         self.json_options = json_config.get('options', config['options'])
         self.json_max_prompt_tokens = json_config.get('max_prompt_tokens', self.max_prompt_tokens)
+        self.json_think = json_config.get('think', self.think)
 
 
     def _get_json_prompt_tokens(self, prompt: str) -> int:
 
         payload = {
-            "format": "json",
             "model": self.json_model_name,
             "stream": False,
             "options": self.json_options,
@@ -63,7 +64,7 @@ class OllamaClient(LlmClientInterface):
             response.raise_for_status()
         except requests.exceptions.RequestException as e:
             self.logger.exception(f"Error in Ollama request: {e}")
-            return None
+            raise
 
         self.logger.info(f"Response status code: {response.status_code}")
         self.logger.debug(f"Response content: {response.content}")
@@ -95,14 +96,15 @@ class OllamaClient(LlmClientInterface):
     def exec_json_prompt(self, prompt: str, output_file: str) -> Dict [str, Any] | None:
 
         payload = {
-            "format": "json",
+            "format": self._get_dfg_json_schema(),
             "model": self.json_model_name,
             "stream": False,
             "options": self.json_options,
             "messages": [
                 {"role": "user", "content": prompt},
             ],
-            "prompt": prompt
+            "prompt": prompt,
+            "think": self.json_think
         }
 
         return self._exec_ollama_prompt(prompt, output_file, payload, self.json_url)

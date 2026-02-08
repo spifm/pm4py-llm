@@ -86,7 +86,7 @@ class OllamaClient(LlmClientInterface):
         return {
             "Input tokens": json_response.get("prompt_eval_count", 0),
             "Output tokens": json_response.get("eval_count", 0),
-            "Total duration ms": int(json_response.get("total_duration", 0) or 0) / 1_000_000,
+            "Total duration ms": round(int(json_response.get("total_duration", 0) or 0) / 1_000_000, 4),
             "load_duration ms": int(json_response.get("load_duration", 0) or 0) / 1_000_000,
             "prompt_eval_duration ms": int(json_response.get("prompt_eval_duration", 0) or 0) / 1_000_000,
             "eval_duration ms": int(json_response.get("eval_duration", 0) or 0) / 1_000_000,

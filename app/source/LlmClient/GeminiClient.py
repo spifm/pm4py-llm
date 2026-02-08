@@ -24,7 +24,7 @@ class GeminiClient(LlmClientInterface):
         return {
             "Input tokens": int(prompt_tokens),
             "Output tokens": int(output_tokens),
-            "Total duration ms": round(latency_ms, 2),
+            "Total duration ms": round(latency_ms, 4),
             "thoughts_token_count": int(thoughts_tokens),
             "total_token_count": int(total_tokens),
         }

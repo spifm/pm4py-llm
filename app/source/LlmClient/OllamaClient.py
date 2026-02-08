@@ -84,12 +84,12 @@ class OllamaClient(LlmClientInterface):
 
         # Get metrics to return them
         return {
-            "prompt_eval_count": json_response.get("prompt_eval_count", 0),
-            "eval_count": json_response.get("eval_count", 0),
-            "load_duration": json_response.get("load_duration", 0.0),
-            "prompt_eval_duration": json_response.get("prompt_eval_duration", 0),
-            "eval_duration": json_response.get("eval_duration", 0),
-            "total_duration": json_response.get("total_duration", 0.0),
+            "Input tokens": json_response.get("prompt_eval_count", 0),
+            "Output tokens": json_response.get("eval_count", 0),
+            "Total duration ms": int(json_response.get("total_duration", 0) or 0) / 1_000_000,
+            "load_duration ms": int(json_response.get("load_duration", 0) or 0) / 1_000_000,
+            "prompt_eval_duration ms": int(json_response.get("prompt_eval_duration", 0) or 0) / 1_000_000,
+            "eval_duration ms": int(json_response.get("eval_duration", 0) or 0) / 1_000_000,
         }
     
 

@@ -250,8 +250,6 @@ class DFGTransformer:
                     logger.error(f"Source ID {t['src']} not found in mapping")
                 if t["tgt"] not in id_to_name:
                     logger.error(f"Target ID {t['tgt']} not found in mapping")
-
-                logger.debug(f"src {t['src']}, tgt {t['tgt']}")
                 restored_transitions.append({
                     "src":  map_id(t["src"]),
                     "tgt":  map_id(t["tgt"]),

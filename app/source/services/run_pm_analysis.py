@@ -158,9 +158,7 @@ class PmAnalysisService:
         if self.config['preprocess']['enabled']:
             info_writer.write("Preprocessing. Using activity mapping from: {}\n".format(mapping_activity_json_path))
 
-        info_writer.write("LLM\n")
-        info_writer.write(f"  - Provider:    {self.config['llm']['llm_provider']}\n")
-        info_writer.write(f"  - Model:       {self.config['llm'][self.config['llm']['llm_provider']]['model_name']}\n\n")
+        info_writer.write_llm_config(self.config['llm'])
 
         # Discover and save models
         discovery = Discovery(log)

@@ -1,8 +1,8 @@
 from google import genai
+from google.genai import types
 from .LlmClientInterface import LlmClientInterface
 from typing import Dict, Any
 import time
-from datetime import datetime, timezone
 
 class GeminiClient(LlmClientInterface):
 
@@ -10,6 +10,7 @@ class GeminiClient(LlmClientInterface):
         config = self.config["llm"]['gemini']
         self.model_name = config['model_name']
         self.api_key = config['api_key']
+        self.think = config.get('think', False)
 
     def _gemini_metrics(self, response, t0_perf: float, t1_perf: float) -> dict:
         um = getattr(response, "usage_metadata", None)
@@ -30,14 +31,24 @@ class GeminiClient(LlmClientInterface):
         }
     
     def exec_prompt(self, prompt: str, output_file: str) -> Dict [str, Any] | None:
-        t0 = time.perf_counter()
+        
         try:
             client = genai.Client(api_key=self.api_key)
 
-            response = client.models.generate_content(
-                model=self.model_name,
-                contents=prompt,
-            )
+            t0 = time.perf_counter()
+            if isinstance(self.think, dict):
+                response = client.models.generate_content(
+                    model=self.model_name,
+                    contents=prompt,
+                    config=types.GenerateContentConfig(
+                        thinking_config=types.ThinkingConfig(**self.think),
+                    ),
+                )
+            else:
+                response = client.models.generate_content(
+                    model=self.model_name,
+                    contents=prompt,
+                )
             t1 = time.perf_counter()
 
         except Exception as e:

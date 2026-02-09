@@ -1,7 +1,7 @@
 import requests
 from .LlmClientInterface import LlmClientInterface
 from typing import Dict, Any
-from source.helpers.info_writer import InfoWriter
+import time
 
 class OllamaClient(LlmClientInterface):
 
@@ -60,8 +60,10 @@ class OllamaClient(LlmClientInterface):
         self.logger.debug(f"Simplificated prompt (truncated to {max_len} chars): {prompt_preview}")
 
         try:
+            t0_perf = time.perf_counter()
             response = requests.post(url, json=payload)
             response.raise_for_status()
+            t1_perf = time.perf_counter()
         except requests.exceptions.RequestException as e:
             self.logger.exception(f"Error in Ollama request: {e}")
             raise
@@ -86,7 +88,8 @@ class OllamaClient(LlmClientInterface):
         return {
             "Input tokens": json_response.get("prompt_eval_count", 0),
             "Output tokens": json_response.get("eval_count", 0),
-            "Total duration ms": round(int(json_response.get("total_duration", 0) or 0) / 1_000_000, 4),
+            "Total duration ms": round((t1_perf - t0_perf) * 1000.0, 4),
+            "total_duration (from Ollama) ms": int(json_response.get("total_duration", 0) or 0) / 1_000_000,
             "load_duration ms": int(json_response.get("load_duration", 0) or 0) / 1_000_000,
             "prompt_eval_duration ms": int(json_response.get("prompt_eval_duration", 0) or 0) / 1_000_000,
             "eval_duration ms": int(json_response.get("eval_duration", 0) or 0) / 1_000_000,
@@ -103,9 +106,11 @@ class OllamaClient(LlmClientInterface):
             "messages": [
                 {"role": "user", "content": prompt},
             ],
-            "prompt": prompt,
-            "think": self.json_think
         }
+
+        if isinstance(self.think, dict):
+            k, v = next(iter(self.json_think.items()))
+            payload[k] = v
 
         return self._exec_ollama_prompt(prompt, output_file, payload, self.json_url)
 
@@ -121,6 +126,10 @@ class OllamaClient(LlmClientInterface):
             ],
             "prompt": prompt
         }
+
+        if self.json_think is dict:
+            k, v = next(iter(self.json_think.items()))
+            payload[k] = v
 
         return self._exec_ollama_prompt(prompt, output_file, payload, self.url)
 

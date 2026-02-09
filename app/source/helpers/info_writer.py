@@ -1,5 +1,6 @@
 import logging
 import os
+import json
 from source.Filename import Filename
 
 logger = logging.getLogger(__name__)
@@ -29,3 +30,16 @@ class InfoWriter:
         except Exception as e:
             logger.error(f"Error writing info to {self.file}: {e}")
             raise
+
+    def write_llm_config(self, llm_config: dict):
+        self.write("LLM\n")
+        self.write(f"  - Provider:    {llm_config['llm_provider']}\n")
+        self.write(f"  - Model:       {llm_config[llm_config['llm_provider']]['model_name']}\n")
+        think = llm_config[llm_config['llm_provider']].get('think', False)
+        if think is False:
+            self.write(f"  - Think:       Not specified (default value in LLM's API was used)\n")
+        else:
+            self.write(f"  - Think:       {json.dumps(think, ensure_ascii=False)}\n")
+
+        options = llm_config[llm_config['llm_provider']].get('options', {})
+        self.write(f"  - Options:     {json.dumps(options, ensure_ascii=False)}\n\n")

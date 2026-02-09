@@ -66,11 +66,16 @@
             }
         },
         "openai": {
-            "openai_api_key": "your_openai_api_key",
+            "api_key": "your_openai_api_key",
             "model_name": "gpt-5-mini",
-            "reasoning": {"effort": "medium"},
+            "think": {"effort": "medium"},
             "max_tokens": 3000
         },
+        "gemini": {
+            "api_key": "your_gemini_api_key",
+            "model_name": "gemini-3-flash-preview",
+            "think": {"thinkingLevel": "high"}
+         },
         "context": [
             "Context for the next prompts:",
             "process models obtained using process mining techniques will be provided later. The process consists of a serious game focused on designing an Entity-Relationship (ER) diagram to model a relational database based on given requirements within the game. The players are students enrolled in a mandatory course called \"Databases\", which is part of the second year curriculum for a Computer Science degree at the University of Cádiz. The proposed solution contained 6 entities, 19 attributes, 7 binary relations and their 14 cardinalities. The results will be used to analyze the students' performance and to improve the understanding of ER modeling concepts in the course considering the detected insights after analyzing the process models. Based on the detected patterns and their metrics, provide interpretative insights, such as iterative processes, starting points, heterogeneous behavior, deletion activities, structured subprocesses, linked activities, parallelism, attribute links, end patterns, loop behavior, suitable frequencies, and variability. Justify the provided insights."

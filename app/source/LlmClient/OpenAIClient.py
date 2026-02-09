@@ -2,32 +2,34 @@ from openai import OpenAI
 from openai.types.responses import ResponseOutputMessage, ResponseOutputText
 from .LlmClientInterface import LlmClientInterface
 from typing import Dict, Any
+import time
 
 class OpenAIClient(LlmClientInterface):
 
     def _init_config(self) -> None:
         config = self.config["llm"]['openai']
         self.model_name = config['model_name']
-        self.reasoning = config['reasoning']
-        self.api_key = config['openai_api_key']
+        self.api_key = config['api_key']
+        self.think = config.get('think', {})
 
     def exec_prompt(self, prompt: str, output_file: str) -> Dict [str, Any] | None:
 
         client = OpenAI(api_key=self.api_key)
 
         try:
-            if self.reasoning:
+            t0_perf = time.perf_counter()
+            if self.think:
                 response = client.responses.create(
                     model=self.model_name,
                     input=prompt,
-                    reasoning=self.reasoning
+                    reasoning=self.think
                 )
             else:
                 response = client.responses.create(
                     model=self.model_name,
-                    input=prompt
+                    input=prompt,
                 )
-
+            t1_perf = time.perf_counter()
         except Exception as e:
             self.logger.error(f"Error during OpenAI request: {e}")
             raise
@@ -50,6 +52,14 @@ class OpenAIClient(LlmClientInterface):
 
         with open(output_file, 'a') as f:
             f.write(result + "\n\n")
+
+        # Get metrics to return them
+        return {
+            "Input tokens": response.usage.input_tokens,
+            "Output tokens": response.usage.output_tokens,
+            "Total duration ms": round((t1_perf - t0_perf) * 1000.0, 4),
+            "total_tokens": response.usage.total_tokens,
+        }
     
     def exec_json_prompt(self, prompt: str, output_file: str) -> Dict [str, Any] | None:
         return self.exec_prompt(prompt, output_file)

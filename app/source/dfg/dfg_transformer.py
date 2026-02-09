@@ -223,7 +223,7 @@ class DFGTransformer:
         # Helper to map an ID or leave it as is if not in the mapping
         def map_id(act_id: str) -> str:
             return id_to_name.get(act_id, act_id)
-
+        
         # 3) Restore names in start_activities
         restored_start = []
         for entry in dfg_data.get("start_activities", []):
@@ -231,6 +231,7 @@ class DFGTransformer:
                 "activity": map_id(entry["activity"]),
                 "freq": int(entry["freq"])
             })
+
 
         # 4) Restore names in end_activities
         restored_end = []
@@ -240,20 +241,33 @@ class DFGTransformer:
                 "freq": int(entry["freq"])
             })
 
+
         # 5) Restore names in transitions
-        restored_transitions = []
-        for t in dfg_data.get("transitions", []):
-            restored_transitions.append({
-                "src":  map_id(t["src"]),
-                "tgt":  map_id(t["tgt"]),
-                "freq": int(t["freq"])
-            })
+        try:
+            restored_transitions = []
+            for t in dfg_data.get("transitions", []):
+                if t["src"] not in id_to_name:
+                    logger.error(f"Source ID {t['src']} not found in mapping")
+                if t["tgt"] not in id_to_name:
+                    logger.error(f"Target ID {t['tgt']} not found in mapping")
+
+                logger.debug(f"src {t['src']}, tgt {t['tgt']}")
+                restored_transitions.append({
+                    "src":  map_id(t["src"]),
+                    "tgt":  map_id(t["tgt"]),
+                    "freq": int(t["freq"])
+                })
+        except Exception as e:
+            logger.error(f"Error while checking transition IDs against mapping: {e}")
+            raise
+        
 
         restored_data = {
             "start_activities": restored_start,
             "end_activities": restored_end,
             "transitions": restored_transitions
         }
+
 
         # 6) Save restored JSON
         with open(output_json_path, 'w', encoding='utf-8') as out:

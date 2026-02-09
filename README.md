@@ -112,19 +112,25 @@ The configuration file is located in the config folder. The file is called confi
     - `llm.ollama.max_prompt_tokens`: maximum number of tokens to be used inside the prompt for the request to the model. If not specified (or 0), no limit will be applied.
     - `llm.ollama.think`: reasoning thinking level for the Ollama model. Example values are:
         - `false` --> to skip this option in requests and use the default thinking effort of the model
-        - `"low"` --> to enable low thinking effort
-        - `"medium"` --> to enable medium thinking effort
-        - `"high"` --> to enable high thinking effort
+        - `{"think": false}` --> to force the thinking effort to be disabled in the requests
+        - `{"think": true}` --> to force the thinking effort to be enabled in the requests
+        - `{"think": "high"}` --> to enable high thinking effort (if supported by the model, i.e. GPT-OSS models)
     - `llm.ollama.json_prompt_config`: configuration for DFG simplification prompts. If it does not exist, the main ollama configuration will be used. It contains the same parameters as the main ollama configuration.
 - If openai is selected as the LLM provider, the following parameters must be specified:
-    - `llm.openai.openai_api_key`: API key to use the OpenAI API for the LLM model
+    - `llm.openai.api_key`: API key to use the OpenAI API for the LLM model
     - `llm.openai.model_name`: name of the LLM model to use
-    - `llm.openai.reasoning`: reasoning effort level for the OpenAI model. Example values are:
+    - `llm.openai.think`: reasoning effort level for the OpenAI model. Example values are:
         - `false` --> to skip this option in requests and use the default reasoning effort of the model
         - `{"effort": "low"}` --> to enable low reasoning effort
         - `{"effort": "medium"}` --> to enable medium reasoning effort
         - `{"effort": "high"}` --> to enable high reasoning effort
     - `llm.openai.max_tokens`: maximum number of tokens to be used in the analysis of the models
+- If gemini is selected as the LLM provider, the following parameters must be specified:
+    - `llm.gemini.api_key`: API key to use the Gemini API for the LLM model
+    - `llm.gemini.model_name`: name of the LLM model to use
+    - `llm.gemini.think`: reasoning thinking level for the Gemini model. Example values are:
+        - `false` --> to skip this option in requests and use the default thinking effort of the model
+        - `{"thinking_level": "high"}` --> to enable low thinking effort
 - `llm.context`: context to be used for the LLM model
 - `llm.petri_net`: configuration for analyzing an abstraction of Petri Net
     - `enabled`: boolean to enable/disable the analysis using true/false

@@ -9,7 +9,7 @@ class OllamaClient(LlmClientInterface):
         config = self.config["llm"]['ollama']
         self.url = f"{config['api_url']}{config['api_endpoint']}"
         self.model_name = config['model_name']
-        self.options = config['options']
+        self.options = config.get('options', {})
         self.max_prompt_tokens = config.get('max_prompt_tokens', 0)
         self.think = config.get('think', False)
 

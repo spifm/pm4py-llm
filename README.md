@@ -203,3 +203,11 @@ docker exec -it pm4py-llm-app python3 -m utils.build-train-jsonl \
   --input-filename dfg-generic-activities.json \
   --output-filename llm-simplified-dfg.json
 ```
+
+# Generate summary from infos
+This script generates a summary from several info.txt files containing information about the analysis of process mining models and their simplification using LLMs. The script is called `generate_summary_from_infos.py` and it must be run independently. When the script is run, it reads all the info.txt files from each subdirectory of a specified base directory, extracts relevant information and compiles this information into a structured summary format. The resulting summary is saved in a CSV file for further analysis or reporting. The script can be run using the following command:
+
+```bash
+docker exec -it pm4py-llm-app python3 -m utils.generate_summary_from_infos \
+  output/directory -o summary.csv
+```

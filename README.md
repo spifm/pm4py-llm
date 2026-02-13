@@ -43,10 +43,10 @@ Then, edit the `app/config/config.json` file to specify the parameters for the a
 
 The system can be run using an API endpoint.
 
-The following permission change could be needed:
+(Optional) Consider these permission changes if you encounter issues with file access in the `data` and `app/output` directories. These directories are used to store input datasets and output results, respectively. Ensuring that the application has the necessary permissions to read from and write to these directories is crucial for its proper functioning.
 
 ```bash
-chmod 777 app/dataset/
+chmod 777 data
 chmod 777 app/output/
 ```
 

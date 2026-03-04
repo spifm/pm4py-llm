@@ -1,20 +1,56 @@
+import argparse
 import pm4py
+from pathlib import Path
 
-#input_path = "output/TEEM-2025/p100-TEEM-2025/p100-dfg-chatgpt.dfg"
-#output_path = "output/TEEM-2025/p100-TEEM-2025/p100-dfg-chatgpt_dfg.png"
 
-input_path = "output/bd-p25/simplified-dfg.dfg"
-output_path = "output/bd-p25/simplified-dfg.png"
+def dfg_to_png(input_path: str, output_path: str, *, bgcolor: str = "white", rankdir: str = "LR") -> None:
+    input_p = Path(input_path)
+    if not input_p.is_file():
+        raise FileNotFoundError(f"Input DFG not found: {input_path}")
 
-dfg, start_activities, end_activities = pm4py.read_dfg(input_path)
+    output_p = Path(output_path)
+    if str(output_p.parent) not in (".", ""):
+        output_p.parent.mkdir(parents=True, exist_ok=True)
 
-pm4py.save_vis_dfg(
-    dfg,
-    start_activities,
-    end_activities,
-    file_path=output_path,
-    bgcolor="white",     # White background
-    rankdir="LR"         # Directed graph from left to right
-)
+    dfg, start_activities, end_activities = pm4py.read_dfg(str(input_p))
+    pm4py.save_vis_dfg(
+        dfg,
+        start_activities,
+        end_activities,
+        file_path=str(output_p),
+        bgcolor=bgcolor,
+        rankdir=rankdir,
+    )
 
-print(f"DFG saved as image in: {output_path}")
+    print(f"DFG saved as image in: {output_p}")
+
+
+def main() -> None:
+    parser = argparse.ArgumentParser(
+        description="Convert a PM4Py .dfg file into a PNG image.",
+    )
+    parser.add_argument(
+        "input_path",
+        help="Path to the input .dfg file",
+    )
+    parser.add_argument(
+        "output_path",
+        help="Path to the output .png to create",
+    )
+    parser.add_argument(
+        "--bgcolor",
+        default="white",
+        help="Background color for the visualization (default: white)",
+    )
+    parser.add_argument(
+        "--rankdir",
+        default="LR",
+        help="Graph direction (default: LR)",
+    )
+    args = parser.parse_args()
+
+    dfg_to_png(args.input_path, args.output_path, bgcolor=args.bgcolor, rankdir=args.rankdir)
+
+
+if __name__ == "__main__":
+    main()

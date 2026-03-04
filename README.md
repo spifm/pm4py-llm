@@ -172,7 +172,7 @@ docker exec -it pm4py-llm-app" python3 -m utils.merge_abstract_dfgs_to_json
 This script reads a dfg model from a pm4py .dfg file and generates a PNG image of the model. The script is called `dfg_to_png.py` and it must be run independently. The dfg file path is directly set in the script. The script will then generate a new png file with the DFG model. The script can be run using the following command:
 
 ```bash
-docker exec -it pm4py-llm-app" python3 -m utils.dfg_to_png
+docker exec -it pm4py-llm-app python3 -m utils.dfg_to_png output/example/input.dfg output/example/output.png
 ```
 
 ## CSV to JSON conversion

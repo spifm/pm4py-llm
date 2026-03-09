@@ -45,7 +45,6 @@ PM4PY_BASE_URL = "http://pm4py-llm-app:8001"
 CACHE_DIR = "./cache/"
 CACHE_DURATION = timedelta(seconds=60 * 60 * 24)  # Cache duration in seconds (1 day)
 SIMPLIFY_FILE = "dfg-generic-activities.json"
-OUTPUT_PATH = "output"
 
 @app.get(
         "/",
@@ -176,7 +175,7 @@ def pm_analysis(request: PMAnalysisRequest):
             "**Example:**\n"
             "```json\n"
             "{\n"
-            "  \"filename\": \"/data/dataset/my_dataset.csv\",\n"
+            "  \"filename\": \"/dataset/my_dataset.csv\",\n"
             "  \"data\": {\n"
             "    \"column1\": [\"value1\", \"value2\"],\n"
             "    \"column2\": [10, 20]\n"
@@ -240,10 +239,10 @@ def store_dataset(request: DatasetToStoreRequest):
         "```json\n"
         "{\n"
         "  \"message\": \"DFG simplified successfully\",\n"
-        "  \"output_analysis\": \"output/simplified-dfg-analysis.txt\",\n"
-        "  \"llm_simplified_dfg\": \"output/llm-simplified-dfg.txt\",\n"
-        "  \"simplified_dfg\": \"output/simplified-dfg.dfg\",\n"
-        "  \"simplified_dfg_image\": \"output/simplified-dfg.png\"\n"
+        "  \"output_analysis\": \"/output/simplified-dfg-analysis.txt\",\n"
+        "  \"llm_simplified_dfg\": \"/output/llm-simplified-dfg.txt\",\n"
+        "  \"simplified_dfg\": \"/output/simplified-dfg.dfg\",\n"
+        "  \"simplified_dfg_image\": \"/output/simplified-dfg.png\"\n"
         "}\n"
         "```"
     ),
@@ -264,7 +263,7 @@ def simplify_dfg_endpoint(request: SimplifyDFGRequest):
         "/get-analysis",
         summary="Get analysis results",
         description=(
-            "Retrieves the analysis results for a given filename.\n\n"
+            "Retrieves the analysis results for a given directory.\n\n"
             "It first checks if a cached version exists and is still valid. If so, it returns the cached data.\n"
             "If not, it fetches the data from the PM4PY container and caches it for future requests.\n\n"
             "**Example response:**\n"
@@ -287,12 +286,9 @@ def get_analysis(analysis_dir: str = Query(
     # Check if the analysis is stored in a cache directory
     os.makedirs(CACHE_DIR, exist_ok=True)
     cache_file = os.path.join(CACHE_DIR, f"{analysis_dir}.json")
-
-    if os.path.isfile(cache_file):
-        cache_time = datetime.fromtimestamp(os.path.getmtime(cache_file))
-        if datetime.now() - cache_time < CACHE_DURATION:
-             with open(cache_file, "r") as f:
-                return JSONResponse(content=json.load(f))
+    cache = _check_cache(cache_file)
+    if cache is not None:
+        return cache
 
     # If not cached or cache is expired, fetch from PM4PY container
     url = f"{PM4PY_BASE_URL}/get-analysis"
@@ -316,3 +312,65 @@ def get_analysis(analysis_dir: str = Query(
 
     except requests.exceptions.RequestException as e:
         raise HTTPException(status_code=500, detail=f"Error fetching analysis: {str(e)}")
+    
+
+@app.get(
+        "/get-simplified-analysis",
+        summary="Get simplified analysis results",
+        description=(
+            "Retrieves the simplified analysis results for a given directory.\n\n"
+            "It first checks if a cached version exists and is still valid. If so, it returns the cached data.\n"
+            "If not, it fetches the data from the PM4PY container and caches it for future requests.\n\n"
+            "**Example response:**\n"
+            "```json\n"
+            "{\n"
+            "  \"simplified_dfg_analysis\": \"XXX\",\n"
+            "  \"simplified_dfg_image\": \"XXX\"\n"
+            "}\n"
+            "```"
+        ),
+        dependencies=[Depends(verify_token)]
+)
+def get_simplified_analysis(analysis_dir: str = Query(
+                                    alias="analysis_dir",
+                                    description="Directory where the analysis results are stored"
+                                    )
+    ):
+    # Check if the simplified analysis is stored in a cache directory
+    os.makedirs(CACHE_DIR, exist_ok=True)
+    cache_file = os.path.join(CACHE_DIR, f"{analysis_dir}-simplified.json")
+    cache = _check_cache(cache_file)
+    if cache is not None:
+        return cache
+
+    # If not cached or cache is expired, fetch from PM4PY container
+    url = f"{PM4PY_BASE_URL}/get-simplified-analysis"
+    headers = {"Authorization": f"Bearer {API_TOKEN}"}
+    try:
+        response = requests.get(url, params={"analysis_dir": analysis_dir}, headers=headers)
+
+        if response.status_code != 200:
+            try:
+                detail = response.json().get("detail", "Unknown error")
+            except Exception:
+                detail = response.text or "Unknown error"
+            raise HTTPException(status_code=response.status_code, detail=f"PM4PY error: {detail}")
+
+        data = response.json()
+
+        with open(cache_file, "w") as f:
+            json.dump(data, f)
+
+        return JSONResponse(content=data)
+
+    except requests.exceptions.RequestException as e:
+        raise HTTPException(status_code=500, detail=f"Error fetching analysis: {str(e)}")
+
+
+def _check_cache(cache_file: str) -> JSONResponse | None:
+    if os.path.isfile(cache_file):
+        cache_time = datetime.fromtimestamp(os.path.getmtime(cache_file))
+        if datetime.now() - cache_time < CACHE_DURATION:
+             with open(cache_file, "r") as f:
+                return JSONResponse(content=json.load(f))
+    return None

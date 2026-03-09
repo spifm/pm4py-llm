@@ -1,6 +1,15 @@
 import csv
 import json
 import os
+import argparse
+
+def parse_args():
+    parser = argparse.ArgumentParser()
+    parser.add_argument("--csv-path")
+    parser.add_argument("--json-path")
+    return parser.parse_args()
+
+args = parse_args()
 
 def convert_value(value):
     # Convert the value to int or float if possible, otherwise keep it as a string.
@@ -30,10 +39,10 @@ def csv_to_custom_json(csv_path, filename):
 
 if __name__ == "__main__":
     # Path to the CSV file
-    csv_file = "/data/dataset/bd-all-events-grades-p25-22students-30711.csv"
+    csv_file = args.csv_path
 
     # Path to save the JSON file
-    json_file = "/data/dataset/bd-p25.json"
+    json_file = args.json_path
 
     # Convert CSV to JSON and save it
     result = csv_to_custom_json(csv_file, json_file)

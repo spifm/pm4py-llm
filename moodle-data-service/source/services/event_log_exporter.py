@@ -19,7 +19,7 @@ class EventLogExporter:
         - Writing the result to CSV.
     """
 
-    def __init__(self, db: MoodleDatabase, output_dir: str = "/data"):
+    def __init__(self, db: MoodleDatabase, output_dir: str):
         self.db = db
         self.output_dir = output_dir
         os.makedirs(self.output_dir, exist_ok=True)

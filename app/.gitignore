@@ -116,11 +116,6 @@ dist
 # TernJS port file
 .tern-port
 
-
-# Saved outputs:
-output/*
-!output/.gitkeep
-
 # Configuration
 config/config.*
 

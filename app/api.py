@@ -15,6 +15,7 @@ import sys
 load_dotenv()
 API_TOKEN = os.getenv("API_TOKEN")
 LOG_LEVEL = os.getenv("LOG_LEVEL", "DEBUG").upper()
+output_dir = os.getenv("OUTPUT_DIR", "/output")
 
 if not API_TOKEN:
     raise RuntimeError("API_TOKEN is not set in environment variables")
@@ -102,10 +103,10 @@ def run_script(request: DatasetToStoreRequest):
         "```json\n"
         "{\n"
         "  \"message\": \"DFG simplified successfully\",\n"
-        "  \"output_analysis\": \"output/simplified-dfg-analysis.txt\",\n"
-        "  \"llm_simplified_dfg\": \"output/llm-simplified-dfg.txt\",\n"
-        "  \"simplified_dfg\": \"output/simplified-dfg.dfg\",\n"
-        "  \"simplified_dfg_image\": \"output/simplified-dfg.png\"\n"
+        "  \"output_analysis\": \"/output/simplified-dfg-analysis.txt\",\n"
+        "  \"llm_simplified_dfg\": \"/output/llm-simplified-dfg.txt\",\n"
+        "  \"simplified_dfg\": \"/output/simplified-dfg.dfg\",\n"
+        "  \"simplified_dfg_image\": \"/output/simplified-dfg.png\"\n"
         "}\n"
         "```"
     ),
@@ -154,7 +155,7 @@ def get_analysis(analysis_dir: str = Query(
                                     )
     ):
 
-    basepath = os.path.join(OUTPUT_PATH, analysis_dir)
+    basepath = os.path.join(output_dir, analysis_dir)
 
     if not os.path.isdir(basepath):
         raise HTTPException(status_code=404, detail="Analysis directory not found")
@@ -169,13 +170,13 @@ def get_analysis(analysis_dir: str = Query(
 
     try:
         with open(dfg_analysis_base_path, "r") as f:
-            dfgAnalysisText = f.read()
+            dfg_analysis_text = f.read()
         with open(dfg_base_path, "rb") as f:
-            dfgImageBytes = f.read()
+            dfg_image_bytes = f.read()
 
         result = {
-            "analysis": dfgAnalysisText,
-            "dfg_image": dfgImageBytes.hex()
+            "analysis": dfg_analysis_text,
+            "dfg_image": dfg_image_bytes.hex()
         }
 
         if os.path.isfile(simplified_dfg_analysis_base_path):
@@ -188,6 +189,58 @@ def get_analysis(analysis_dir: str = Query(
                 simplified_dfg_image_bytes = f.read()
             result["simplified_dfg_image"] = simplified_dfg_image_bytes.hex()
 
+        return result
+
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
+    
+
+@app.get(
+        "/get-simplified-analysis",
+        summary="Get simplified analysis results",
+        description=(
+            "Retrieves the simplified analysis results for a given output directory.\n\n"
+            "**Example response:**\n"
+            "```json\n"
+            "{\n"
+            "  \"simplified_dfg_analysis\": \"XXX\",\n"
+            "  \"simplified_dfg_image\": \"XXX\"\n"
+            "}\n"
+            "```"
+        ),
+        dependencies=[Depends(verify_token)]
+)
+def get_simplified_analysis(analysis_dir: str = Query(
+                                    alias="analysis_dir",
+                                    description="Directory where the analysis results are stored"
+                                    )
+    ):
+
+    basepath = os.path.join(output_dir, analysis_dir)
+
+    if not os.path.isdir(basepath):
+        raise HTTPException(status_code=404, detail="Analysis directory not found")
+    
+    simplified_dfg_base_path = os.path.join(basepath, "simplified-dfg.png")
+    simplified_dfg_analysis_base_path = os.path.join(basepath, "simplified-dfg-analysis.txt")
+
+    try:
+        if not os.path.isfile(simplified_dfg_analysis_base_path) or not os.path.isfile(simplified_dfg_base_path):
+            raise HTTPException(status_code=404, detail="Simplified DFG files not found")
+
+        if os.path.isfile(simplified_dfg_analysis_base_path):
+            with open(simplified_dfg_analysis_base_path, "r") as f:
+                simplified_dfg_analysis_text = f.read()
+
+        if os.path.isfile(simplified_dfg_base_path):
+            with open(simplified_dfg_base_path, "rb") as f:
+                simplified_dfg_image_bytes = f.read()
+
+        result = {
+            "simplified_dfg_analysis": simplified_dfg_analysis_text,
+            "simplified_dfg_image": simplified_dfg_image_bytes.hex()
+        }
+        
         return result
 
     except Exception as e:

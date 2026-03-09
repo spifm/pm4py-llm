@@ -14,6 +14,8 @@ def parse_args():
 
 args = parse_args()
 
+output_path = args.output_path if args.output_path else str(int(time.time()))
+
 configInstance = Config()
 configInstance.initialize(
     dataset_path=args.dataset_path,
@@ -50,6 +52,6 @@ print(f"Sampled caseids: {sampled_caseids}")
 sample = dataset[dataset[case_id].isin(sampled_caseids)]
 
 # Save the sample
-sample.to_csv(f"output/{str(int(time.time()))}-sample_{sample_size}_cases.csv", index=False)
+sample.to_csv(f"{output_path}/{str(int(time.time()))}-sample_{sample_size}_cases.csv", index=False)
 
-print(f"Sample stored in output/sample_{sample_size}_cases.csv")
+print(f"Sample stored in {output_path}/sample_{sample_size}_cases.csv")

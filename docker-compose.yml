@@ -8,7 +8,8 @@ services:
       - "8001:8001"
     volumes:
       - ./app:/app
-      - ./data:/data
+      - ./dataset:${DATASET_DIR}
+      - ./output:${OUTPUT_DIR}
     env_file:
       - .env
 
@@ -35,7 +36,7 @@ services:
       - "8002:8002"
     volumes:
       - ./moodle-data-service/source:/app/source
-      - ./data/moodle-exports:/data
+      - ./dataset:${DATASET_DIR}
     env_file:
       - .env
 
@@ -46,7 +47,7 @@ services:
     command: ["rq", "worker", "-u", "redis://redis:6379/0", "default"]
     volumes:
       - ./moodle-data-service/source:/app/source
-      - ./data/moodle-exports:/data
+      - ./dataset:${DATASET_DIR}
     env_file:
       - .env
     depends_on:

@@ -14,7 +14,7 @@
     },
     "preprocess": {
         "enabled": true,
-        "mapping_activity_json_path": "/data/dataset/activity_mappings/moodle_activity_mapping.json"
+        "mapping_activity_json_path": "/dataset/activity_mappings/moodle_activity_mapping.json"
     },
     "discovery": {
         "petri_net": {

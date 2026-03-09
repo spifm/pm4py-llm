@@ -1,18 +1,20 @@
 from pathlib import Path
 import time
-from config.constants import OUTPUT_PATH
+import os
 import logging
 
 logger = logging.getLogger(__name__)
+
+output_dir = os.getenv("OUTPUT_DIR", "/output")
 
 class MakeOutputDir:
     @staticmethod
     def make_unique_dir(base_dir: str) -> str:
         try:
             if base_dir != "":
-                base_output_directory = OUTPUT_PATH + "/" + base_dir
+                base_output_directory = output_dir + "/" + base_dir
             else:
-                base_output_directory = OUTPUT_PATH + "/" + str(int(time.time()))
+                base_output_directory = output_dir + "/" + str(int(time.time()))
             
             base_path = Path(base_output_directory)
             try:

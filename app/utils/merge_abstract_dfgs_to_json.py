@@ -6,7 +6,7 @@ print("extracts user IDs and grades from folder names, and combines them")
 print("into a single JSON file for later processing.\n")
 
 # Ask user for the base directory
-base_dir = input("Enter the path to the base directory (e.g., output/my-dfg-folder): ").strip()
+base_dir = input("Enter the path to the base directory (e.g., /output/my-dfg-folder): ").strip()
 
 if not os.path.isdir(base_dir):
     print(f"Error: Directory not found: {base_dir}")
@@ -54,7 +54,7 @@ for folder_name in os.listdir(base_dir):
 
 # Prepare output path
 folder_name = os.path.basename(os.path.normpath(base_dir))
-output_dir = "output"
+output_dir = os.getenv("OUTPUT_DIR", "/output")
 os.makedirs(output_dir, exist_ok=True)
 output_file = os.path.join(output_dir, f"output_dfg_{folder_name}.json")
 

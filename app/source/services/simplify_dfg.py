@@ -7,6 +7,7 @@ from source.Filename import Filename
 import logging
 
 logger = logging.getLogger(__name__)
+output_dir = os.getenv("OUTPUT_DIR", "/output")
 
 class SimplifyDFGService:
     @staticmethod
@@ -20,7 +21,7 @@ class SimplifyDFGService:
         dfg_transformer = DFGTransformer()
         dfg_filter = DFGFilter()
         
-        input_dir = os.path.join(OUTPUT_PATH, output_path)
+        input_dir = os.path.join(output_dir, output_path)
         dfg_file = os.path.join(input_dir, fn.get_filename("dfg.json"))
 
         if not os.path.exists(dfg_file):

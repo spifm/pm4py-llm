@@ -43,11 +43,11 @@ Then, edit the `app/config/config.json` file to specify the parameters for the a
 
 The system can be run using an API endpoint.
 
-(Optional) Consider these permission changes if you encounter issues with file access in the `data` and `app/output` directories. These directories are used to store input datasets and output results, respectively. Ensuring that the application has the necessary permissions to read from and write to these directories is crucial for its proper functioning.
+(Optional) Consider these permission changes if you encounter issues with file access in the `dataset` and `/output` directories. These directories are used to store input datasets and output results, respectively. Ensuring that the application has the necessary permissions to read from and write to these directories is crucial for its proper functioning.
 
 ```bash
-chmod 777 data
-chmod 777 app/output/
+chmod 777 dataset
+chmod 777 output
 ```
 
 The API is available at `http://localhost:8001` after the container `pm4py-llm-app"` is started. The corresponding documentation is available at `http://localhost:8001/docs`.
@@ -156,15 +156,18 @@ The configuration file is located in the config folder. The file is called confi
 The application can generate a random sample of the log file indicated in the config file. The sample is generated using `random_sample_selection.py`, which is a script that must be run independently. When the script is run, the user is prompted to enter the number the number of cases to be sampled. The script will then generate a new log file with the sampled cases. The new log file will be saved in the output directory created with a timestamp. Flags indicate the dataset path and the csv delimiter. An example of how to run the script is shown below:
 
 ```bash
-docker exec -it pm4py-llm-app" python3 -m utils.random_sample_selection --dataset-path="dataset/dataset.csv" --dataset-csv_delimiter=","
+docker exec -it pm4py-llm-app python3 -m utils.random_sample_selection \
+--dataset-path="/dataset/dataset.csv" \
+--dataset-csv_delimiter="," \
+--output_path="/output"
 ```
 
 ## Merge abstract dfgs to json
 
-This script reads abstract DFG models from a directory structure, extracts user IDs and grades from folder names, and combines them into a single JSON file for later processing. The script is called `merge_abstract_dfgs_to_json.py` and it must be run independently. When the script is run, the user is prompted to enter the path to the base directory (e.g., output/my-dfg-folder) where the abstract DFGs are stored. The script will then generate a new json file with the merged abstract DFGs. The new log file will be saved in the output directory created with a timestamp. The script can be run using the following command:
+This script reads abstract DFG models from a directory structure, extracts user IDs and grades from folder names, and combines them into a single JSON file for later processing. The script is called `merge_abstract_dfgs_to_json.py` and it must be run independently. When the script is run, the user is prompted to enter the path to the base directory (e.g., /output/my-dfg-folder) where the abstract DFGs are stored. The script will then generate a new json file with the merged abstract DFGs. The new log file will be saved in the output directory created with a timestamp. The script can be run using the following command:
 
 ```bash
-docker exec -it pm4py-llm-app" python3 -m utils.merge_abstract_dfgs_to_json
+docker exec -it pm4py-llm-app python3 -m utils.merge_abstract_dfgs_to_json
 ```
 
 ## DFG to PNG
@@ -172,7 +175,7 @@ docker exec -it pm4py-llm-app" python3 -m utils.merge_abstract_dfgs_to_json
 This script reads a dfg model from a pm4py .dfg file and generates a PNG image of the model. The script is called `dfg_to_png.py` and it must be run independently. The dfg file path is directly set in the script. The script will then generate a new png file with the DFG model. The script can be run using the following command:
 
 ```bash
-docker exec -it pm4py-llm-app python3 -m utils.dfg_to_png output/example/input.dfg output/example/output.png
+docker exec -it pm4py-llm-app python3 -m utils.dfg_to_png /output/example/input.dfg /output/example/output.png
 ```
 
 ## CSV to JSON conversion
@@ -180,7 +183,9 @@ docker exec -it pm4py-llm-app python3 -m utils.dfg_to_png output/example/input.d
 This script converts a CSV file to a custom JSON format. The script is called `csv_to_json.py` and it must be run independently. The CSV file path is directly set in the script. The script will then generate a new json file with the converted data. The script can be run using the following command:
 
 ```bash
-docker exec -it pm4py-llm-app" python3 -m utils.csv_to_json
+docker exec -it pm4py-llm-app python3 -m utils.csv_to_json \
+    --csv-path="/dataset/dataset.csv" \
+    --json-path="/output/dataset.json"
 ``` 
 
 ## XES to Histogram
@@ -188,7 +193,7 @@ docker exec -it pm4py-llm-app" python3 -m utils.csv_to_json
 This script generates histograms from XES log files. The script is called `xes_to_histogram.py` and it must be run independently. The XES file path is directly set in the script. The script will then generate histogram plots and data files. The script can be run using the following command:
 
 ```bash
-docker exec -it pm4py-llm-app" python3 -m utils.xes_to_histogram
+docker exec -it pm4py-llm-app python3 -m utils.xes_to_histogram
 ```
 
 # Build training JSONL for LLM fine-tuning
@@ -209,5 +214,5 @@ This script generates a summary from several info.txt files containing informati
 
 ```bash
 docker exec -it pm4py-llm-app python3 -m utils.generate_summary_from_infos \
-  output/directory -o summary.csv
+  /output/directory -o summary.csv
 ```

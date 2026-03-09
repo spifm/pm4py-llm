@@ -6,8 +6,10 @@ import numpy as np
 import os
 from datetime import datetime
 
+dataset_dir = os.getenv("DATASET_DIR", "/dataset")
+output_dir = os.getenv("OUTPUT_DIR", "/output")
 
-dataset = "dataset/jla_union.xes"
+dataset = f"{dataset_dir}/jla_union.xes"
 column_name = "grade_er"
 label_name = "Grade"
 title_name = "Distribution of Grades by Student"
@@ -41,8 +43,8 @@ if column_name in df.columns:
 
     # Create output directory with timestamp
     timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
-    output_dir = os.path.join("output", f"histogram-{timestamp}")
-    os.makedirs(output_dir, exist_ok=True)
+    output = os.path.join(output_dir, f"histogram-{timestamp}")
+    os.makedirs(output, exist_ok=True)
 
     # Group by case and get the relevant column
     # Take the first value per trace (assuming it's consistent within a trace)
@@ -61,7 +63,7 @@ if column_name in df.columns:
     removed_events = df[df["case:concept:name"].isin(removed_traces.index)]
     print("Number of events in removed traces:", len(removed_events))
     print(removed_events)
-    removed_events.to_csv(os.path.join(output_dir, "removed_traces.csv"), index=False)
+    removed_events.to_csv(os.path.join(output, "removed_traces.csv"), index=False)
 
 
     # Convert the column to numeric, removing non-numeric entries
@@ -78,7 +80,7 @@ if column_name in df.columns:
     plt.ylabel("Number of Students")
     plt.title(title_name + " (Absolute)")
     plt.grid(axis="y", alpha=0.75)
-    plt.savefig(os.path.join(output_dir, "histogram_absolute.png"))
+    plt.savefig(os.path.join(output, "histogram_absolute.png"))
     plt.close()
 
 
@@ -92,7 +94,7 @@ if column_name in df.columns:
     plt.ylabel("Percentage of Students")
     plt.title(title_name + " (%)")
     plt.grid(axis="y", alpha=0.75)
-    plt.savefig(os.path.join(output_dir, "histogram_percent.png"))
+    plt.savefig(os.path.join(output, "histogram_percent.png"))
     plt.close()
 
 
@@ -108,7 +110,7 @@ if column_name in df.columns:
     })
 
     # Store in CSV
-    hist_data.to_csv(os.path.join(output_dir, "histogram_data.csv"), index=False)
+    hist_data.to_csv(os.path.join(output, "histogram_data.csv"), index=False)
 
 else:
     print(column_name, ": Column not found in the log. Please check the exact attribute name.")

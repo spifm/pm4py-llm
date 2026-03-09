@@ -119,15 +119,16 @@ dist
 # pycache
 __pycache__/
 
-# data folder
-data/*
-!data/dataset/
-data/dataset/*
-!data/dataset/anon.csv
-!data/dataset/anon.xes
-!data/dataset/dataset-example.csv
-!data/dataset/running-example.csv
-!data/dataset/running-example.xes
+# dataset folder
+dataset/*
+!dataset/examples
+!dataset/activity_mappings/
+dataset/activity_mappings/*
+!dataset/activity_mappings/.gitkeep
+
+# Saved outputs:
+output/*
+!output/.gitkeep
 
 
 # Directory for LLM Training

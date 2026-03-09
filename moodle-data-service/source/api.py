@@ -50,7 +50,7 @@ def verify_token(credentials: HTTPAuthorizationCredentials = Depends(security)):
 
 # ─── Service instances ────────────────────────────────────────
 
-output_dir = os.getenv("EXPORT_OUTPUT_DIR", "/data")
+dataset_dir = os.getenv("DATASET_DIR", "/dataset")
 
 REDIS_URL = os.getenv("REDIS_URL", "redis://redis:6379/0")
 redis_conn = redis.from_url(REDIS_URL)
@@ -93,7 +93,7 @@ def read_root():
         "```json\n"
         "{\n"
         "  \"message\": \"Event log exported successfully\",\n"
-        "  \"output_file\": \"data/my_dataset.csv\",\n"
+        "  \"output_file\": \"/dataset/my_dataset.csv\",\n"
         "  \"rows_exported\": 100,\n"
         "  \"course_info\": {\n"
         "    \"id\": 123,\n"
@@ -115,7 +115,7 @@ def export_event_log(request: ExportEventLogRequest):
         db = MoodleDatabase.from_env()
         if dbname:
             db.set_dbname(dbname)
-        event_log_exporter = EventLogExporter(db=db, output_dir=output_dir)
+        event_log_exporter = EventLogExporter(db=db, output_dir=dataset_dir)
 
         output_file, rows_exported, course_info = event_log_exporter.export_course_event_log(
             course_id=course_id,
@@ -161,7 +161,7 @@ def export_event_log(request: ExportEventLogRequest):
         "```json\n"
         "{\n"
         "  \"message\": \"Event log export started\",\n"
-        "  \"expected_output_file\": \"data/my_dataset.csv\",\n"
+        "  \"expected_output_file\": \"/dataset/my_dataset.csv\",\n"
         "  \"course_info\": {\n"
         "    \"id\": 123,\n"
         "    \"fullname\": \"Example Course\",\n"
@@ -186,7 +186,7 @@ async def export_event_log_async(
         db = MoodleDatabase.from_env()
         if dbname:
             db.set_dbname(dbname)
-        event_log_exporter = EventLogExporter(db=db, output_dir=output_dir)
+        event_log_exporter = EventLogExporter(db=db, output_dir=dataset_dir)
 
         course_info = event_log_exporter.get_course_info(course_id)
         if course_info is None:

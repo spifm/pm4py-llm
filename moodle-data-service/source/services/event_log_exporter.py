@@ -7,6 +7,7 @@ from db import MoodleDatabase
 import csv
 import re
 from models.schemas import CourseInfo
+from .event_log_metadata_builder import EventLogMetadataBuilder
 
 logger = logging.getLogger(__name__)
 
@@ -22,6 +23,7 @@ class EventLogExporter:
     def __init__(self, db: MoodleDatabase, output_dir: str):
         self.db = db
         self.output_dir = output_dir
+        self.metadata_service = EventLogMetadataBuilder()
         os.makedirs(self.output_dir, exist_ok=True)
 
     def _sanitize_filename(self, name: str) -> str:
@@ -157,5 +159,12 @@ class EventLogExporter:
             )
             writer.writerow(colnames)
             writer.writerows(rows)
+
+
+        self.metadata_service.write_metadata(
+            dataset_path=output_path,
+            row_count=len(rows),
+            course_info=course_info,
+        )
 
         return output_path, len(rows), course_info

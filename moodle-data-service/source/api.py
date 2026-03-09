@@ -173,8 +173,7 @@ def export_event_log(request: ExportEventLogRequest):
     dependencies=[Depends(verify_token)],
 )
 async def export_event_log_async(
-    request: ExportEventLogRequest,
-    background_tasks: BackgroundTasks,
+    request: ExportEventLogRequest
 ):
     course_id = request.course_id
     dbname = request.dbname

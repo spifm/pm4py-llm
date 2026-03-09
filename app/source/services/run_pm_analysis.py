@@ -15,6 +15,7 @@ from source.Preprocessor import Preprocessor
 import logging
 from typing import Any
 from source.helpers.info_writer import InfoWriter
+from pathlib import Path
 
 
 logger = logging.getLogger(__name__)
@@ -71,6 +72,49 @@ class PmAnalysisService:
         logger.debug("First row of the log:\n%s", log.iloc[0])
 
         return log, file_extension
+    
+
+    def _write_metadata_info(self, info_writer: InfoWriter) -> None:
+        """
+        Writes dataset metadata from the sidecar JSON file associated with the analyzed dataset.
+
+        Expected metadata path:
+        /path/to/dataset.csv -> /path/to/dataset.meta.json
+
+        If the metadata file does not exist, logs a warning and continues.
+        """
+        dataset_path = Path(self.dataset_path)
+        metadata_path = dataset_path.with_suffix(".meta.json")
+
+        if not metadata_path.exists():
+            logger.warning("Metadata file not found for dataset: %s. Continuing analysis.", metadata_path)
+            return
+
+        try:
+            with open(metadata_path, "r", encoding="utf-8") as f:
+                metadata = json.load(f)
+        except Exception as e:
+            logger.warning("Could not read metadata file %s: %s", metadata_path, e)
+            return
+
+        info_writer.write("=== Dataset Metadata ===\n\n")
+
+        def write_item(prefix: str, value: Any) -> None:
+            if isinstance(value, dict):
+                for k, v in value.items():
+                    new_prefix = f"{prefix}.{k}" if prefix else str(k)
+                    write_item(new_prefix, v)
+            elif isinstance(value, list):
+                for i, item in enumerate(value):
+                    new_prefix = f"{prefix}[{i}]"
+                    write_item(new_prefix, item)
+            else:
+                info_writer.write(f"{prefix}: {value}\n")
+
+        for key, value in metadata.items():
+            write_item(str(key), value)
+
+        info_writer.write("\n\n")
 
 
     def _filter_log(self, log: Any, output_directory: str):
@@ -102,6 +146,7 @@ class PmAnalysisService:
             logger.debug("\nTrace values ({}): {}".format(filter_attr, trace_values))
 
         return filtered_log, filtered_info_str
+    
 
     def run_pm_analysis(self):
         """
@@ -148,8 +193,12 @@ class PmAnalysisService:
             preprocessor = Preprocessor(mapping_activity_json=mapping_json, col_to_map=activity_key)
             log = preprocessor.map_activities(log)
 
-        # Create text file with information about the analysis
+        # Create text file with information about the dataset and the analysis
         info_writer = InfoWriter(output_directory)
+
+        self._write_metadata_info(info_writer)
+
+        info_writer.write("=== Dataset Info ===\n\n")
         info_writer.write("Analysis Date and Time: {}\n".format(time.strftime("%Y-%m-%d %H:%M:%S", time.localtime())))
         info_writer.write("Dataset path: {}\n".format(self.dataset_path))
         info_writer.write("Dataset extension: {}\n".format(file_extension))

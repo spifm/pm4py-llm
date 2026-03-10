@@ -119,14 +119,22 @@ dist
 # pycache
 __pycache__/
 
-# dataset folder
+
+# Configuration
+app/config/*
+!app/config/*_template*
+!app/config/prompts
+app/config/prompts/*
+!app/config/prompts/*_template*
+
+# Dataset
 dataset/*
 !dataset/examples
 !dataset/activity_mappings/
 dataset/activity_mappings/*
 !dataset/activity_mappings/.gitkeep
 
-# Saved outputs:
+# Saved outputs
 output/*
 !output/.gitkeep
 

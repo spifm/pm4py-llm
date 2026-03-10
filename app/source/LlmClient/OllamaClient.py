@@ -108,7 +108,7 @@ class OllamaClient(LlmClientInterface):
             ],
         }
 
-        if isinstance(self.think, dict):
+        if isinstance(self.json_think, dict):
             k, v = next(iter(self.json_think.items()))
             payload[k] = v
 
@@ -127,8 +127,8 @@ class OllamaClient(LlmClientInterface):
             "prompt": prompt
         }
 
-        if self.json_think is dict:
-            k, v = next(iter(self.json_think.items()))
+        if self.think is dict:
+            k, v = next(iter(self.think.items()))
             payload[k] = v
 
         return self._exec_ollama_prompt(prompt, output_file, payload, self.url)

@@ -1,6 +1,5 @@
 import pm4py
 from source.Config import Config
-from source.Filename import Filename
 from source.Llm import Llm
 import os
 import logging
@@ -14,7 +13,6 @@ logger = logging.getLogger(__name__)
 class DFGSimplifier:
     def __init__(self):
         self.config = self._load_config()
-        self.fn = Filename()
         self.llm = Llm()
         self.analysis_prompt = self.config['llm']['dfg']['simplify_dfg']['simplification_analysis_prompt']
         self.simplification_prompt = self.config['llm']['dfg']['simplify_dfg']['simplification_instructions_prompt']

@@ -14,6 +14,9 @@ class SimplifyDFGRequest(BaseModel):
     output_path: str
     prompt_context: Optional[List[str]] = None
 
+class CreateMindMapRequest(BaseModel):
+    analysis_dir: str
+
 class FullAnalysisRequest(BaseModel):
     dataset_path: str
     dataset_csv_delimiter: Optional[str] = ","

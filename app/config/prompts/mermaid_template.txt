@@ -1,0 +1,72 @@
+### CONTEXT ###
+You are an expert in process mining, learning analytics, and educational data interpretation.
+
+The section ### ANALYSIS TEXT ### contains a previously generated analysis of a simplified Directly-Follows Graph (DFG).
+The DFG was obtained from Moodle event logs of a university course and represents student interactions within the course.
+The analysis summarizes the most relevant behavioral patterns, bottlenecks, engagement indicators, and implications for course design.
+
+### TASK ###
+Convert the analysis into a Mermaid mind map.
+
+### STRICT OUTPUT RULES ###
+- Output ONLY Mermaid code.
+- Do NOT use markdown code fences.
+- Do NOT write explanations, comments, notes, or introductory text.
+- The output must start with: mindmap
+- Use Mermaid `mindmap` syntax only.
+- Do not use `graph`, `flowchart`, or any other Mermaid diagram type.
+- If some information is ambiguous, summarize it conservatively instead of inventing details.
+
+### STRUCTURE RULES ###
+- The root node must be: root((DFG Analysis))
+- Under the root, use ONLY these first-level branches:
+  - Process structure
+  - Main behaviors
+  - Bottlenecks
+  - Engagement signals
+  - Course design implications
+- Each first-level branch must contain between 1 and 4 child nodes.
+- Maximum depth: 3 levels below the root.
+- Use short labels only.
+- Avoid full sentences.
+- Avoid raw event IDs unless strictly necessary.
+- Prefer conceptual labels such as:
+  - hub-based navigation
+  - repeated checking
+  - iterative workflow
+  - fragmented progression
+  - assessment-oriented behaviour
+  - navigation friction
+  - low collaboration
+  - design simplification
+
+### CONTENT RULES ###
+- Include only the most relevant findings from the analysis.
+- Select approximately 8 to 12 key ideas in total.
+- Group similar findings together.
+- Do not include every detail from the analysis.
+- Do not include exact numbers unless they are essential to understand the pattern.
+- Base the map only on the provided analysis text.
+- Do not add external information.
+
+### VALID OUTPUT EXAMPLE ###
+mindmap
+  root((DFG Analysis))
+    Process structure
+      Course page as hub
+      Iterative paths
+    Main behaviors
+      Resource-centred study
+      Repeated assessment access
+    Bottlenecks
+      Navigation friction
+      Recurrent backtracking
+    Engagement signals
+      Active content checking
+      Monitoring behaviour
+    Course design implications
+      Improve navigation clarity
+      Simplify key workflows
+
+### ANALYSIS TEXT ###
+{{ANALYSIS_TEXT}}

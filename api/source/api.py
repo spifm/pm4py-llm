@@ -15,6 +15,7 @@ from pathlib import Path
 load_dotenv()
 API_TOKEN = os.getenv("API_TOKEN")
 LOG_LEVEL = os.getenv("LOG_LEVEL", "DEBUG").upper()
+PM4PY_BASE_URL = os.getenv("PM4PY_BASE_URL", "http://pm4py-llm-app:8001")
 
 if not API_TOKEN:
     raise RuntimeError("API_TOKEN is not set in environment variables")
@@ -41,7 +42,6 @@ def verify_token(credentials: HTTPAuthorizationCredentials = Depends(security)):
 
 app = FastAPI()
 
-PM4PY_BASE_URL = "http://pm4py-llm-app:8001"
 CACHE_DIR = "./cache/"
 CACHE_DURATION = timedelta(seconds=60 * 60 * 24)  # Cache duration in seconds (1 day)
 SIMPLIFY_FILE = "dfg-generic-activities.json"
@@ -259,6 +259,32 @@ def simplify_dfg_endpoint(request: SimplifyDFGRequest):
         return {"error": str(e)}
 
 
+@app.post(
+        "/create-mind-map",
+        summary="Create a Mermaid mind map",
+        description=(
+            "Creates a Mermaid mind map based on the simplified analysis results.\n\n"
+            "**Example response:**\n"
+            "```json\n"
+            "{\n"
+            "  \"mind_map_file\": \"output/mind_map.mmd\",\n"
+            "}\n"
+            "```"
+        ),
+        dependencies=[Depends(verify_token)]
+)
+def create_mind_map(request: CreateMindMapRequest):
+
+    url = f"{PM4PY_BASE_URL}/create-mind-map"
+    headers = {"Authorization": f"Bearer {API_TOKEN}"}
+    try:
+        response = requests.post(url, json=request.model_dump(), headers=headers)
+        response.raise_for_status()
+        return {"output": response.json()}
+    except requests.exceptions.RequestException as e:
+        return {"error": str(e)}
+    
+
 @app.get(
         "/get-analysis",
         summary="Get analysis results",
@@ -312,7 +338,7 @@ def get_analysis(analysis_dir: str = Query(
 
     except requests.exceptions.RequestException as e:
         raise HTTPException(status_code=500, detail=f"Error fetching analysis: {str(e)}")
-    
+
 
 @app.get(
         "/get-simplified-analysis",

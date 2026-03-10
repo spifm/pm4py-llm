@@ -30,6 +30,10 @@ class Filename:
             "json_llm_restored_simplified": "llm-restored-simplified-dfg.json",
             "performance_image": "performance-dfg.png",
         },
+        "mermaid": {
+            "simplified_mind_map": "simplified-mind_map.mmd",
+            "simplified_mind_map_image": "simplified-mind_map.png"
+        }
     }
     
 

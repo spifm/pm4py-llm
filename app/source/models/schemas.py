@@ -14,3 +14,5 @@ class SimplifyDFGRequest(BaseModel):
     output_path: str
     prompt_context: Optional[List[str]] = None
 
+class CreateMindMapRequest(BaseModel):
+    analysis_dir: str

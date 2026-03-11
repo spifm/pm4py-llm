@@ -32,7 +32,7 @@ class Filename:
         },
         "mermaid": {
             "simplified_mind_map": "simplified-mind_map.mmd",
-            "simplified_mind_map_image": "simplified-mind_map.png"
+            "simplified_mind_map_image": "simplified-mind_map.FORMAT" # FORMAT will be replaced
         }
     }
     
@@ -52,7 +52,7 @@ class Filename:
         return node
 
 
-    def get_filename_path(self, dotted_key, output_dir):
+    def get_filename_path(self, dotted_key, output_dir) -> str:
         """
         Returns the full path combining output_dir + constant filename.
         Example:

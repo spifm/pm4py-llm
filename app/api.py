@@ -137,10 +137,15 @@ def simplify_dfg_endpoint(request: SimplifyDFGRequest):
         summary="Create a Mermaid mind map",
         description=(
             "Creates a Mermaid mind map based on the simplified analysis results.\n\n"
+            "The format of the image is set in configuration (default is svg).\n\n"
+            "**Expected input:**\n"
+            "- `analysis_dir` (str): Directory where the analysis results are stored."
+            "This directory should contain the simplified DFG analysis file.\n\n"
             "**Example response:**\n"
             "```json\n"
             "{\n"
             "  \"mind_map_file\": \"output/mind_map.mmd\",\n"
+            "  \"mind_map_image_file\": \"output/mind_map.svg\"\n"
             "}\n"
             "```"
         ),
@@ -148,18 +153,20 @@ def simplify_dfg_endpoint(request: SimplifyDFGRequest):
 )
 def create_mind_map(request: CreateMindMapRequest):
 
+    logger.info("Received request to create mind map")
+
     basepath = os.path.join(output_dir, request.analysis_dir)
 
     if not os.path.isdir(basepath):
         raise HTTPException(status_code=404, detail="Analysis directory not found")
     
     mind_map_builder_service = MindMapBuilderService()
-    mind_map_file = mind_map_builder_service.build_mind_map(basepath)
+    result = mind_map_builder_service.build_mind_map(basepath)
 
-    result = {
-        "mind_map_file": mind_map_file,
-    }
-    
+    logger.info("Mind map created successfully.")
+    logger.debug(f"Mind map file: {result['mind_map_file']}")
+    logger.debug(f"Mind map image file: {result['mind_map_image_file']}")
+
     return result
 
 

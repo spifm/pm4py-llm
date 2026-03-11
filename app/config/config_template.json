@@ -195,5 +195,9 @@
             "enabled": false,
             "prompt": "Model used is a Temporal Profile."
         }
+    },
+    "mermaid": {
+        "prompt": "prompts/mermaid_template.txt",
+        "image_format": "svg"
     }
 }

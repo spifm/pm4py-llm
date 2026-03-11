@@ -1,5 +1,4 @@
 from source.Config import Config
-from source.Filename import Filename
 from source.LlmMermaidClient import llm_mermaid_factory
 import os
 import logging
@@ -11,7 +10,6 @@ class MindMapBuilder:
 
     def __init__(self):
         self.config = self._load_config()
-        self.fn = Filename()
         self.client = llm_mermaid_factory.create_llm_client(self.config, logger)
 
     def _load_config(self):
@@ -26,17 +24,17 @@ class MindMapBuilder:
     def build_mind_map(
         self,
         analysis: str,
-        mind_map_path: str
+        mind_map_file: str
     ) -> str:
         """
         Build a mind map from a DFG's analysis.
 
         Args:
             analysis: The text analysis of the DFG to be used as input for the mind map generation.
-            mind_map_path: The path where the resulting mind map will be saved.
+            mind_map_file: The file path where the resulting mind map will be saved.
 
         Returns:
-            The mind map data
+            The mind map content
         """
 
         logger.info("Starting mind map building process.")
@@ -45,21 +43,18 @@ class MindMapBuilder:
         prompt = self.client.get_mermaid_prompt().replace("{{ANALYSIS_TEXT}}", analysis)
 
         # Execute the prompt using the LLM client and get the mind map data
-        simplified_mind_map_path = self.fn.get_filename_path("mermaid.simplified_mind_map", mind_map_path)
         metrics = self.client.exec_prompt(
             prompt,
-            simplified_mind_map_path
+            mind_map_file
         )
 
         # Write the metrics to the info file
-        output_dir = os.path.dirname(simplified_mind_map_path)
+        output_dir = os.path.dirname(mind_map_file)
         info_writer = InfoWriter(output_dir)
         info_writer.write("\n\n=== (Simplified) Mind map LLM Request Metrics ===\n\n")
         for key, value in metrics.items():
             info_writer.write(f"{key}: {value}\n")
 
-        # Read the generated mind map data from the file and return it
-        #with open(simplified_mind_map_path, 'r', encoding='utf-8') as f:
-        #    simplified_mind_map_data = f.read()
-
-        return simplified_mind_map_path
+        # Read the generated mind map file and return its content
+        with open(mind_map_file, 'r', encoding='utf-8') as f:
+            return f.read()

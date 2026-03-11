@@ -2,6 +2,7 @@ import requests
 from .LlmClientInterface import LlmClientInterface
 from typing import Dict, Any
 import time
+import json
 
 class OllamaClient(LlmClientInterface):
 
@@ -112,7 +113,20 @@ class OllamaClient(LlmClientInterface):
             k, v = next(iter(self.json_think.items()))
             payload[k] = v
 
-        return self._exec_ollama_prompt(prompt, output_file, payload, self.json_url)
+        metrics = self._exec_ollama_prompt(prompt, output_file, payload, self.json_url)
+        
+        llm_info = {
+            "Provider": "Ollama",
+            "Model": self.json_model_name,
+            "Think": (
+                "Not specified (default value in LLM's API was used)"
+                if self.json_think is False
+                else json.dumps(self.json_think, ensure_ascii=False)
+            ),
+            "Options": json.dumps(self.json_options, ensure_ascii=False),
+        }
+
+        return {**llm_info, **metrics}
 
 
     def exec_prompt(self, prompt: str, output_file: str) -> Dict [str, Any] | None:
@@ -131,7 +145,20 @@ class OllamaClient(LlmClientInterface):
             k, v = next(iter(self.think.items()))
             payload[k] = v
 
-        return self._exec_ollama_prompt(prompt, output_file, payload, self.url)
+        metrics = self._exec_ollama_prompt(prompt, output_file, payload, self.url)
+
+        llm_info = {
+            "Provider": "Ollama",
+            "Model": self.model_name,
+            "Think": (
+                "Not specified (default value in LLM's API was used)"
+                if self.think is False
+                else json.dumps(self.think, ensure_ascii=False)
+            ),
+            "Options": json.dumps(self.options, ensure_ascii=False),
+        }
+
+        return {**llm_info, **metrics}
 
 
     def eval_max_tokens_for_json_prompt(self, prompt: str) -> bool:

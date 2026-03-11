@@ -3,6 +3,7 @@ from google.genai import types
 from .LlmClientInterface import LlmClientInterface
 from typing import Dict, Any
 import time
+import json
 
 class GeminiClient(LlmClientInterface):
 
@@ -11,6 +12,7 @@ class GeminiClient(LlmClientInterface):
         self.model_name = config['model_name']
         self.api_key = config['api_key']
         self.think = config.get('think', False)
+        self.options = config.get('options', {})
 
     def _gemini_metrics(self, response, t0_perf: float, t1_perf: float) -> dict:
         um = getattr(response, "usage_metadata", None)
@@ -23,6 +25,14 @@ class GeminiClient(LlmClientInterface):
         latency_ms = (t1_perf - t0_perf) * 1000.0
 
         return {
+            "Provider": "Gemini",
+            "Model": self.model_name,
+            "Think": (
+                "Not specified (default value in LLM's API was used)"
+                if self.think is False
+                else json.dumps(self.think, ensure_ascii=False)
+            ),
+            "Options": json.dumps(self.options, ensure_ascii=False),
             "Input tokens": int(prompt_tokens),
             "Output tokens": int(output_tokens),
             "Total duration ms": round(latency_ms, 4),

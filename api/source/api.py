@@ -59,9 +59,9 @@ def read_root():
 
 @app.post(
     "/run-full-analysis",
-    summary="Execute full analysis pipeline: process mining analysis, simplification and get results",
+    summary="Execute full analysis pipeline: process mining analysis, simplification, mind map, and return results",
     description=(
-        "Runs the full pipeline: pm-analysis → simplify-dfg → get-analysis\n\n"
+        "Runs the full pipeline: pm-analysis → simplify-dfg → get-analysis → create-mind-map\n\n"
         "**Required input:**\n"
         "- `dataset_path` (str): Full path to the dataset file (CSV format) to analyze.\n"
         "- `output_path` (str): Directory where the analysis results will be stored.\n"
@@ -90,7 +90,9 @@ def read_root():
         "  \"analysis\": \"XXX\",\n"
         "  \"dfg_image\": \"XXX\",\n"
         "  \"simplified_dfg_analysis\": \"XXX\",\n"
-        "  \"simplified_dfg_image\": \"XXX\"\n"
+        "  \"simplified_dfg_image\": \"XXX\",\n"
+        "  \"mind_map_file\": \"output/mind_map.mmd\"\n"
+        "  \"mind_map_image_file\": \"output/mind_map.svg\"\n"
         "}\n"
         "```"
     ),
@@ -138,13 +140,21 @@ def full_analysis(
     # Step 3: Execute get_analysis
     try:
         analysis_result = get_analysis(analysis_dir=output_directory)
-
         logger.debug(f"Step 3: Get Analysis output: {analysis_result}")
-
     except Exception as e:
         return {"step": "get-analysis", "error": str(e)}
+    
+    
+    # Step 4: Execute create_mind_map
+    try:
+        create_mind_map_request = CreateMindMapRequest(analysis_dir=output_directory)
+        mind_map_result = create_mind_map(create_mind_map_request)
+        logger.debug(f"Step 4: Create Mind Map output: {mind_map_result}")
+    except Exception as e:
+        return {"step": "create-mind-map", "error": str(e)}
 
-    return analysis_result
+
+    return {**analysis_result, **mind_map_result}
 
 
 @app.post(
@@ -268,6 +278,7 @@ def simplify_dfg_endpoint(request: SimplifyDFGRequest):
             "```json\n"
             "{\n"
             "  \"mind_map_file\": \"output/mind_map.mmd\",\n"
+            "  \"mind_map_image_file\": \"output/mind_map.svg\",\n"
             "}\n"
             "```"
         ),
@@ -280,7 +291,7 @@ def create_mind_map(request: CreateMindMapRequest):
     try:
         response = requests.post(url, json=request.model_dump(), headers=headers)
         response.raise_for_status()
-        return {"output": response.json()}
+        return response.json()
     except requests.exceptions.RequestException as e:
         return {"error": str(e)}
     

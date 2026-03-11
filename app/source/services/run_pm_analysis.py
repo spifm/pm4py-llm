@@ -207,8 +207,6 @@ class PmAnalysisService:
         if self.config['preprocess']['enabled']:
             info_writer.write("Preprocessing. Using activity mapping from: {}\n".format(mapping_activity_json_path))
 
-        info_writer.write_llm_config(self.config['llm'])
-
         # Discover and save models
         discovery = Discovery(log)
 

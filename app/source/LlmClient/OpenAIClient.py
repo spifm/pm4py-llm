@@ -3,6 +3,7 @@ from openai.types.responses import ResponseOutputMessage, ResponseOutputText
 from .LlmClientInterface import LlmClientInterface
 from typing import Dict, Any
 import time
+import json
 
 class OpenAIClient(LlmClientInterface):
 
@@ -11,6 +12,7 @@ class OpenAIClient(LlmClientInterface):
         self.model_name = config['model_name']
         self.api_key = config['api_key']
         self.think = config.get('think', {})
+        self.options = config.get('options', {})
 
     def exec_prompt(self, prompt: str, output_file: str) -> Dict [str, Any] | None:
 
@@ -55,6 +57,14 @@ class OpenAIClient(LlmClientInterface):
 
         # Get metrics to return them
         return {
+            "Provider": "OpenAI",
+            "Model": self.model_name,
+            "Think": (
+                "Not specified (default value in LLM's API was used)"
+                if self.think is False
+                else json.dumps(self.think, ensure_ascii=False)
+            ),
+            "Options": json.dumps(self.options, ensure_ascii=False),
             "Input tokens": response.usage.input_tokens,
             "Output tokens": response.usage.output_tokens,
             "Total duration ms": round((t1_perf - t0_perf) * 1000.0, 4),

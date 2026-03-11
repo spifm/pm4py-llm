@@ -266,8 +266,6 @@ class DFGSimplifier:
         info_writer.write(f"Original DFG:    {original_dfg_path}\n")
         info_writer.write(f"Simplified DFG:  {simplified_dfg_path}\n\n")
 
-        info_writer.write_llm_config(self.config['llm'])
-
         info_writer.write("Activities (nodes)\n")
         info_writer.write(f"  - Original:    {orig_activities}\n")
         info_writer.write(f"  - Simplified:  {simp_activities}\n\n")

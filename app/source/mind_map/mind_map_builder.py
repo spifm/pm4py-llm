@@ -1,8 +1,9 @@
 from source.Config import Config
-from source.LlmMermaidClient import llm_mermaid_factory
+from source.LlmClient import llm_factory
 import os
 import logging
 from source.helpers.info_writer import InfoWriter
+from source.helpers.load_prompt_template import PromptLoader
 
 logger = logging.getLogger(__name__)
 
@@ -10,7 +11,8 @@ class MindMapBuilder:
 
     def __init__(self):
         self.config = self._load_config()
-        self.client = llm_mermaid_factory.create_llm_client(self.config, logger)
+        self.client = llm_factory.create_llm_client(self.config, logger)
+        self.prompt_loader = PromptLoader()
 
     def _load_config(self):
         """
@@ -40,7 +42,9 @@ class MindMapBuilder:
         logger.info("Starting mind map building process.")
 
         # Prepare the prompt by loading the template and replacing the placeholder with the analysis
-        prompt = self.client.get_mermaid_prompt().replace("{{ANALYSIS_TEXT}}", analysis)
+        prompt = self.prompt_loader.load_template(
+            self.config["mermaid"]["prompt"]
+            ).replace("{{ANALYSIS_TEXT}}", analysis)
 
         # Execute the prompt using the LLM client and get the mind map data
         metrics = self.client.exec_prompt(

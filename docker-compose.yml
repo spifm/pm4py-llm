@@ -69,4 +69,14 @@ services:
     depends_on:
       - redis
 
-
+  mermaid-service:
+    image: pm4py-mermaid-service
+    build:
+      context: ./mermaid-service
+    container_name: pm4py-mermaid-service
+    ports:
+      - "8003:8003"
+    volumes:
+      - ./mermaid-service/source:/app/source
+    env_file:
+      - .env

@@ -1,7 +1,7 @@
-from fastapi import FastAPI, HTTPException, status, Depends, BackgroundTasks
+from fastapi import FastAPI, HTTPException, status, Depends
 from fastapi.security import HTTPBearer, HTTPAuthorizationCredentials
-import os
 from dotenv import load_dotenv
+import os
 import logging
 import sys
 from db import MoodleDatabase

@@ -39,13 +39,12 @@ class EventLogMetadataBuilder:
         path = Path(dataset_path)
         return str(path.with_suffix(".meta.json"))
     
-    def _build_db_info(self, dbname: str) -> DBInfo:
-        m = re.search(r'_(av\d+)_(\d{2}_\d{2})_db$', dbname)
-
-        db_av = m.group(1) if m else None
-        db_year = m.group(2) if m else None
+    def _build_db_info(self, db_name: str) -> DBInfo:
+        parts = db_name.split("_")
+        db_av = parts[1] if len(parts) >= 4 else None
+        db_year = f"{parts[2]}_{parts[3]}" if len(parts) >= 4 else None
         return DBInfo(
-            name=dbname,
+            name=db_name,
             av=db_av if db_av else "unknown",
             year=db_year if db_year else "unknown",
         )

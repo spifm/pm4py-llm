@@ -198,6 +198,6 @@
     },
     "mermaid": {
         "prompt": "prompts/mermaid_template.txt",
-        "image_format": "svg",
+        "image_format": "svg"
     }
 }

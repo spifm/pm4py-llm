@@ -18,6 +18,10 @@ class MoodleDatabase:
         self.dbname = dbname
         self.table_prefix = table_prefix
 
+    def get_dbname(self) -> str:
+        """Get the current database name."""
+        return self.dbname
+
     @classmethod
     def from_env(cls) -> "MoodleDatabase":
         """Create an instance by reading from environment variables."""

@@ -11,6 +11,11 @@ class CourseInfo(BaseModel):
     fullname: str
     shortname: str
 
+class DBInfo(BaseModel):
+    name: str
+    av: str
+    year: str
+
 class ExportEventLogResponse(BaseModel):
     message: str
     output_file: str

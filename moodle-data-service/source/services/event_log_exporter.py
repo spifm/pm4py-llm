@@ -164,7 +164,7 @@ class EventLogExporter:
         self.metadata_service.write_metadata(
             dataset_path=output_path,
             row_count=len(rows),
-            database= self.db,
+            db_name=self.db.get_dbname(),
             course_info=course_info,
         )
 

@@ -25,5 +25,5 @@ class ExportEventLogResponse(BaseModel):
 class AsyncExportEventLogResponse(BaseModel):
     message: str
     job_id: str
-    expected_output_file: str
+    dataset_path: str
     course_info: CourseInfo

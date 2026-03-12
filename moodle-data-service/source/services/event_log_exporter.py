@@ -20,11 +20,41 @@ class EventLogExporter:
         - Writing the result to CSV.
     """
 
-    def __init__(self, db: MoodleDatabase, output_dir: str):
+    def __init__(self, db: MoodleDatabase, course_id: int, dataset_dir: str, dataset_name: str | None = None):
         self.db = db
-        self.output_dir = output_dir
+        self.dataset_dir = dataset_dir
         self.metadata_service = EventLogMetadataBuilder()
-        os.makedirs(self.output_dir, exist_ok=True)
+        course_info = self._fetch_course_info(course_id)
+        if course_info is None:
+            logger.warning("Course %s not found", course_id)
+            raise ValueError(f"Course with id {course_id} not found")
+        self.course_info = course_info
+        self.dataset_path = self._build_dataset_path(dataset_name)
+        os.makedirs(self.dataset_dir, exist_ok=True)
+
+
+    def _fetch_course_info(self, course_id: int) -> CourseInfo | None:
+        """
+        Returns a `dict` course info (id, fullname, shortname)
+        or None if the course does not exist.
+        """
+        with self.db.get_connection() as conn:
+            with conn.cursor(cursor_factory=RealDictCursor) as cur:
+                query = sql.SQL(
+                    """
+                    SELECT id, fullname, shortname
+                    FROM {course_table}
+                    WHERE id = %s
+                    """
+                ).format(
+                    course_table=sql.Identifier(f"{self.db.table_prefix}course")
+                )
+
+                cur.execute(query, (course_id,))
+                row = cur.fetchone()
+                return CourseInfo(**row) if row else None
+                # Type conversion dict -> Pydantic model
+
 
     def _sanitize_filename(self, name: str) -> str:
         """
@@ -37,9 +67,23 @@ class EventLogExporter:
         name = name.replace(" ", "_")
         name = re.sub(r"[^a-z0-9_\-]", "", name)
         return name or "dataset"
+    
+
+    def _build_dataset_path(
+        self,
+        dataset_name: str | None = None,
+    ) -> str:
+        """
+        Returns the expected dataset filename for a given course_id and optional dataset_name.
+        """
+        if dataset_name:
+            safe_name = self._sanitize_filename(dataset_name)
+        else:
+            safe_name = self.course_info.shortname
+        return os.path.join(self.dataset_dir, f"{safe_name}.csv")
 
 
-    def _fetch_logs(self, course_id: int) -> Tuple[List[str], List[tuple]]:
+    def _fetch_logs(self) -> Tuple[List[str], List[tuple]]:
         """
         Returns (columns, rows) of the event log of the course filtered only for students.
         """
@@ -75,65 +119,27 @@ class EventLogExporter:
                     context_table=sql.Identifier(f"{self.db.table_prefix}context"),
                 )
 
-                cur.execute(query, (course_id,))
+                cur.execute(query, (self.course_info.id,))
                 rows = cur.fetchall()
                 colnames = [desc[0] for desc in cur.description]
 
         return colnames, rows
+
+    
+    def get_course_info(self) -> CourseInfo:
+        return self.course_info
     
 
-    def get_course_info(self, course_id: int) -> CourseInfo | None:
-        """
-        Returns a `dict` course info (id, fullname, shortname)
-        or None if the course does not exist.
-        """
-        with self.db.get_connection() as conn:
-            with conn.cursor(cursor_factory=RealDictCursor) as cur:
-                query = sql.SQL(
-                    """
-                    SELECT id, fullname, shortname
-                    FROM {course_table}
-                    WHERE id = %s
-                    """
-                ).format(
-                    course_table=sql.Identifier(f"{self.db.table_prefix}course")
-                )
-
-                cur.execute(query, (course_id,))
-                row = cur.fetchone()
-                return CourseInfo(**row) if row else None
-                # Type conversion dict -> Pydantic model
+    def get_dataset_path(self) -> str:
+        return self.dataset_path
 
 
-    def get_output_path(
-        self,
-        course_id: int,
-        dataset_name: str | None = None,
-    ) -> str:
-        """
-        Returns the expected dataset filename for a given course_id and optional dataset_name.
-        """
-        if dataset_name:
-            safe_name = self._sanitize_filename(dataset_name)
-        else:
-            safe_name = f"dataset-{course_id}"
-        return os.path.join(self.output_dir, f"{safe_name}.csv")
-
-
-    def export_course_event_log(
-        self,
-        course_id: int,
-        dataset_name: str | None = None,
-    ) -> tuple[str, int, CourseInfo]:
+    def export_course_event_log(self,) -> int:
         """
         Exports the event log of a course to CSV.
-        If dataset_name is provided, it is used to name the file.
-        Returns (file_path, number_of_rows, course_info).
+        Returns number_of_rows.
         """
-        course_info = self.get_course_info(course_id)
-        if course_info is None:
-            logger.warning("Course %s not found", course_id)
-            raise ValueError(f"Course with id {course_id} not found")
+        course_info = self.get_course_info()
 
         logger.info(
             "Exporting event log for course_id=%s (%s)",
@@ -141,16 +147,11 @@ class EventLogExporter:
             course_info.fullname,
         )
 
-        colnames, rows = self._fetch_logs(course_id)
+        colnames, rows = self._fetch_logs()
 
-        output_path = self.get_output_path(
-            course_id=course_id,
-            dataset_name=dataset_name,
-        )
+        logger.info("Writing %s rows to %s", len(rows), self.get_dataset_path())
 
-        logger.info("Writing %s rows to %s", len(rows), output_path)
-
-        with open(output_path, "w", newline="", encoding="utf-8") as f:
+        with open(self.get_dataset_path(), "w", newline="", encoding="utf-8") as f:
             writer = csv.writer(
                 f,
                 delimiter=",",
@@ -162,10 +163,10 @@ class EventLogExporter:
 
 
         self.metadata_service.write_metadata(
-            dataset_path=output_path,
+            dataset_path=self.get_dataset_path(),
             row_count=len(rows),
             db_name=self.db.get_dbname(),
             course_info=course_info,
         )
 
-        return output_path, len(rows), course_info
+        return len(rows)

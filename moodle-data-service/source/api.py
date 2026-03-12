@@ -50,8 +50,7 @@ def verify_token(credentials: HTTPAuthorizationCredentials = Depends(security)):
 
 # ─── Service instances ────────────────────────────────────────
 
-dataset_dir = os.getenv("DATASET_DIR", "/dataset")
-
+DATASET_DIR = os.getenv("DATASET_DIR", "/dataset")
 REDIS_URL = os.getenv("REDIS_URL", "redis://redis:6379/0")
 redis_conn = redis.from_url(REDIS_URL)
 task_queue = Queue("default", connection=redis_conn)
@@ -115,17 +114,20 @@ def export_event_log(request: ExportEventLogRequest):
         db = MoodleDatabase.from_env()
         if dbname:
             db.set_dbname(dbname)
-        event_log_exporter = EventLogExporter(db=db, output_dir=dataset_dir)
 
-        output_file, rows_exported, course_info = event_log_exporter.export_course_event_log(
+        event_log_exporter = EventLogExporter(
+            db=db,
             course_id=course_id,
-            dataset_name=dataset_name,
+            dataset_dir=DATASET_DIR,
+            dataset_name=dataset_name
         )
+        rows_exported = event_log_exporter.export_course_event_log()
+
         return ExportEventLogResponse(
             message="Event log exported successfully",
-            output_file=output_file,
+            output_file=event_log_exporter.get_dataset_path(),
             rows_exported=rows_exported,
-            course_info=course_info
+            course_info=event_log_exporter.get_course_info(),
         )
     except ValueError as e:
         raise HTTPException(status_code=404, detail=str(e))
@@ -185,9 +187,15 @@ async def export_event_log_async(
         db = MoodleDatabase.from_env()
         if dbname:
             db.set_dbname(dbname)
-        event_log_exporter = EventLogExporter(db=db, output_dir=dataset_dir)
 
-        course_info = event_log_exporter.get_course_info(course_id)
+        event_log_exporter = EventLogExporter(
+            db=db,
+            course_id=course_id,
+            dataset_dir=DATASET_DIR,
+            dataset_name=dataset_name
+        )
+
+        course_info = event_log_exporter.get_course_info()
         if course_info is None:
             raise ValueError(f"Course with id {course_id} not found")
     except ValueError as e:
@@ -199,23 +207,15 @@ async def export_event_log_async(
             detail="Unexpected error while checking course",
         )
 
-    # Get safe output full path
-    expected_output_file = event_log_exporter.get_output_path(
-        course_id=course_id,
-        dataset_name=dataset_name,
-    )
-
     # Execute export task in background
     job = task_queue.enqueue(
         export_event_log_task,
         event_log_exporter=event_log_exporter,
-        course_id=course_id,
-        dataset_name=dataset_name,
     )
 
     return AsyncExportEventLogResponse(
         message="Event log export started",
         job_id=job.id,
-        expected_output_file=expected_output_file,
+        dataset_path=event_log_exporter.get_dataset_path(),
         course_info=course_info,
     )

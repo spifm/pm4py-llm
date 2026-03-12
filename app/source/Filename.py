@@ -14,13 +14,13 @@ class Filename:
             "image": "bpmn.png"
         },
         "dfg": {
-            "image": "dfg.png",
+            "image": "dfg.svg",
             "raw": "dfg.dfg",
             "abstract": "abstract-dfg.txt",
             "analysis": "dfg-analysis.txt",
             "llm_simplified": "llm-simplified-dfg.txt",
             "simplified": "simplified-dfg.dfg",
-            "simplified_image": "simplified-dfg.png",
+            "simplified_image": "simplified-dfg.svg",
             "simplified_analysis": "simplified-dfg-analysis.txt",
             "json": "dfg.json",
             "json_activity_mapping_from_dfg": "dfg-activity_mapping.json",

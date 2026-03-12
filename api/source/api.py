@@ -256,7 +256,7 @@ def store_dataset(request: DatasetToStoreRequest):
         "  \"output_analysis\": \"/output/simplified-dfg-analysis.txt\",\n"
         "  \"llm_simplified_dfg\": \"/output/llm-simplified-dfg.txt\",\n"
         "  \"simplified_dfg\": \"/output/simplified-dfg.dfg\",\n"
-        "  \"simplified_dfg_image\": \"/output/simplified-dfg.png\"\n"
+        "  \"simplified_dfg_image\": \"/output/simplified-dfg.svg\"\n"
         "}\n"
         "```"
     ),

@@ -7,6 +7,7 @@ from source.services.run_pm_analysis import PmAnalysisService
 from source.services.store_dataset_as_csv import StoreDatasetAsCsvService
 from source.services.simplify_dfg import SimplifyDFGService
 from source.services.build_mind_map_service import MindMapBuilderService
+from source.services.get_analysis_service import GetAnalysisService
 import os
 import logging
 import sys
@@ -107,7 +108,7 @@ def run_script(request: DatasetToStoreRequest):
         "  \"output_analysis\": \"/output/simplified-dfg-analysis.txt\",\n"
         "  \"llm_simplified_dfg\": \"/output/llm-simplified-dfg.txt\",\n"
         "  \"simplified_dfg\": \"/output/simplified-dfg.dfg\",\n"
-        "  \"simplified_dfg_image\": \"/output/simplified-dfg.png\"\n"
+        "  \"simplified_dfg_image\": \"/output/simplified-dfg.svg\"\n"
         "}\n"
         "```"
     ),
@@ -167,6 +168,7 @@ def create_mind_map(request: CreateMindMapRequest):
     logger.debug(f"Mind map file: {result['mind_map_file']}")
     logger.debug(f"Mind map image file: {result['mind_map_image_file']}")
 
+
     return result
 
 
@@ -198,10 +200,13 @@ def get_analysis(analysis_dir: str = Query(
     if not os.path.isdir(basepath):
         raise HTTPException(status_code=404, detail="Analysis directory not found")
     
-    dfg_base_path = os.path.join(basepath, "dfg.png")
-    dfg_analysis_base_path = os.path.join(basepath, "dfg-analysis.txt")
-    simplified_dfg_base_path = os.path.join(basepath, "simplified-dfg.png")
-    simplified_dfg_analysis_base_path = os.path.join(basepath, "simplified-dfg-analysis.txt")
+    get_analysis_service = GetAnalysisService()
+    result = get_analysis_service.get_analysis_files(basepath)
+
+    dfg_base_path = result["dfg_image"]
+    dfg_analysis_base_path = result["dfg_analysis"]
+    simplified_dfg_base_path = result["simplified_dfg_image"]
+    simplified_dfg_analysis_base_path = result["simplified_dfg_analysis"]
     
     if not os.path.isfile(dfg_base_path) or not os.path.isfile(dfg_analysis_base_path):
         raise HTTPException(status_code=404, detail=dfg_base_path + " or " + dfg_analysis_base_path + " not found")
@@ -259,8 +264,10 @@ def get_simplified_analysis(analysis_dir: str = Query(
     if not os.path.isdir(basepath):
         raise HTTPException(status_code=404, detail="Analysis directory not found")
     
-    simplified_dfg_base_path = os.path.join(basepath, "simplified-dfg.png")
-    simplified_dfg_analysis_base_path = os.path.join(basepath, "simplified-dfg-analysis.txt")
+    get_analysis_service = GetAnalysisService()
+    result = get_analysis_service.get_simplified_analysis_files(basepath)
+    simplified_dfg_base_path = result["simplified_dfg_image"]
+    simplified_dfg_analysis_base_path = result["simplified_dfg_analysis"]
 
     try:
         if not os.path.isfile(simplified_dfg_analysis_base_path) or not os.path.isfile(simplified_dfg_base_path):

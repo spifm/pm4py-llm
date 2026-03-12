@@ -141,3 +141,6 @@ output/*
 
 # Directory for LLM Training
 llm-training
+
+# api cache
+api/source/cache

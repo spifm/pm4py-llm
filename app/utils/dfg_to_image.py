@@ -3,7 +3,7 @@ import pm4py
 from pathlib import Path
 
 
-def dfg_to_png(input_path: str, output_path: str, *, bgcolor: str = "white", rankdir: str = "LR") -> None:
+def dfg_to_image(input_path: str, output_path: str, *, bgcolor: str = "white", rankdir: str = "LR") -> None:
     input_p = Path(input_path)
     if not input_p.is_file():
         raise FileNotFoundError(f"Input DFG not found: {input_path}")
@@ -27,7 +27,7 @@ def dfg_to_png(input_path: str, output_path: str, *, bgcolor: str = "white", ran
 
 def main() -> None:
     parser = argparse.ArgumentParser(
-        description="Convert a PM4Py .dfg file into a PNG image.",
+        description="Convert a PM4Py .dfg file into an image.",
     )
     parser.add_argument(
         "input_path",
@@ -35,7 +35,7 @@ def main() -> None:
     )
     parser.add_argument(
         "output_path",
-        help="Path to the output .png to create",
+        help="Path to the output image to create",
     )
     parser.add_argument(
         "--bgcolor",
@@ -49,7 +49,7 @@ def main() -> None:
     )
     args = parser.parse_args()
 
-    dfg_to_png(args.input_path, args.output_path, bgcolor=args.bgcolor, rankdir=args.rankdir)
+    dfg_to_image(args.input_path, args.output_path, bgcolor=args.bgcolor, rankdir=args.rankdir)
 
 
 if __name__ == "__main__":

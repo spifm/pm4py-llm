@@ -176,13 +176,17 @@ This script reads abstract DFG models from a directory structure, extracts user 
 docker exec -it pm4py-llm-app python3 -m utils.merge_abstract_dfgs_to_json
 ```
 
-## DFG to PNG
+## DFG to IMAGE
 
-This script reads a dfg model from a pm4py .dfg file and generates a PNG image of the model. The script is called `dfg_to_png.py` and it must be run independently. The dfg file path is directly set in the script. The script will then generate a new png file with the DFG model. The script can be run using the following command:
+This script reads a dfg model from a pm4py .dfg file and generates an image of the model. The script is called `dfg_to_image.py` and it must be run independently. The dfg file path is directly set in the script. The script will then generate a new image file with the DFG model. The script can be run using the following command:
 
 ```bash
-docker exec -it pm4py-llm-app python3 -m utils.dfg_to_png /output/example/input.dfg /output/example/output.png
+docker exec -it pm4py-llm-app python3 -m utils.dfg_to_image \
+/output/example/input.dfg \
+/output/example/output.svg
 ```
+
+NOTE: it has been tested using png and svg formats for the output image, but it should work with any format supported by the graphviz library used in the script.
 
 ## CSV to JSON conversion
 

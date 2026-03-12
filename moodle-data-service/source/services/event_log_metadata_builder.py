@@ -9,6 +9,7 @@ class EventLogMetadataBuilder:
         self,
         dataset_path: str,
         row_count: int,
+        database: str,
         course_info: CourseInfo,
         extra: dict[str, Any] | None = None,
     ) -> dict[str, Any]:
@@ -16,6 +17,7 @@ class EventLogMetadataBuilder:
             "dataset_path": dataset_path,
             "created_at_utc": datetime.now(timezone.utc).isoformat(),
             "row_count": row_count,
+            "database": database,
             "course": {
                 "id": course_info.id,
                 "fullname": course_info.fullname,
@@ -36,12 +38,14 @@ class EventLogMetadataBuilder:
         self,
         dataset_path: str,
         row_count: int,
+        database: str,
         course_info: CourseInfo,
         extra: dict[str, Any] | None = None,
     ) -> str:
         metadata = self._build_metadata(
             dataset_path=dataset_path,
             row_count=row_count,
+            database=database,
             course_info=course_info,
             extra=extra,
         )

@@ -153,8 +153,12 @@ def full_analysis(
     except Exception as e:
         return {"step": "create-mind-map", "error": str(e)}
 
-
-    return {**analysis_result, **mind_map_result}
+    return JSONResponse(
+        content={
+            **json.loads(analysis_result.body),
+            **json.loads(mind_map_result.body),
+        }
+    )
 
 
 @app.post(
@@ -291,7 +295,7 @@ def create_mind_map(request: CreateMindMapRequest):
     try:
         response = requests.post(url, json=request.model_dump(), headers=headers)
         response.raise_for_status()
-        return response.json()
+        return JSONResponse(content=response.json())
     except requests.exceptions.RequestException as e:
         return {"error": str(e)}
     

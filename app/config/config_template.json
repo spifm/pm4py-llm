@@ -199,6 +199,5 @@
     "mermaid": {
         "prompt": "prompts/mermaid_template.txt",
         "image_format": "svg",
-        "enabled_in_full_analysis": true
     }
 }

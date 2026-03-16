@@ -8,8 +8,8 @@ services:
       - "8001:8001"
     volumes:
       - ./app:/app
-      - ./dataset:${DATASET_DIR}
-      - ./output:${OUTPUT_DIR}
+      - ./dataset:/dataset
+      - ./output:/output
     env_file:
       - .env
 
@@ -36,7 +36,7 @@ services:
       - "8002:8002"
     volumes:
       - ./moodle-data-service/source:/app/source
-      - ./dataset:${DATASET_DIR}
+      - ./dataset:/dataset
     env_file:
       - .env
 
@@ -47,7 +47,7 @@ services:
     command: ["rq", "worker", "-u", "redis://redis:6379/0", "default"]
     volumes:
       - ./moodle-data-service/source:/app/source
-      - ./dataset:${DATASET_DIR}
+      - ./dataset:/dataset
     env_file:
       - .env
     depends_on:
@@ -80,3 +80,18 @@ services:
       - ./mermaid-service/source:/app/source
     env_file:
       - .env
+
+  results-publisher:
+    image: pm4py-results-publisher
+    build:
+      context: ./results-publisher
+    container_name: pm4py-results-publisher
+    ports:
+      - "8004:8004"
+    volumes:
+      - ./results-publisher/source:/app/source
+      - ./output:/output
+      - ${LOCAL_PUBLISH_DIRECTORY}:/app/published_results
+    env_file:
+      - .env
+

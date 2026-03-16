@@ -144,3 +144,6 @@ llm-training
 
 # api cache
 api/source/cache
+
+# data
+data

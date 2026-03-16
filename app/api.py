@@ -17,7 +17,8 @@ import sys
 load_dotenv()
 API_TOKEN = os.getenv("API_TOKEN")
 LOG_LEVEL = os.getenv("LOG_LEVEL", "DEBUG").upper()
-output_dir = os.getenv("OUTPUT_DIR", "/output")
+output_dir = "/output"
+dataset_dir = "/dataset"
 
 if not API_TOKEN:
     raise RuntimeError("API_TOKEN is not set in environment variables")
@@ -49,7 +50,7 @@ app = FastAPI()
 def pm_analysis(request: PMAnalysisRequest):
     try:
         service = PmAnalysisService(
-            dataset_path=request.dataset_path,
+            dataset_path=os.path.join(dataset_dir, request.dataset),
             dataset_csv_delimiter=request.dataset_csv_delimiter,
             output_path=request.output_path
         )

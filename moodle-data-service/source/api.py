@@ -50,8 +50,9 @@ def verify_token(credentials: HTTPAuthorizationCredentials = Depends(security)):
 
 # ─── Service instances ────────────────────────────────────────
 
-DATASET_DIR = os.getenv("DATASET_DIR", "/dataset")
+
 REDIS_URL = os.getenv("REDIS_URL", "redis://redis:6379/0")
+DATASET_DIR = "/dataset"
 redis_conn = redis.from_url(REDIS_URL)
 task_queue = Queue("default", connection=redis_conn)
 

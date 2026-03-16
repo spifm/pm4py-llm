@@ -5,7 +5,7 @@ import logging
 
 logger = logging.getLogger(__name__)
 
-output_dir = os.getenv("OUTPUT_DIR", "/output")
+output_dir = "/output"
 
 class MakeOutputDir:
     @staticmethod

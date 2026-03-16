@@ -2,7 +2,7 @@ from pydantic import BaseModel
 from typing import Optional, Dict, List
 
 class PMAnalysisRequest(BaseModel):
-    dataset_path: str
+    dataset: str
     dataset_csv_delimiter: str = ","
     output_path: Optional[str] = ""
 

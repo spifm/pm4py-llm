@@ -6,8 +6,8 @@ import numpy as np
 import os
 from datetime import datetime
 
-dataset_dir = os.getenv("DATASET_DIR", "/dataset")
-output_dir = os.getenv("OUTPUT_DIR", "/output")
+dataset_dir = "/dataset"
+output_dir = "/output"
 
 dataset = f"{dataset_dir}/jla_union.xes"
 column_name = "grade_er"

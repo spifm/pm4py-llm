@@ -54,7 +54,7 @@ for folder_name in os.listdir(base_dir):
 
 # Prepare output path
 folder_name = os.path.basename(os.path.normpath(base_dir))
-output_dir = os.getenv("OUTPUT_DIR", "/output")
+output_dir = "/output"
 os.makedirs(output_dir, exist_ok=True)
 output_file = os.path.join(output_dir, f"output_dfg_{folder_name}.json")
 

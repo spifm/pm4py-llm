@@ -2,7 +2,7 @@ from pydantic import BaseModel
 from typing import Optional, Dict, List
 
 class PMAnalysisRequest(BaseModel):
-    dataset_path: str
+    dataset: str
     dataset_csv_delimiter: Optional[str] = ","
     output_path: Optional[str] = ""
 
@@ -18,7 +18,7 @@ class CreateMindMapRequest(BaseModel):
     analysis_dir: str
 
 class FullAnalysisRequest(BaseModel):
-    dataset_path: str
+    dataset: str
     dataset_csv_delimiter: Optional[str] = ","
     output_path: Optional[str] = ""
     prompt_context: Optional[List[str]] = None

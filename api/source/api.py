@@ -63,7 +63,7 @@ def read_root():
     description=(
         "Runs the full pipeline: pm-analysis → simplify-dfg → get-analysis → create-mind-map\n\n"
         "**Required input:**\n"
-        "- `dataset_path` (str): Full path to the dataset file (CSV format) to analyze.\n"
+        "- `dataset` (str): the dataset file (CSV format) to analyze.\n"
         "- `output_path` (str): Directory where the analysis results will be stored.\n"
         "\n**Optional input:**\n"
         "- `dataset_csv_delimiter` (Optional[str]): CSV delimiter used in the dataset.\n"
@@ -71,7 +71,7 @@ def read_root():
         "**Example input:**\n"
         "```json\n"
         "{\n"
-        "  \"dataset_path\": \"data/my_dataset.csv\",\n"
+        "  \"dataset\": \"my_dataset.csv\",\n"
         "  \"dataset_csv_delimiter\": \",\",\n"
         "  \"output_path\": \"my-folder\",\n"
         "  \"prompt_context\": [\n"
@@ -105,7 +105,7 @@ def full_analysis(
 
     # Step 1: Execute pm_analysis
     pm_analysis_request = PMAnalysisRequest(
-        dataset_path=request.dataset_path,
+        dataset=request.dataset,
         output_path=request.output_path
     )
 

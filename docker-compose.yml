@@ -13,15 +13,15 @@ services:
     env_file:
       - .env
 
-  api:
-    image: pm4py-llm-api
+  orchestrator:
+    image: pm4py-llm-orchestrator
     build:
-      context: ./api
-    container_name: pm4py-llm-api
+      context: ./orchestrator
+    container_name: pm4py-llm-orchestrator
     ports:
       - "8000:8000"
     volumes:
-      - ./api/source:/app/source
+      - ./orchestrator/source:/app/source
     env_file:
       - .env
     depends_on:

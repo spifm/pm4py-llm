@@ -1,0 +1,14 @@
+[
+  {
+    "course_id": 123,
+    "dbname": "moodle_course_123",
+    "description": "Applied Physics",
+    "enabled": true
+  },
+  {
+    "course_id": 456,
+    "dbname": "moodle_course_456",
+    "description": "Calculus",
+    "enabled": true
+  }
+]

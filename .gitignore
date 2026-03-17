@@ -142,8 +142,11 @@ output/*
 # Directory for LLM Training
 llm-training
 
-# api cache
-api/source/cache
+# orchestrator cache
+orchestrator/source/cache
 
 # data
 data
+
+# config in orchestrator
+orchestrator/source/config/scheduled_courses.json

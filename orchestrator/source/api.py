@@ -87,6 +87,7 @@ def read_root():
         "**Example response:**\n"
         "```json\n"
         "{\n"
+        "  \"output_dir\": \"XXX\",\n"
         "  \"analysis\": \"XXX\",\n"
         "  \"dfg_image\": \"XXX\",\n"
         "  \"simplified_dfg_analysis\": \"XXX\",\n"
@@ -155,6 +156,7 @@ def full_analysis(
 
     return JSONResponse(
         content={
+            "output_dir": output_directory,
             **json.loads(analysis_result.body),
             **json.loads(mind_map_result.body),
         }

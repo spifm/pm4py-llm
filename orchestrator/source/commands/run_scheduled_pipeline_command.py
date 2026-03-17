@@ -1,0 +1,165 @@
+import json
+import logging
+from pathlib import Path
+from typing import Any
+import os
+import sys
+import requests
+
+
+# ------ Configure logging
+
+LOG_LEVEL = os.getenv("LOG_LEVEL", "DEBUG").upper()
+logging.basicConfig(
+    level=getattr(logging, LOG_LEVEL, logging.INFO),
+    format="%(asctime)s - %(levelname)s - %(message)s",
+    handlers=[logging.StreamHandler(sys.stdout)]
+)
+logger = logging.getLogger(__name__)
+
+
+
+class RunScheduledPipelineCommand:
+    def __init__(self):
+        self.orchestrator_api_url = self._require_env("ORCHESTRATOR_API_URL").rstrip("/")
+        self.moodle_data_service_url = self._require_env("MOODLE_DATA_SERVICE_URL").rstrip("/")
+        self.results_publisher_url = self._require_env("RESULTS_PUBLISHER_URL").rstrip("/")
+
+        self.bearer_token = self._require_env("API_TOKEN")
+        self.timeout = int(os.getenv("PIPELINE_TIMEOUT_SECONDS", "1800")) # 30 minutes default
+        self.config_path = "/app/source/config/scheduled_courses.json"
+
+    def execute(self) -> dict[str, Any]:
+        courses = self._load_config(self.config_path)
+
+        results: list[dict[str, Any]] = []
+
+        for course in courses:
+            if not course.get("enabled", True):
+                logger.info("Skipping disabled course: %s", course.get("course_id"))
+                continue
+
+            course_id = course["course_id"]
+            dbname = course.get("dbname")
+
+            logger.info("Starting pipeline for course_id=%s", course_id)
+
+            try:
+                export_result = self._export_dataset(course_id, dbname)
+                dataset = export_result["output_file"]
+                output_path = export_result["course_info"]["shortname"]
+
+                analysis_result = self._run_full_analysis(dataset, output_path)
+                publish_result = self._publish_results(analysis_result["output_dir"])
+
+                results.append(
+                    {
+                        "course_id": course_id,
+                        "dbname": dbname,
+                        "status": "success",
+                        "dataset": dataset,
+                        "results_directory": analysis_result["output_dir"],
+                        "publish_result": publish_result["published_result"]["published_results_directory"],
+                    }
+                )
+
+                logger.info("Pipeline completed successfully for course_id=%s", course_id)
+
+            except requests.exceptions.RequestException as e:
+                logger.exception("HTTP pipeline failed for course_id=%s", course_id)
+                results.append(
+                    {
+                        "course_id": course_id,
+                        "dbname": dbname,
+                        "status": "error",
+                        "error": str(e),
+                    }
+                )
+            except Exception as e:
+                logger.exception("Unexpected pipeline failure for course_id=%s", course_id)
+                results.append(
+                    {
+                        "course_id": course_id,
+                        "dbname": dbname,
+                        "status": "error",
+                        "error": str(e),
+                    }
+                )
+
+        return {
+            "message": "Scheduled pipeline execution finished",
+            "results": results,
+        }
+
+    def _load_config(self, config_path: str) -> list[dict[str, Any]]:
+        path = Path(config_path)
+        if not path.exists():
+            raise FileNotFoundError(f"Config file not found: {path}")
+
+        with open(path, "r", encoding="utf-8") as f:
+            data = json.load(f)
+
+        if not isinstance(data, list):
+            raise ValueError("The scheduled pipeline config must be a JSON list")
+
+        return data
+
+    def _get_headers(self) -> dict[str, str]:
+        if not self.bearer_token:
+            return {}
+        return {"Authorization": f"Bearer {self.bearer_token}"}
+    
+    def _require_env(self, name: str) -> str:
+        value = os.getenv(name)
+        if not value:
+            raise ValueError(f"Missing required environment variable: {name}")
+        return value
+
+    def _export_dataset(self, course_id: int, dbname: str) -> dict[str, Any]:
+        payload = {
+            "course_id": course_id,
+            "dbname": dbname,
+        }
+
+        response = requests.post(
+            f"{self.moodle_data_service_url}/export-event-log",
+            json=payload,
+            headers=self._get_headers(),
+            timeout=self.timeout,
+        )
+        response.raise_for_status()
+        return response.json()
+
+    def _run_full_analysis(self, dataset: str, output_path: str) -> dict[str, Any]:
+        payload = {
+            "dataset": dataset,
+            "output_path": output_path,
+        }
+
+        response = requests.post(
+            f"{self.orchestrator_api_url}/run-full-analysis",
+            json=payload,
+            headers=self._get_headers(),
+            timeout=self.timeout,
+        )
+        response.raise_for_status()
+        return response.json()
+
+    def _publish_results(self, results_directory: str) -> dict[str, Any]:
+        payload = {
+            "results_directory": results_directory,
+        }
+
+        response = requests.post(
+            f"{self.results_publisher_url}/publish-results",
+            json=payload,
+            headers=self._get_headers(),
+            timeout=self.timeout,
+        )
+        response.raise_for_status()
+        return response.json()
+    
+
+if __name__ == "__main__":
+    result = RunScheduledPipelineCommand().execute()
+    print(json.dumps(result, indent=2, ensure_ascii=False))

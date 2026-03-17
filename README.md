@@ -24,7 +24,7 @@ docker compose up -d
 
 The following containers will be created:
 - `pm4py-llm-app`: the container that runs the Python application. It includes the necessary libraries and scripts to run the process mining application. The container will also run the API server to expose the functionalities of the application through a generic endpoint
-- `pm4py-llm-api`: the container with the client API. In case of integration with other systems, this API can be used to communicate with the Python application
+- `pm4py-llm-orchestrator`: the orchestrator container that contains the client API. In case of integration with other systems, this API can be used to communicate with the Python application
 - `pm4py-moodle-data-service`: the container that runs a Moodle data service. This service is used to fetch data from a Moodle instance
 - `pm4py-moodle-data-service-worker`: the container that runs a worker for the Moodle data service. This worker is used to process tasks in a redis queue
 - `pm4py-redis`: the container that runs a Redis server. This server is used as a message broker for the Moodle data service
@@ -45,15 +45,12 @@ Then, edit the `app/config/config.json` file to specify the parameters for the a
 
 The system can be run using an API endpoint.
 
-(Optional) Consider these permission changes if you encounter issues with file access in the `dataset` and `/output` directories. These directories are used to store input datasets and output results, respectively. Ensuring that the application has the necessary permissions to read from and write to these directories is crucial for its proper functioning.
+(Optional) Consider these permission changes if you encounter issues with file access in the `dataset` and `output` directories. These directories are used to store input datasets and output results, respectively. Ensuring that the application has the necessary permissions to read from and write to these directories is crucial for its proper functioning.
 
 ```bash
 chmod 777 dataset
 chmod 777 output
 ```
-
-The API is available at `http://localhost:8001` after the container `pm4py-llm-app"` is started. The corresponding documentation is available at `http://localhost:8001/docs`.
-
 
 ## Stop the container
 
@@ -61,9 +58,9 @@ The API is available at `http://localhost:8001` after the container `pm4py-llm-a
 docker compose down
 ```
 
-# API container
+# Orchestrator container
 
-The API documentation is available at `http://localhost:8000/docs` after the container `pm4py-llm-api"` is started. The documentation is generated using [FastAPI] and it provides information about the available endpoints, request and response formats, and examples of how to use the API.
+The API documentation is available at `http://localhost:8000/docs` after the container `pm4py-llm-orchestrator"` is started. The documentation is generated using [FastAPI] and it provides information about the available endpoints, request and response formats, and examples of how to use the API.
 
 # Configuration
 

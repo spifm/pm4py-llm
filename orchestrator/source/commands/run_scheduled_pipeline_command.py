@@ -5,6 +5,7 @@ from typing import Any
 import os
 import sys
 import requests
+from datetime import datetime
 
 
 # ------ Configure logging
@@ -47,7 +48,8 @@ class RunScheduledPipelineCommand:
             try:
                 export_result = self._export_dataset(course_id, dbname)
                 dataset = export_result["output_file"]
-                output_path = export_result["course_info"]["shortname"]
+                course_info = export_result["course_info"]
+                output_path = f"{course_info['shortname']}_{datetime.now().strftime('%Y%m%d')}"
 
                 analysis_result = self._run_full_analysis(dataset, output_path)
                 publish_result = self._publish_results(analysis_result["output_dir"])
@@ -55,6 +57,7 @@ class RunScheduledPipelineCommand:
                 results.append(
                     {
                         "course_id": course_id,
+                        "course.shortname": course_info["shortname"],
                         "dbname": dbname,
                         "status": "success",
                         "dataset": dataset,

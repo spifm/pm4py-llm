@@ -43,7 +43,7 @@ Then, edit the `app/config/config.json` file to specify the parameters for the a
 
 ## Run
 
-The system can be run using an API endpoint.
+The system can be run using API endpoints.
 
 (Optional) Consider these permission changes if you encounter issues with file access in the `dataset` and `output` directories. These directories are used to store input datasets and output results, respectively. Ensuring that the application has the necessary permissions to read from and write to these directories is crucial for its proper functioning.
 
@@ -62,7 +62,20 @@ docker compose down
 
 The API documentation is available at `http://localhost:8000/docs` after the container `pm4py-llm-orchestrator"` is started. The documentation is generated using [FastAPI] and it provides information about the available endpoints, request and response formats, and examples of how to use the API.
 
-# Configuration
+## Orchestrator commands
+
+The orchestrator container exposes one command called `run_scheduled_pipeline`, which runs the entire process mining pipeline using the configuration specified in the `config.json` file. This pipeline includes the following steps:
+1. Create a dataset from the Moodle database using the Moodle data service
+2. Run the process mining pipeline using the created dataset and the configuration specified in the `config.json` file. This step includes discovering models, analyzing the models using LLMs, simplifying the models, and rendering Mermaid diagrams.
+3. Publish the results using the results publisher service
+
+The courses to be analyzed can be specified in the `config/scheduled_courses.json` file located in the orchestrator container.
+
+```bash
+docker exec -it pm4py-llm-orchestrator python3 -m commands.run_scheduled_pipeline_command
+```
+
+# Configuration in app
 
 The configuration file is located in the config folder. The file is called config.json and it contains the following parameters:
 - `dataset.columns`: list of columns to be used in the log file. The columns must be present in the log file:

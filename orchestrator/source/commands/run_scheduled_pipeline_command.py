@@ -19,6 +19,18 @@ logging.basicConfig(
 logger = logging.getLogger(__name__)
 
 
+def save_pipeline_result(result: dict, base_dir: str = "/app/source/tmp/pipeline-results") -> str:
+    now = datetime.now()
+    day_dir = Path(base_dir) / now.strftime("%Y%m%d")
+    day_dir.mkdir(parents=True, exist_ok=True)
+
+    file_path = day_dir / f"pipeline_result_{now.strftime('%Y%m%d_%H%M%S')}.json"
+
+    with open(file_path, "w", encoding="utf-8") as f:
+        json.dump(result, f, ensure_ascii=False, indent=2)
+
+    return str(file_path)
+
 
 class RunScheduledPipelineCommand:
     def __init__(self):
@@ -58,6 +70,7 @@ class RunScheduledPipelineCommand:
                     {
                         "course_id": course_id,
                         "course.shortname": course_info["shortname"],
+                        "course.fullname": course_info["fullname"],
                         "dbname": dbname,
                         "status": "success",
                         "dataset": dataset,
@@ -165,4 +178,5 @@ class RunScheduledPipelineCommand:
 
 if __name__ == "__main__":
     result = RunScheduledPipelineCommand().execute()
-    print(json.dumps(result, indent=2, ensure_ascii=False))
+    saved_path = save_pipeline_result(result)
+    print(f"Pipeline result saved to: {saved_path}")

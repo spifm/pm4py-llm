@@ -142,8 +142,11 @@ output/*
 # Directory for LLM Training
 llm-training
 
-# orchestrator cache
-orchestrator/source/cache
+# orchestrator tmp files
+orchestrator/source/tmp/*
+!orchestrator/source/tmp/pipeline-results
+orchestrator/source/tmp/pipeline-results/*
+!orchestrator/source/tmp/pipeline-results/.gitkeep
 
 # data
 data

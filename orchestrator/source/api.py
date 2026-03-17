@@ -42,8 +42,8 @@ def verify_token(credentials: HTTPAuthorizationCredentials = Depends(security)):
 
 app = FastAPI()
 
-CACHE_DIR = "./cache/"
-CACHE_DURATION = timedelta(seconds=60 * 60 * 24)  # Cache duration in seconds (1 day)
+CACHE_DIR = "./tmp/cache/"
+CACHE_DURATION = int(os.getenv("CACHE_DURATION_SECONDS", 86400))  # Default cache duration: 24 hours
 SIMPLIFY_FILE = "dfg-generic-activities.json"
 
 @app.get(

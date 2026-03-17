@@ -75,12 +75,6 @@ The courses to be analyzed can be specified in the `config/scheduled_courses.jso
 docker exec -it pm4py-llm-orchestrator python3 -m commands.run_scheduled_pipeline_command
 ```
 
-If you want to run the command without using `sudo` and avoid permission issues with the generated output files, you can run the command with the current user's UID and GID. This way, the generated files will have the correct ownership and permissions for the current user.
-
-```bash
-docker exec -u $(id -u):$(id -g) pm4py-llm-orchestrator python3 -m commands.run_scheduled_pipeline_command
-```
-
 # Configuration in app
 
 The configuration file is located in the config folder. The file is called config.json and it contains the following parameters:

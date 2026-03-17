@@ -12,6 +12,7 @@ services:
       - ./output:/output
     env_file:
       - .env
+    user: "${UID}:${GID}"
 
   orchestrator:
     image: pm4py-llm-orchestrator
@@ -26,6 +27,7 @@ services:
       - .env
     depends_on:
       - app
+    user: "${UID}:${GID}"
 
   moodle-data-service:
     image: pm4py-moodle-data-service
@@ -39,6 +41,7 @@ services:
       - ./dataset:/dataset
     env_file:
       - .env
+    user: "${UID}:${GID}"
 
   moodle-data-service-worker:
     build:
@@ -52,6 +55,7 @@ services:
       - .env
     depends_on:
       - redis
+    user: "${UID}:${GID}"
 
   redis:
     image: redis:7-alpine
@@ -80,6 +84,7 @@ services:
       - ./mermaid-service/source:/app/source
     env_file:
       - .env
+    user: "${UID}:${GID}"
 
   results-publisher:
     image: pm4py-results-publisher
@@ -94,4 +99,5 @@ services:
       - ${LOCAL_PUBLISH_DIRECTORY}:/app/published_results
     env_file:
       - .env
+    user: "${UID}:${GID}"
 

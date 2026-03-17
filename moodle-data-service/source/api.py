@@ -93,7 +93,7 @@ def read_root():
         "```json\n"
         "{\n"
         "  \"message\": \"Event log exported successfully\",\n"
-        "  \"output_file\": \"/dataset/my_dataset.csv\",\n"
+        "  \"output_file\": \"my_dataset.csv\",\n"
         "  \"rows_exported\": 100,\n"
         "  \"course_info\": {\n"
         "    \"id\": 123,\n"
@@ -126,7 +126,7 @@ def export_event_log(request: ExportEventLogRequest):
 
         return ExportEventLogResponse(
             message="Event log exported successfully",
-            output_file=event_log_exporter.get_dataset_path(),
+            output_file=event_log_exporter.get_dataset_name(),
             rows_exported=rows_exported,
             course_info=event_log_exporter.get_course_info(),
         )
@@ -164,7 +164,7 @@ def export_event_log(request: ExportEventLogRequest):
         "```json\n"
         "{\n"
         "  \"message\": \"Event log export started\",\n"
-        "  \"expected_output_file\": \"/dataset/my_dataset.csv\",\n"
+        "  \"expected_output_file\": \"my_dataset.csv\",\n"
         "  \"course_info\": {\n"
         "    \"id\": 123,\n"
         "    \"fullname\": \"Example Course\",\n"
@@ -217,6 +217,6 @@ async def export_event_log_async(
     return AsyncExportEventLogResponse(
         message="Event log export started",
         job_id=job.id,
-        dataset_path=event_log_exporter.get_dataset_path(),
+        dataset_path=event_log_exporter.get_dataset_name(),
         course_info=course_info,
     )

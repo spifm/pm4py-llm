@@ -132,6 +132,10 @@ class EventLogExporter:
 
     def get_dataset_path(self) -> str:
         return self.dataset_path
+    
+    
+    def get_dataset_name(self) -> str:
+        return os.path.basename(self.dataset_path)
 
 
     def export_course_event_log(self,) -> int:

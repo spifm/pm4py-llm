@@ -1,6 +1,7 @@
 import requests
 from .LlmClientInterface import LlmClientInterface
 from typing import Dict, Any
+from source.helpers.clean_json import CleanJson
 import time
 import json
 
@@ -114,6 +115,8 @@ class OllamaClient(LlmClientInterface):
             payload[k] = v
 
         metrics = self._exec_ollama_prompt(prompt, output_file, payload, self.json_url)
+
+        CleanJson.clean_json(output_file)
         
         llm_info = {
             "Provider": "Ollama",

@@ -55,15 +55,22 @@ class RunScheduledPipelineCommand:
             course_id = course["course_id"]
             dbname = course.get("dbname")
 
-            logger.info("Starting pipeline for course_id=%s", course_id)
-
             try:
+                logger.info("Scheduled pipeline: Starting STEP 1 (export dataset) for course_id=%s", course_id)
                 export_result = self._export_dataset(course_id, dbname)
+
                 dataset = export_result["output_file"]
                 course_info = export_result["course_info"]
-                output_path = f"{course_info['shortname']}_{datetime.now().strftime('%Y%m%d')}"
-
+                #output_path = f"{course_info['shortname']}_{datetime.now().strftime('%Y%m%d')}"
+                output_path = f"{datetime.now().strftime('%Y%m%d')}/{course_info['shortname']}"
+                logger.info("Scheduled pipeline: Starting STEP 2 (run analysis) for course.shortname=%s, output_path=%s",
+                            course_info['shortname'], output_path
+                )
                 analysis_result = self._run_full_analysis(dataset, output_path)
+
+                logger.info("Scheduled pipeline: Starting STEP 3 (publish results) for course.shortname=%s, output_dir=%s",
+                            course_info['shortname'], analysis_result["output_dir"]
+                )
                 publish_result = self._publish_results(analysis_result["output_dir"])
 
                 results.append(
@@ -79,7 +86,9 @@ class RunScheduledPipelineCommand:
                     }
                 )
 
-                logger.info("Pipeline completed successfully for course_id=%s", course_id)
+                logger.info("Pipeline completed successfully for course_id=%s, course.shortname=%s",
+                            course_id, course_info["shortname"]
+                )
 
             except requests.exceptions.RequestException as e:
                 logger.exception("HTTP pipeline failed for course_id=%s", course_id)

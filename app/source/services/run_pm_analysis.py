@@ -166,7 +166,7 @@ class PmAnalysisService:
             raise
 
         # Create output directory
-        output_directory = MakeOutputDir.make_unique_dir(self.output_path)
+        output_directory, final_output_name = MakeOutputDir.make_unique_dir(self.output_path)
 
         # Filter log by config parameters if enabled
         try:
@@ -274,5 +274,6 @@ class PmAnalysisService:
             llm_instance.analyze_temporal_profile(abstract_tp, filename)
         return {
             "message": "PM analysis completed",
-            "output_directory": output_directory
+            "output_directory": output_directory,
+            "output_directory_name": final_output_name
         }

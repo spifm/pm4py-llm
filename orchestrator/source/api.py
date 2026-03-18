@@ -2,9 +2,10 @@ from fastapi import FastAPI, HTTPException, Query, status, Depends, Body
 from fastapi.security import HTTPBearer, HTTPAuthorizationCredentials
 from fastapi.responses import JSONResponse
 from models.schemas import *
+from helpers.cache_results_helper import CacheResultsHelper
 import requests
 import os
-from datetime import datetime, timedelta
+from datetime import datetime
 from dotenv import load_dotenv
 import json
 import logging
@@ -42,8 +43,9 @@ def verify_token(credentials: HTTPAuthorizationCredentials = Depends(security)):
 
 app = FastAPI()
 
-CACHE_DIR = "./tmp/cache/"
-CACHE_DURATION = timedelta(seconds=int(os.getenv("CACHE_DURATION_SECONDS", 86400)))  # Default cache duration: 24 hours
+cache_results_helper = CacheResultsHelper()
+
+
 SIMPLIFY_FILE = "dfg-generic-activities.json"
 
 @app.get(
@@ -115,12 +117,14 @@ def full_analysis(
 
     pm_result = pm_analysis(pm_analysis_request)
 
-    logger.debug(f"Step 1: PM Analysis output: {pm_result}")
+    logger.debug(f"Step 1 Completed: PM Analysis output: {pm_result}")
 
     if "error" in pm_result:
         return {"step": "pm-analysis", "error": pm_result["error"]}
     
-    output_directory = Path(pm_result["output_directory"]).name
+    output_directory = pm_result["output_directory_name"]
+
+    logger.debug(f"Starting Step 2: Simplify DFG in {output_directory}")
     
     # Step 2: Execute simplify_dfg_endpoint
     simplify_request = SimplifyDFGRequest(
@@ -327,11 +331,10 @@ def get_analysis(analysis_dir: str = Query(
                                     )
     ):
     # Check if the analysis is stored in a cache directory
-    os.makedirs(CACHE_DIR, exist_ok=True)
-    cache_file = os.path.join(CACHE_DIR, f"{analysis_dir}.json")
-    cache = _check_cache(cache_file)
-    if cache is not None:
-        return cache
+    if cache_results_helper.is_enabled():
+        cache, cache_file = cache_results_helper.read_from_cache(analysis_dir, simplified=False)
+        if cache is not None:
+            return JSONResponse(content=cache)
 
     # If not cached or cache is expired, fetch from PM4PY container
     url = f"{PM4PY_BASE_URL}/get-analysis"
@@ -348,8 +351,8 @@ def get_analysis(analysis_dir: str = Query(
 
         data = response.json()
 
-        with open(cache_file, "w") as f:
-            json.dump(data, f)
+        if cache_results_helper.is_enabled():
+            cache_results_helper.write_to_cache(cache_file, data)
 
         return JSONResponse(content=data)
 
@@ -380,11 +383,10 @@ def get_simplified_analysis(analysis_dir: str = Query(
                                     )
     ):
     # Check if the simplified analysis is stored in a cache directory
-    os.makedirs(CACHE_DIR, exist_ok=True)
-    cache_file = os.path.join(CACHE_DIR, f"{analysis_dir}-simplified.json")
-    cache = _check_cache(cache_file)
-    if cache is not None:
-        return cache
+    if cache_results_helper.is_enabled():
+        cache, cache_file = cache_results_helper.read_from_cache(analysis_dir, simplified=True)
+        if cache is not None:
+            return JSONResponse(content=cache)
 
     # If not cached or cache is expired, fetch from PM4PY container
     url = f"{PM4PY_BASE_URL}/get-simplified-analysis"
@@ -401,19 +403,10 @@ def get_simplified_analysis(analysis_dir: str = Query(
 
         data = response.json()
 
-        with open(cache_file, "w") as f:
-            json.dump(data, f)
+        if cache_results_helper.is_enabled():
+            cache_results_helper.write_to_cache(cache_file, data)
 
         return JSONResponse(content=data)
 
     except requests.exceptions.RequestException as e:
         raise HTTPException(status_code=500, detail=f"Error fetching analysis: {str(e)}")
-
-
-def _check_cache(cache_file: str) -> JSONResponse | None:
-    if os.path.isfile(cache_file):
-        cache_time = datetime.fromtimestamp(os.path.getmtime(cache_file))
-        if datetime.now() - cache_time < CACHE_DURATION:
-             with open(cache_file, "r") as f:
-                return JSONResponse(content=json.load(f))
-    return None

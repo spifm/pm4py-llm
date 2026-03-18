@@ -1,6 +1,5 @@
 import logging
 import os
-import json
 from source.Filename import Filename
 
 logger = logging.getLogger(__name__)

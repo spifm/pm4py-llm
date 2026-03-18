@@ -153,6 +153,3 @@ data
 
 # config in orchestrator
 orchestrator/source/config/scheduled_courses.json
-
-# mermaid container
-mermaid-service/source/tmp

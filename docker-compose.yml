@@ -84,7 +84,6 @@ services:
       - ./mermaid-service/source:/app/source
     env_file:
       - .env
-    user: "${UID}:${GID}"
 
   results-publisher:
     image: pm4py-results-publisher

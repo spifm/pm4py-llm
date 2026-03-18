@@ -8,12 +8,7 @@ RUN npm install -g @mermaid-js/mermaid-cli
 
 ENV PYTHONDONTWRITEBYTECODE=1 \
     PYTHONUNBUFFERED=1 \
-    PUPPETEER_EXECUTABLE_PATH=/usr/bin/chromium \
-    HOME=/tmp \
-    XDG_CONFIG_HOME=/tmp/.config \
-    XDG_CACHE_HOME=/tmp/.cache
-
-RUN mkdir -p /tmp/.config /tmp/.cache
+    PUPPETEER_EXECUTABLE_PATH=/usr/bin/chromium
 
 WORKDIR /app
 

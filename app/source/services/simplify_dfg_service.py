@@ -1,9 +1,9 @@
-from source.dfg.dfg_filter import DFGFilter
-from source.dfg.dfg_simplifier import DFGSimplifier
-from source.dfg.dfg_transformer import DFGTransformer
+from source.core.dfg.dfg_filter import DFGFilter
+from source.core.dfg.dfg_simplifier import DFGSimplifier
+from source.core.dfg.dfg_transformer import DFGTransformer
 import os
 from config.constants import *
-from source.Filename import Filename
+from source.helpers.filename_getter import Filename
 import logging
 
 logger = logging.getLogger(__name__)

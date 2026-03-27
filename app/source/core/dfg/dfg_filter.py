@@ -1,5 +1,5 @@
 from source.Config import Config
-from source.Filename import Filename
+from source.helpers.filename_getter import Filename
 from source.helpers.info_writer import InfoWriter
 import logging
 import json

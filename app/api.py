@@ -3,9 +3,9 @@ from fastapi.security import HTTPBearer, HTTPAuthorizationCredentials
 from dotenv import load_dotenv
 from source.models.schemas import *
 from config.constants import *
-from source.services.run_pm_analysis import PmAnalysisService
+from source.services.pm_analysis_service import PmAnalysisService
 from source.services.store_dataset_as_csv import StoreDatasetAsCsvService
-from source.services.simplify_dfg import SimplifyDFGService
+from source.services.simplify_dfg_service import SimplifyDFGService
 from source.services.build_mind_map_service import MindMapBuilderService
 from source.services.get_analysis_service import GetAnalysisService
 import os

@@ -7,10 +7,11 @@
         }
     },
     "filter": {
-        "enabled": true,
-        "level": "trace",
-        "attr": "game_outcome",
-        "export_formats": []
+        "enabled": false,
+        "events": [
+            "\\core\\event\\course_viewed"
+        ],
+        "export_formats": ["xes", "csv"]
     },
     "preprocess": {
         "enabled": true,

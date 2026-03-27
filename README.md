@@ -82,11 +82,9 @@ The configuration file is located in the config folder. The file is called confi
     - `case_id` --> field for case identifier
     - `activity` --> field for activity name
     - `timestamp` --> field for timestamp of the activity
-- `filter.level`: filter level to be used. Possible values are:
-    - `trace` --> to filter by trace attributes
-    - `event` --> to filter by event attributes
-- `filter.attr`: attribute to be used for filtering. The attribute must be present in the event or trace attributes such as `grade_outcome`, `grade_er`, `grade_final`, etc.
-- `filter.export_formats`: list of export formats to be used. If empty, no export will be performed. Possible values are:
+- `filter.enabled`: boolean to enable/disable the filtering of the log using true/false
+- `filter.events`: list of events to be used for filtering the log. The events must be present in the log file.
+- `filter.export_formats`: list of export formats to be used. If empty, no export will be performed. Following values can be included:
     - `csv` --> to export the filtered log in CSV format
     - `xes` --> to export the filtered log in XES format
 - `preprocess.enabled`: boolean to enable/disable the preprocessing of the log using true/false

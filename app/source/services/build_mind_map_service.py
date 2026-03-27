@@ -1,7 +1,7 @@
-from source.mind_map.mind_map_builder import MindMapBuilder
-from source.mind_map.mind_map_render import MindMapRender
+from source.core.mind_map.mind_map_builder import MindMapBuilder
+from source.core.mind_map.mind_map_render import MindMapRender
 from typing import Dict
-from source.Filename import Filename
+from source.helpers.filename_getter import Filename
 from source.Config import Config
 import logging
 import os

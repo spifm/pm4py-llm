@@ -1,6 +1,6 @@
 import logging
 import os
-from source.Filename import Filename
+from source.helpers.filename_getter import Filename
 
 logger = logging.getLogger(__name__)
 

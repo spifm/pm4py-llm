@@ -1,5 +1,5 @@
 from source.Config import Config
-from source.LlmClient import llm_factory
+from source.core.llm_client import llm_factory
 import os
 import logging
 from source.helpers.info_writer import InfoWriter

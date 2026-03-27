@@ -6,16 +6,16 @@ from source.helpers.make_dir import MakeOutputDir
 import json
 from config.constants import *
 from source.Config import Config
-from source.Filename import Filename
-import source.filtering as filtering
+from source.helpers.filename_getter import Filename
 from source.Discovery import Discovery
-from source.dfg.dfg_transformer import DFGTransformer
+from source.core.dfg.dfg_transformer import DFGTransformer
 from source.Llm import Llm
-from source.Preprocessor import Preprocessor
+from source.helpers.preprocessor import Preprocessor
 import logging
 from typing import Any
 from source.helpers.info_writer import InfoWriter
 from pathlib import Path
+from source.core.dataset_filter.event_filter import EventFilter
 
 
 logger = logging.getLogger(__name__)
@@ -38,6 +38,13 @@ class PmAnalysisService:
                 output_path=output_path
             )
             self.config = config_instance.get()
+
+            self.event_filter = EventFilter(
+                case_id_key=self.config['dataset']['columns']['case_id'],
+                activity_key=self.config['dataset']['columns']['activity'],
+                timestamp_key=self.config['dataset']['columns']['timestamp']
+            )
+
         except Exception as e:
             raise ValueError(f"Error initializing PmAnalysisService: {e}")
 
@@ -119,31 +126,22 @@ class PmAnalysisService:
 
     def _filter_log(self, log: Any, output_directory: str):
         """
-        Filters the event log based on configuration parameters.
+        Filters the event log based on configured event names.
         Returns the filtered log and a string with filtering information.
         """
-        filter_level = self.config['filter']['level']
-        filter_attr = self.config['filter']['attr']
-        export_formats = self.config['filter']['export_formats']
+        events_to_filter = self.config['filter'].get('events', [])
+        export_formats = self.config['filter'].get('export_formats', [])
 
-        # Filter log by config parameters
-        filtered_log, filtered_info_str = filtering.filter_log(log, filter_attr, filter_level)
-        case_values = pm4py.stats.get_trace_attribute_values(filtered_log, self.config['dataset']['columns']['case_id'])
+        filtered_log = self.event_filter.filter_events(log, events_to_filter)
 
-        # Export filtered log if enabled
-        if export_formats:
-            for export_format in export_formats:
-                filename = "filtered_log" + "-numcases_" + str(len(case_values)) + "-" + filtered_info_str
-                filename = os.path.join(output_directory, filename + "." + export_format)
-                filtering.export_filtered_log(filtered_log, filename, export_format)
+        exported_files = self.event_filter.export_filtered_log(filtered_log, output_directory, export_formats)
 
-        # Show info in log
-        if filter_level == "event":
-            event_values = pm4py.stats.get_event_attribute_values(filtered_log, filter_attr)
-            logger.debug("\nEvent values ({}): {}".format(filter_attr, event_values))
-        elif filter_level == "trace":
-            trace_values = pm4py.stats.get_trace_attribute_values(filtered_log, 'case:' + filter_attr)
-            logger.debug("\nTrace values ({}): {}".format(filter_attr, trace_values))
+        filtered_info_str = f"event_filter_removed={events_to_filter}" if events_to_filter else "event_filter_removed=[]"
+
+        logger.info("Configured events filtered out: %s", events_to_filter)
+        if exported_files:
+            logger.info("Exported filtered log to: %s", exported_files)
+
 
         return filtered_log, filtered_info_str
     
@@ -168,21 +166,45 @@ class PmAnalysisService:
         # Create output directory
         output_directory, final_output_name = MakeOutputDir.make_unique_dir(self.output_path)
 
-        # Filter log by config parameters if enabled
-        try:
-            if self.config['filter']['enabled']:
-                log, filtered_info_str = self._filter_log(raw_log, output_directory)
-            else:
-                log, filtered_info_str = raw_log, ''
-        except Exception as e:
-            raise ValueError(f"Error filtering log: {e}")
-
         # Log case IDs and number of cases
-        case_values = pm4py.stats.get_trace_attribute_values(log, case_id)
+        case_values = pm4py.stats.get_trace_attribute_values(raw_log, case_id)
         number_of_cases = len(case_values)
         
         logger.info("Case IDs: {}".format(case_values))
         logger.info("Number of cases: {}\n".format(number_of_cases))
+
+        # Create text file with information about the dataset and the analysis
+        info_writer = InfoWriter(output_directory)
+        self._write_metadata_info(info_writer)
+        info_writer.write("=== Dataset Info ===\n\n")
+        info_writer.write("Analysis Date and Time: {}\n".format(time.strftime("%Y-%m-%d %H:%M:%S", time.localtime())))
+        info_writer.write("Dataset path: {}\n".format(self.dataset_path))
+        info_writer.write("Dataset extension: {}\n".format(file_extension))
+        info_writer.write("Number of cases: {}\n".format(str(number_of_cases)))
+        info_writer.write("Number of events: {}\n".format(str(len(raw_log))))
+
+        # Filter log by config parameters if enabled
+        try:
+            if self.config['filter']['enabled']:
+                log, filtered_info_str = self._filter_log(raw_log, output_directory)
+
+                # Log case IDs and number of cases
+                case_values = pm4py.stats.get_trace_attribute_values(log, case_id)
+                number_of_cases = len(case_values)
+
+                logger.info("Case IDs after filtering: {}".format(case_values))
+                cases_message = "Number of cases after filtering: {}".format(number_of_cases)
+                events_message = "Number of events after filtering: {}".format(str(len(log)))
+                logger.info(cases_message)
+                logger.info(events_message)
+                info_writer.write(cases_message + "\n")
+                info_writer.write(events_message + "\n")
+                info_writer.write("Filter information: {}\n".format(filtered_info_str))
+            else:
+                
+                log, filtered_info_str = raw_log, ''
+        except Exception as e:
+            raise ValueError(f"Error filtering log: {e}")
 
         # Preprocess log
         if self.config['preprocess']['enabled']:
@@ -193,19 +215,8 @@ class PmAnalysisService:
             preprocessor = Preprocessor(mapping_activity_json=mapping_json, col_to_map=activity_key)
             log = preprocessor.map_activities(log)
 
-        # Create text file with information about the dataset and the analysis
-        info_writer = InfoWriter(output_directory)
-
-        self._write_metadata_info(info_writer)
-
-        info_writer.write("=== Dataset Info ===\n\n")
-        info_writer.write("Analysis Date and Time: {}\n".format(time.strftime("%Y-%m-%d %H:%M:%S", time.localtime())))
-        info_writer.write("Dataset path: {}\n".format(self.dataset_path))
-        info_writer.write("Dataset extension: {}\n".format(file_extension))
-        info_writer.write("Number of cases: {}\n".format(str(number_of_cases)))
-        info_writer.write("Filter information: {}\n".format(filtered_info_str))
-        if self.config['preprocess']['enabled']:
             info_writer.write("Preprocessing. Using activity mapping from: {}\n".format(mapping_activity_json_path))
+
 
         # Discover and save models
         discovery = Discovery(log)

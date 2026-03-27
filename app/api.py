@@ -209,15 +209,19 @@ def get_analysis(analysis_dir: str = Query(
     simplified_dfg_base_path = result["simplified_dfg_image"]
     simplified_dfg_analysis_base_path = result["simplified_dfg_analysis"]
     
-    if not os.path.isfile(dfg_base_path) or not os.path.isfile(dfg_analysis_base_path):
-        raise HTTPException(status_code=404, detail=dfg_base_path + " or " + dfg_analysis_base_path + " not found")
-
     try:
-        with open(dfg_analysis_base_path, "r") as f:
-            dfg_analysis_text = f.read()
+        if not os.path.isfile(dfg_base_path):
+            raise HTTPException(status_code=404, detail=dfg_base_path + " not found")
+        
         with open(dfg_base_path, "rb") as f:
             dfg_image_bytes = f.read()
-
+        
+        if not os.path.isfile(dfg_analysis_base_path):
+            dfg_analysis_text = 'No analysis file found for DFG.'
+        else:
+            with open(dfg_analysis_base_path, "r") as f:
+                dfg_analysis_text = f.read()
+        
         result = {
             "analysis": dfg_analysis_text,
             "dfg_image": dfg_image_bytes.hex()

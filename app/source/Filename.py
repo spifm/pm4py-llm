@@ -8,7 +8,8 @@ class Filename:
         "petri_net": {
             "image": "petri_net.png",
             "raw": "petri_net.pnml",
-            "abstract": "abstract-petri-net.txt"
+            "abstract": "abstract-petri-net.txt",
+            "analysis": "petri_net-analysis.txt",
         },
         "bpmn": {
             "image": "bpmn.png"
@@ -29,6 +30,9 @@ class Filename:
             "json_llm_simplified": "llm-simplified-dfg.json",
             "json_llm_restored_simplified": "llm-restored-simplified-dfg.json",
             "performance_image": "performance-dfg.png",
+        },
+        "temporal_profile": {
+            "analysis": "temporal_profile-analysis.txt",
         },
         "mermaid": {
             "simplified_mind_map": "simplified-mind_map.mmd",

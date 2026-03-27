@@ -261,17 +261,20 @@ class PmAnalysisService:
         
         if self.config['discovery']['petri_net']['enabled'] and self.config['llm']['petri_net']['enabled']:
             logger.debug("LLM analysis for Petri net...")
-            filename = os.path.join(output_directory, "petri_net-analysis.txt")
+            filename = self.fn.get_filename_path("petri_net.analysis", output_directory)
             llm_instance.analyze_petri_net(abstract_pn, filename)
         if self.config['discovery']['dfg']['enabled'] and self.config['llm']['dfg']['enabled']:
             logger.debug("LLM analysis for DFG...")
-            filename = os.path.join(output_directory, "dfg-analysis.txt")
+            filename = self.fn.get_filename_path("dfg.analysis", output_directory)
             llm_instance.analyze_dfg(abstract_dfg, filename)
+        else:
+            logger.warning("DFG discovery or LLM analysis for DFG is disabled. Skipping LLM analysis for DFG.")
 
         if self.config['discovery']['temporal_profile']['enabled'] and self.config['llm']['temporal_profile']['enabled']:
             logger.debug("LLM analysis for Temporal profile...")
-            filename = os.path.join(output_directory, "temporal_profile-analysis.txt")
+            filename = self.fn.get_filename_path("temporal_profile.analysis", output_directory)
             llm_instance.analyze_temporal_profile(abstract_tp, filename)
+        
         return {
             "message": "PM analysis completed",
             "output_directory": output_directory,

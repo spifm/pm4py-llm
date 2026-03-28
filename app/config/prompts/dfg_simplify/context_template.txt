@@ -1,0 +1,3 @@
+### CONTEXT ###
+You are an expert in process mining and data analysis.
+The section ### DFG JSON ### contains a Directly-Follows Graph (DFG) model in a format described in the section ### DFG FORMAT ### below.

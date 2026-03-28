@@ -7,15 +7,15 @@ import json
 from typing import Any, Dict, List
 import math
 from source.helpers.info_writer import InfoWriter
+from source.helpers.load_prompt_template import PromptLoader
 
 logger = logging.getLogger(__name__)
 
 class DFGSimplifier:
     def __init__(self):
         self.config = self._load_config()
+        self.prompt_loader = PromptLoader()
         self.llm = Llm()
-        self.analysis_prompt = self.config['llm']['dfg']['simplify_dfg']['simplification_analysis_prompt']
-        self.simplification_prompt = self.config['llm']['dfg']['simplify_dfg']['simplification_instructions_prompt']
         self.removing_transitions_ratio = self.config['llm']['dfg']['simplify_dfg'].get('removing_transitions_ratio', 50)
         self.retaining_transitions_ratio = self.config['llm']['dfg']['simplify_dfg'].get('retaining_transitions_ratio', 20)
 
@@ -51,17 +51,13 @@ class DFGSimplifier:
         return mapping
 
 
-    def get_context_prompt(self):
+    def _get_context_prompt(self):
         """
         Returns the context prompt for the simplifier.
         """
-        return self.config['llm']['dfg']['simplify_dfg']['simplification_context_prompt']
-
-    def set_context_prompt(self, context_prompt):
-        """
-        Sets the context prompt for the simplifier.
-        """
-        self.config['llm']['dfg']['simplify_dfg']['simplification_context_prompt'] = context_prompt
+        return self.prompt_loader.load_template(
+            self.config['llm']['dfg']['simplify_dfg']['simplification_context_prompt']
+        )
 
 
     def _build_simplification_prompt(self, dfg_file):
@@ -69,18 +65,24 @@ class DFGSimplifier:
         Builds the full simplification prompt by combining the context prompt,
         instructions, ratios, and the DFG content.
         """
-        dfg = self._read_dfg(dfg_file)
-        prompt_context = "\n".join(self.get_context_prompt())
-        prompt_instructions = "\n".join(self.simplification_prompt)
-        prompt_instructions = prompt_instructions.replace(
-            "{{removing_transitions_ratio}}",
-            str(self.removing_transitions_ratio),
-        ).replace(
-            "{{retaining_transitions_ratio}}",
-            str(self.retaining_transitions_ratio),
-        )
-        prompt = f"{prompt_context}\n\n{prompt_instructions}\n\n{dfg}"
-        return prompt
+        try:
+            dfg = self._read_dfg(dfg_file)
+            prompt_context = self._get_context_prompt()
+            prompt_instructions = self.prompt_loader.load_template(
+                self.config['llm']['dfg']['simplify_dfg']['simplification_instructions_prompt']
+            )
+            prompt_instructions = prompt_instructions.replace(
+                "{{removing_transitions_ratio}}",
+                str(self.removing_transitions_ratio),
+            ).replace(
+                "{{retaining_transitions_ratio}}",
+                str(self.retaining_transitions_ratio),
+            )
+            prompt = f"{prompt_context}\n\n{prompt_instructions}\n\n{dfg}"
+            return prompt
+        except Exception as e:
+            logger.error(f"Error building simplification prompt: {e}")
+            raise
 
 
     def eval_fit_json_prompt_tokens(self, dfg_file) -> bool:
@@ -99,9 +101,6 @@ class DFGSimplifier:
         print("\n\n-------------------\nSimplifying DFG\n-------------------\n\n")
         try:
             prompt = self._build_simplification_prompt(dfg_file)
-            max_len = 500
-            prompt_preview = prompt if len(prompt) <= max_len else prompt[:max_len] + "..."
-            logger.debug(f"Simplification prompt (truncated to {max_len} chars): {prompt_preview}")
             metrics = self.llm.client.exec_json_prompt(prompt, output_file)
             if metrics is not None:
                 out_dir = os.path.dirname(os.path.abspath(output_file))
@@ -121,9 +120,11 @@ class DFGSimplifier:
         """
         print("\n\n-------------------\nAnalyzing Simplified DFG\n-------------------\n\n")
         try:       
+            prompt_context = self._get_context_prompt()
+            prompt_instructions = self.prompt_loader.load_template(
+                self.config['llm']['dfg']['simplify_dfg']['simplification_analysis_prompt']
+            )
             simplified_dfg = self._read_dfg(dfg_file)
-            prompt_context = "\n".join(self.get_context_prompt())
-            prompt_instructions = "\n".join(self.analysis_prompt)
             prompt = f"{prompt_context}{prompt_instructions}{simplified_dfg}"
             logger.debug(f"Analysis prompt: {prompt}")
             metrics = self.llm.client.exec_prompt(prompt, output_analysis)

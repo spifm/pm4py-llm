@@ -1,0 +1,55 @@
+### DFG FORMAT ###
+The DFG is expressed as a single JSON object with the following structure:
+
+{
+  "start_activities": [
+    { "activity": "<ACT_ID_or_name>", "freq": <integer> },
+    ...
+  ],
+  "end_activities": [
+    { "activity": "<ACT_ID_or_name>", "freq": <integer> },
+    ...
+  ],
+  "transitions": [
+    { "src": "<ACT_ID_or_name>", "tgt": "<ACT_ID_or_name>", "freq": <integer> },
+    ...
+  ]
+}
+
+Each activity is identified by a string (for example an ACT_ID like "ACT_0", "ACT_1", ...).
+The frequencies are integers representing how often the activity or transition appears.
+
+### INSTRUCTIONS ###
+Simplify the model to make it significantly more interpretable:
+- Keep only the most relevant activities and transitions (high-frequency, common paths, important cycles).
+- You MUST retain between 5 and 7 activities.
+- For every retained activity you MUST keep at least its most relevant incoming and outgoing transitions.
+- You MUST NOT invent new activities: only use activity identifiers that already appear in the input.
+- You MUST NOT invent new transitions: any transition you keep MUST already exist in the input with the same src and tgt.
+- Each (src, tgt) pair MUST appear at most once in the output (no duplicate transitions).
+
+### OUTPUT FORMAT ###
+Return ONLY a single valid JSON object with the SAME structure as the input:
+
+{
+  "start_activities": [
+    { "activity": "<ACT_ID_or_name>", "freq": <integer> },
+    ...
+  ],
+  "end_activities": [
+    { "activity": "<ACT_ID_or_name>", "freq": <integer> },
+    ...
+  ],
+  "transitions": [
+    { "src": "<ACT_ID_or_name>", "tgt": "<ACT_ID_or_name>", "freq": <integer> },
+    ...
+  ]
+}
+
+### IMPORTANT ###
+- DO NOT add any natural language explanation.
+- DO NOT add markdown, headings, comments, or code fences.
+- DO NOT write anything before or after the JSON object.
+- If you are unsure, return a smaller JSON instead of explaining.
+
+### DFG JSON ###

@@ -12,8 +12,7 @@ output_dir = "/output"
 class SimplifyDFGService:
     @staticmethod
     def simplify_dfg(
-        output_path: str,
-        prompt_context: str = None
+        output_path: str
     ) -> dict:
 
         fn = Filename()
@@ -26,13 +25,8 @@ class SimplifyDFGService:
 
         if not os.path.exists(dfg_file):
             raise ValueError("DFG file not found.")
-        
-        if prompt_context is not None:
-            dfg_simplifier.set_context_prompt(prompt_context)
-            logger.debug(f"Context prompt updated: {dfg_simplifier.get_context_prompt()}")
 
-
-        print("Transforming DFG JSON to use generic activity names...")
+        logger.info("Transforming DFG JSON to use generic activity names...")
         json_dfg_file = fn.get_filename_path("dfg.json", input_dir)
         json_dfg_generics_file = fn.get_filename_path("dfg.json_generic_act", input_dir)
         json_activity_mapping_file = fn.get_filename_path("dfg.json_activity_mapping_from_dfg", input_dir)
@@ -67,6 +61,7 @@ class SimplifyDFGService:
                     except Exception as e:
                         logger.error(f"Error during DFG filtering attempt {i+1}: {e}")
                         raise
+        
 
         # Update transitions ratios to retain/remove if dfg was filtered
         if json_dfg_generics_file != json_dfg_to_simplify:

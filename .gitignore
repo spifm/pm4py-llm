@@ -126,6 +126,9 @@ app/config/*
 !app/config/prompts
 app/config/prompts/*
 !app/config/prompts/*_template*
+!app/config/prompts/dfg_simplify
+app/config/prompts/dfg_simplify/*
+!app/config/prompts/dfg_simplify/*_template*
 
 # Dataset
 dataset/*

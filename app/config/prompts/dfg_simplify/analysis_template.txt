@@ -1,0 +1,38 @@
+The model is a simplified DFG that you have created in a previous message based on the original model.
+The DFG is expressed as a single JSON object with the following structure:
+
+{
+  "start_activities": [
+    { "activity": "<ACT_ID_or_name>", "freq": <integer> },
+    ...
+  ],
+  "end_activities": [
+    { "activity": "<ACT_ID_or_name>", "freq": <integer> },
+    ...
+  ],
+  "transitions": [
+    { "src": "<ACT_ID_or_name>", "tgt": "<ACT_ID_or_name>", "freq": <integer> },
+    ...
+  ]
+}
+
+Each activity is identified by a string (for example an ACT_ID like "ACT_0", "ACT_1", ...).
+The frequencies are integers representing how often the activity or transition appears.
+
+### ANALYSIS INSTRUCTIONS ###
+Objective: Identify key behavioral indicators, trends, anomalies, and recurring patterns.
+Pay special attention to:
+- Common and uncommon workflows followed by students.
+- Variability in the learning process (i.e., differences in how students interact with the course).
+- Bottlenecks or deviations from expected behavior.
+- Potential indicators of engagement, difficulty, or inefficiencies in learning.
+Analysis requirements:
+- Present findings clearly and in a structured way.
+- Justify conclusions based on the structure of the provided model, detected event relationships, and transition frequencies.
+- Explain the implications of identified patterns for student experience and course design.
+- Avoid assuming prior knowledge or external data; base your analysis solely on the provided model.
+Additional instructions:
+Reason step by step, explaining how detected patterns relate to the events and transitions in the model.
+Justify any conclusions with observed data, and do not assume external information.
+If you identify a pattern, explain how you reached that conclusion and what it implies for student behavior and course design.
+### DFG JSON ###

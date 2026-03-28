@@ -80,19 +80,10 @@ def run_script(request: DatasetToStoreRequest):
         "This endpoint requires a **previous process mining analysis** that has generated a DFG file in PM4Py format.\n\n"
         "**Required input:**\n"
         "- `output_path` (str): Path where the DFG file to simplify is located.\n"
-        "\n**Optional input:**\n"
-        "- `prompt_context` (Optional[List[str]]): list of prompt context lines to replace the default context. Useful for customizing the LLM behavior.\n\n"
         "**Example input:**\n"
         "```json\n"
         "{\n"
-        "  \"output_path\": \"my-folder\",\n"
-        "  \"prompt_context\": [\n"
-        "    \"### CONTEXT ###\\n\",\n"
-        "    \"You are an expert in process mining and data analysis, with a focus on educational data.\",\n"
-        "    \"The section ### DFG MODEL ### contains a Directly-Follows Graph (DFG) model extracted from Moodle logs.\",\n"
-        "    \"This model represents the activity behavior of students.\",\n"
-        "    \"The structure and format of the DFG are described in the section ### DFG FORMAT ### above.\"\n"
-        "  ]\n"
+        "  \"output_path\": \"my-folder\"\n"
         "}\n"
         "```"
         "\n\n"
@@ -119,8 +110,7 @@ def simplify_dfg_endpoint(request: SimplifyDFGRequest):
     try:
         
         result = SimplifyDFGService.simplify_dfg(
-            output_path=request.output_path,
-            prompt_context=request.prompt_context
+            output_path=request.output_path
         )
 
         return {

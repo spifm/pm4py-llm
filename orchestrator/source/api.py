@@ -69,20 +69,12 @@ def read_root():
         "- `output_path` (str): Directory where the analysis results will be stored.\n"
         "\n**Optional input:**\n"
         "- `dataset_csv_delimiter` (Optional[str]): CSV delimiter used in the dataset.\n"
-        "- `prompt_context` (Optional[List[str]]): list of prompt context lines to replace the default context. Useful for customizing the LLM behavior.\n\n"
         "**Example input:**\n"
         "```json\n"
         "{\n"
         "  \"dataset\": \"my_dataset.csv\",\n"
         "  \"dataset_csv_delimiter\": \",\",\n"
-        "  \"output_path\": \"my-folder\",\n"
-        "  \"prompt_context\": [\n"
-        "    \"### CONTEXT ###\\n\",\n"
-        "    \"You are an expert in process mining and data analysis, with a focus on educational data.\",\n"
-        "    \"The section ### DFG MODEL ### contains a Directly-Follows Graph (DFG) model extracted from Moodle logs.\",\n"
-        "    \"This model represents the activity behavior of students.\",\n"
-        "    \"The structure and format of the DFG are described in the section ### DFG FORMAT ### above.\"\n"
-        "  ]\n"
+        "  \"output_path\": \"my-folder\"\n"
         "}\n"
         "```"
         "\n\n"
@@ -130,9 +122,6 @@ def full_analysis(
     simplify_request = SimplifyDFGRequest(
         output_path = output_directory
     )
-
-    if request.prompt_context is not None:
-        simplify_request.prompt_context = request.prompt_context
 
     simplify_result = simplify_dfg_endpoint(simplify_request)
 
@@ -233,19 +222,10 @@ def store_dataset(request: DatasetToStoreRequest):
         "This endpoint requires a **previous process mining analysis** that has generated a DFG file in PM4Py format.\n\n"
         "**Required input:**\n"
         "- `output_path` (str): Path where the DFG file to simplify is located.\n"
-        "\n**Optional input:**\n"
-        "- `prompt_context` (Optional[List[str]]): list of prompt context lines to replace the default context. Useful for customizing the LLM behavior.\n\n"
         "**Example input:**\n"
         "```json\n"
         "{\n"
-        "  \"output_path\": \"my-folder\",\n"
-        "  \"prompt_context\": [\n"
-        "    \"### CONTEXT ###\\n\",\n"
-        "    \"You are an expert in process mining and data analysis, with a focus on educational data.\",\n"
-        "    \"The section ### DFG MODEL ### contains a Directly-Follows Graph (DFG) model extracted from Moodle logs.\",\n"
-        "    \"This model represents the activity behavior of students.\",\n"
-        "    \"The structure and format of the DFG are described in the section ### DFG FORMAT ### above.\"\n"
-        "  ]\n"
+        "  \"output_path\": \"my-folder\"\n"
         "}\n"
         "```"
         "\n\n"

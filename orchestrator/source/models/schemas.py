@@ -12,7 +12,6 @@ class DatasetToStoreRequest(BaseModel):
 
 class SimplifyDFGRequest(BaseModel):
     output_path: str
-    prompt_context: Optional[List[str]] = None
 
 class CreateMindMapRequest(BaseModel):
     analysis_dir: str
@@ -21,4 +20,3 @@ class FullAnalysisRequest(BaseModel):
     dataset: str
     dataset_csv_delimiter: Optional[str] = ","
     output_path: Optional[str] = ""
-    prompt_context: Optional[List[str]] = None

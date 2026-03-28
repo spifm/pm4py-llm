@@ -23,8 +23,6 @@ The frequencies are integers representing how often the activity or transition a
 Simplify the model to make it significantly more interpretable:
 - Keep only the most relevant activities and transitions (high-frequency, common paths, important cycles).
 - You MUST retain between 5 and 7 activities.
-- You MUST remove at least {{removing_transitions_ratio}}% of the transitions compared to the original model.
-- You MUST retain at least {{retaining_transitions_ratio}}% of the original transitions.
 - For every retained activity you MUST keep at least its most relevant incoming and outgoing transitions.
 - You MUST NOT invent new activities: only use activity identifiers that already appear in the input.
 - You MUST NOT invent new transitions: any transition you keep MUST already exist in the input with the same src and tgt.

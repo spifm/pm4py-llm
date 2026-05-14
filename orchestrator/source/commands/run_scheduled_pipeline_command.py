@@ -1,3 +1,4 @@
+import argparse
 import json
 import logging
 from pathlib import Path
@@ -33,7 +34,7 @@ def save_pipeline_result(result: dict, base_dir: str = "/app/source/tmp/pipeline
 
 
 class RunScheduledPipelineCommand:
-    def __init__(self):
+    def __init__(self, disable_mind_map: bool = False):
         self.orchestrator_api_url = self._require_env("ORCHESTRATOR_API_URL").rstrip("/")
         self.moodle_data_service_url = self._require_env("MOODLE_DATA_SERVICE_URL").rstrip("/")
         self.results_publisher_url = self._require_env("RESULTS_PUBLISHER_URL").rstrip("/")
@@ -41,6 +42,7 @@ class RunScheduledPipelineCommand:
         self.bearer_token = self._require_env("API_TOKEN")
         self.timeout = int(os.getenv("PIPELINE_TIMEOUT_SECONDS", "1800")) # 30 minutes default
         self.config_path = "/app/source/config/scheduled_courses.json"
+        self.disable_mind_map = disable_mind_map
 
     def execute(self) -> dict[str, Any]:
         courses = self._load_config(self.config_path)
@@ -66,7 +68,7 @@ class RunScheduledPipelineCommand:
                 logger.info("Scheduled pipeline: Starting STEP 2 (run analysis) for course.shortname=%s, output_path=%s",
                             course_info['shortname'], output_path
                 )
-                analysis_result = self._run_full_analysis(dataset, output_path)
+                analysis_result = self._run_full_analysis(dataset, output_path, self.disable_mind_map)
 
                 logger.info("Scheduled pipeline: Starting STEP 3 (publish results) for course.shortname=%s, output_dir=%s",
                             course_info['shortname'], analysis_result["output_dir"]
@@ -155,10 +157,11 @@ class RunScheduledPipelineCommand:
         response.raise_for_status()
         return response.json()
 
-    def _run_full_analysis(self, dataset: str, output_path: str) -> dict[str, Any]:
+    def _run_full_analysis(self, dataset: str, output_path: str, disable_mind_map: bool = False) -> dict[str, Any]:
         payload = {
             "dataset": dataset,
             "output_path": output_path,
+            "disable-mind_map": disable_mind_map,
         }
 
         response = requests.post(
@@ -186,6 +189,15 @@ class RunScheduledPipelineCommand:
     
 
 if __name__ == "__main__":
-    result = RunScheduledPipelineCommand().execute()
+    parser = argparse.ArgumentParser(description="Run the scheduled pipeline command")
+    parser.add_argument(
+        "--disable-mind_map",
+        action="store_true",
+        default=False,
+        help="Disable mind map generation during full analysis",
+    )
+    args = parser.parse_args()
+
+    result = RunScheduledPipelineCommand(disable_mind_map=args.disable_mind_map).execute()
     saved_path = save_pipeline_result(result)
     print(f"Pipeline result saved to: {saved_path}")

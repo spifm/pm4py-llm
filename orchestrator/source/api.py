@@ -69,12 +69,14 @@ def read_root():
         "- `output_path` (str): Directory where the analysis results will be stored.\n"
         "\n**Optional input:**\n"
         "- `dataset_csv_delimiter` (Optional[str]): CSV delimiter used in the dataset.\n"
+        "- `disable-mind_map` (Optional[bool]): Flag to disable mind map generation.\n"
         "**Example input:**\n"
         "```json\n"
         "{\n"
         "  \"dataset\": \"my_dataset.csv\",\n"
         "  \"dataset_csv_delimiter\": \",\",\n"
-        "  \"output_path\": \"my-folder\"\n"
+        "  \"output_path\": \"my-folder\",\n"
+        "  \"disable-mind_map\": false\n"
         "}\n"
         "```"
         "\n\n"
@@ -89,6 +91,8 @@ def read_root():
         "  \"mind_map_file\": \"output/mind_map.mmd\"\n"
         "  \"mind_map_image_file\": \"output/mind_map.svg\"\n"
         "}\n"
+        "\n**Notes**\n"
+        "- If `disable-mind_map` is set to true, the response will not include `mind_map_file` and `mind_map_image_file` fields.\n"
         "```"
     ),
     dependencies=[Depends(verify_token)]
@@ -138,21 +142,27 @@ def full_analysis(
     except Exception as e:
         return {"step": "get-analysis", "error": str(e)}
     
+
+    content = {
+        "output_dir": output_directory,
+        **json.loads(analysis_result.body),
+    }
     
     # Step 4: Execute create_mind_map
-    try:
-        create_mind_map_request = CreateMindMapRequest(analysis_dir=output_directory)
-        mind_map_result = create_mind_map(create_mind_map_request)
-        logger.debug(f"Step 4: Create Mind Map output: {mind_map_result}")
-    except Exception as e:
-        return {"step": "create-mind-map", "error": str(e)}
+    if not request.disable_mind_map:
+        try:
+            create_mind_map_request = CreateMindMapRequest(analysis_dir=output_directory)
+            mind_map_result = create_mind_map(create_mind_map_request)
+            logger.debug(f"Step 4: Create Mind Map output: {mind_map_result}")
+            content.update(json.loads(mind_map_result.body))
+        except Exception as e:
+            return {"step": "create-mind-map", "error": str(e)}
+    else:
+        logger.info("Mind map generation is disabled for this analysis by request.")
+    
 
     return JSONResponse(
-        content={
-            "output_dir": output_directory,
-            **json.loads(analysis_result.body),
-            **json.loads(mind_map_result.body),
-        }
+        content=content
     )
 
 

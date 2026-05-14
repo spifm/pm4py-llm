@@ -1,4 +1,4 @@
-from pydantic import BaseModel
+from pydantic import BaseModel, Field
 from typing import Optional, Dict, List
 
 class PMAnalysisRequest(BaseModel):
@@ -20,3 +20,4 @@ class FullAnalysisRequest(BaseModel):
     dataset: str
     dataset_csv_delimiter: Optional[str] = ","
     output_path: Optional[str] = ""
+    disable_mind_map: Optional[bool] = Field(False, alias="disable-mind_map")

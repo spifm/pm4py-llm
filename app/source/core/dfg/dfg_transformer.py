@@ -195,7 +195,8 @@ class DFGTransformer:
     def dfg_json_restore_activity_names(self,
                                         act_json_path: str,
                                         mapping_path: str,
-                                        output_json_path: str) -> None:
+                                        output_json_path: str,
+                                        add_activity_numbers: bool = False) -> None:
         """
         Restores original activity names in a JSON DFG that uses IDs (ACT_0, ACT_1, ...),
         using a JSON mapping file of the form:
@@ -210,6 +211,8 @@ class DFGTransformer:
 
         Output JSON (output_json_path):
         Same structure, but with original names instead of ACT_x.
+        If add_activity_numbers is True, activity names are prefixed with a
+        human-friendly number in first-appearance order, e.g. "[1] Activity".
         """
 
         # 1) Load JSON DFG with ACT_x
@@ -223,12 +226,24 @@ class DFGTransformer:
         # Helper to map an ID or leave it as is if not in the mapping
         def map_id(act_id: str) -> str:
             return id_to_name.get(act_id, act_id)
+
+        activity_numbers = {}
+
+        def add_number(activity_name: str) -> str:
+            if not add_activity_numbers:
+                return activity_name
+
+            if activity_name not in activity_numbers:
+                activity_numbers[activity_name] = len(activity_numbers) + 1
+
+            return f"[{activity_numbers[activity_name]}] {activity_name}"
         
         # 3) Restore names in start_activities
         restored_start = []
         for entry in dfg_data.get("start_activities", []):
+            activity = map_id(entry["activity"])
             restored_start.append({
-                "activity": map_id(entry["activity"]),
+                "activity": add_number(activity),
                 "freq": int(entry["freq"])
             })
 
@@ -236,8 +251,9 @@ class DFGTransformer:
         # 4) Restore names in end_activities
         restored_end = []
         for entry in dfg_data.get("end_activities", []):
+            activity = map_id(entry["activity"])
             restored_end.append({
-                "activity": map_id(entry["activity"]),
+                "activity": add_number(activity),
                 "freq": int(entry["freq"])
             })
 
@@ -250,9 +266,11 @@ class DFGTransformer:
                     logger.error(f"Source ID {t['src']} not found in mapping")
                 if t["tgt"] not in id_to_name:
                     logger.error(f"Target ID {t['tgt']} not found in mapping")
+                src = map_id(t["src"])
+                tgt = map_id(t["tgt"])
                 restored_transitions.append({
-                    "src":  map_id(t["src"]),
-                    "tgt":  map_id(t["tgt"]),
+                    "src":  add_number(src),
+                    "tgt":  add_number(tgt),
                     "freq": int(t["freq"])
                 })
         except Exception as e:
@@ -365,4 +383,3 @@ class DFGTransformer:
                 src_idx = activity_to_idx[src_name]
                 tgt_idx = activity_to_idx[tgt_name]
                 out.write(f"{src_idx}>{tgt_idx}x{freq}\n")
-

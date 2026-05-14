@@ -78,7 +78,8 @@ class SimplifyDFGService:
         dfg_transformer.dfg_json_restore_activity_names(
             act_json_path=llm_simplified_dfg_file,
             mapping_path=json_activity_mapping_file,
-            output_json_path=llm_restored_simplified_dfg_file
+            output_json_path=llm_restored_simplified_dfg_file,
+            add_activity_numbers=True
         )
 
         print("Restoring simplified DFG in json to pm4py DFG format...")

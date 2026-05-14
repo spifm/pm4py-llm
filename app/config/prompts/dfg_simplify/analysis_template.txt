@@ -3,20 +3,20 @@ The DFG is expressed as a single JSON object with the following structure:
 
 {
   "start_activities": [
-    { "activity": "<ACT_ID_or_name>", "freq": <integer> },
+    { "activity": "<activity_name>", "freq": <integer> },
     ...
   ],
   "end_activities": [
-    { "activity": "<ACT_ID_or_name>", "freq": <integer> },
+    { "activity": "<activity_name>", "freq": <integer> },
     ...
   ],
   "transitions": [
-    { "src": "<ACT_ID_or_name>", "tgt": "<ACT_ID_or_name>", "freq": <integer> },
+    { "src": "<activity_name>", "tgt": "<activity_name>", "freq": <integer> },
     ...
   ]
 }
 
-Each activity is identified by a string (for example an ACT_ID like "ACT_0", "ACT_1", ...).
+Each activity is identified by a string prefixed with a human-readable number in square brackets (for example "[1] activity create", "[2] activity submit", ...).
 The frequencies are integers representing how often the activity or transition appears.
 
 ### ANALYSIS INSTRUCTIONS ###

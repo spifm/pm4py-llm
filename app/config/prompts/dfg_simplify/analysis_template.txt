@@ -20,19 +20,34 @@ Each activity is identified by a string prefixed with a human-readable number in
 The frequencies are integers representing how often the activity or transition appears.
 
 ### ANALYSIS INSTRUCTIONS ###
-Objective: Identify key behavioral indicators, trends, anomalies, and recurring patterns.
-Pay special attention to:
-- Common and uncommon workflows followed by students.
-- Variability in the learning process (i.e., differences in how students interact with the course).
-- Bottlenecks or deviations from expected behavior.
-- Potential indicators of engagement, difficulty, or inefficiencies in learning.
-Analysis requirements:
-- Present findings clearly and in a structured way.
-- Justify conclusions based on the structure of the provided model, detected event relationships, and transition frequencies.
-- Explain the implications of identified patterns for student experience and course design.
-- Avoid assuming prior knowledge or external data; base your analysis solely on the provided model.
-Additional instructions:
-Reason step by step, explaining how detected patterns relate to the events and transitions in the model.
-Justify any conclusions with observed data, and do not assume external information.
-If you identify a pattern, explain how you reached that conclusion and what it implies for student behavior and course design.
+Write the analysis in Markdown.
+
+The intended audience is non-technical teaching staff or course coordinators. Explain the findings as observations about student behavior, not as technical properties of a graph. Avoid technical jargon where possible. If a technical term is necessary, explain it briefly in plain language.
+
+When referring to an activity, include its numbered label exactly as it appears, for example "[3] submit assignment".
+
+Use clear section headings, short paragraphs, and bullet points when useful. Follow this structure:
+
+## Overview
+Briefly summarize what the process shows in plain language.
+
+## Main Student Behaviors
+Describe the most relevant behavior patterns observed in the process.
+
+## Common Paths
+Explain the most frequent workflows or transitions.
+
+## Unusual or Less Frequent Paths
+Explain any relevant uncommon paths, deviations, or exceptions.
+
+## Possible Difficulties or Bottlenecks
+Identify steps where students may be struggling, repeating actions, or showing hesitation.
+
+## Interpretation for Teaching
+Explain what these patterns may imply for course design, student support, or learning activities.
+
+## Key Takeaways
+Provide a short list of the most important conclusions.
+
+Base every conclusion on the activities, transitions, and frequencies present in the DFG. Do not assume external information. Do not overstate conclusions: when a finding is uncertain, describe it as a possible interpretation.
 ### DFG JSON ###

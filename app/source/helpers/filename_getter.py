@@ -15,13 +15,13 @@ class Filename:
             "image": "bpmn.png"
         },
         "dfg": {
-            "image": "dfg.svg",
+            "image": "dfg.FORMAT",
             "raw": "dfg.dfg",
             "abstract": "abstract-dfg.txt",
             "analysis": "dfg-analysis.txt",
             "llm_simplified": "llm-simplified-dfg.txt",
             "simplified": "simplified-dfg.dfg",
-            "simplified_image": "simplified-dfg.svg",
+            "simplified_image": "simplified-dfg.FORMAT",
             "simplified_analysis": "simplified-dfg-analysis.txt",
             "json": "dfg.json",
             "json_activity_mapping_from_dfg": "dfg-activity_mapping.json",
@@ -66,4 +66,22 @@ class Filename:
         if filename is None:
             raise KeyError(f"Filename key '{dotted_key}' not found in Filename.FILENAMES")
         return os.path.join(output_dir, filename)
+
+
+    def get_filename_for_format(self, dotted_key, image_format: str) -> str:
+        filename = self.get_filename(dotted_key)
+        if filename is None:
+            raise KeyError(f"Filename key '{dotted_key}' not found in Filename.FILENAMES")
+        return filename.replace("FORMAT", image_format)
+
+
+    def get_filename_path_for_format(self, dotted_key, output_dir, image_format: str) -> str:
+        return os.path.join(output_dir, self.get_filename_for_format(dotted_key, image_format))
+
+
+    def get_filename_paths_for_formats(self, dotted_key, output_dir, image_formats: list[str]) -> dict[str, str]:
+        return {
+            image_format: self.get_filename_path_for_format(dotted_key, output_dir, image_format)
+            for image_format in image_formats
+        }
 

@@ -139,22 +139,26 @@ class DFGSimplifier:
             raise
 
 
-    def convert_dfg_to_image(self, dfg_file, output_path):
+    def convert_dfg_to_image(self, dfg_file, output_paths):
         """
-        Converts the DFG to a PNG image
+        Converts the DFG to one or more image files.
         """
-        logger.debug(f"Converting DFG from {dfg_file} to image {output_path}")
+        logger.debug(f"Converting DFG from {dfg_file} to image {output_paths}")
+
+        if isinstance(output_paths, str):
+            output_paths = [output_paths]
         
         dfg, start_activities, end_activities = pm4py.read_dfg(dfg_file)
 
-        pm4py.save_vis_dfg(
-            dfg,
-            start_activities,
-            end_activities,
-            file_path=output_path,
-            bgcolor="white",     # White background
-            rankdir="LR"         # Directed graph from left to right
-        )
+        for output_path in output_paths:
+            pm4py.save_vis_dfg(
+                dfg,
+                start_activities,
+                end_activities,
+                file_path=output_path,
+                bgcolor="white",
+                rankdir="LR"
+            )
 
     def _parse_pm4py_dfg(self, dfg_path: str):
         """
@@ -377,4 +381,3 @@ class DFGSimplifier:
             L, U, Lp, Up,
             self.retaining_transitions_ratio, self.removing_transitions_ratio,
         )
-

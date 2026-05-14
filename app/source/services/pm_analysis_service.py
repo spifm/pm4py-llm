@@ -234,11 +234,12 @@ class PmAnalysisService:
 
         if self.config['discovery']['dfg']['enabled']:
             logger.info("Discovering DFG...")
-            image_filename = self.fn.get_filename_path("dfg.image", output_directory)
+            image_formats = self.config['discovery']['dfg']['image_formats']
+            image_filenames = self.fn.get_filename_paths_for_formats("dfg.image", output_directory, image_formats)
             dfg_filename = self.fn.get_filename_path("dfg.raw", output_directory)
             abstract_filename = self.fn.get_filename_path("dfg.abstract", output_directory)
             abstract_dfg = discovery.get_dfg(
-                image_filename, dfg_filename, abstract_filename
+                list(image_filenames.values()), dfg_filename, abstract_filename
             )
 
             # Store DFG as json

@@ -1,10 +1,12 @@
 import os
 from source.helpers.filename_getter import Filename
+from source.Config import Config
 
 class GetAnalysisService:
 
     def __init__(self):
         self.fn = Filename()
+        self.config = Config().get()
     
     def get_analysis_files(self, output_dir):
         """
@@ -20,9 +22,17 @@ class GetAnalysisService:
 
         return {
             "dfg_analysis": dfg_analysis,
-            "dfg_image": self.fn.get_filename_path("dfg.image", output_dir),
+            "dfg_images": self.fn.get_filename_paths_for_formats(
+                "dfg.image",
+                output_dir,
+                self.config['discovery']['dfg']['image_formats']
+            ),
             "simplified_dfg_analysis": self.fn.get_filename_path("dfg.simplified_analysis", output_dir),
-            "simplified_dfg_image": self.fn.get_filename_path("dfg.simplified_image", output_dir)
+            "simplified_dfg_images": self.fn.get_filename_paths_for_formats(
+                "dfg.simplified_image",
+                output_dir,
+                self.config['llm']['dfg']['simplify_dfg']['image_formats']
+            )
         }
     
     def get_simplified_analysis_files(self, output_dir):
@@ -32,5 +42,9 @@ class GetAnalysisService:
         """
         return {
             "simplified_dfg_analysis": self.fn.get_filename_path("dfg.simplified_analysis", output_dir),
-            "simplified_dfg_image": self.fn.get_filename_path("dfg.simplified_image", output_dir)
+            "simplified_dfg_images": self.fn.get_filename_paths_for_formats(
+                "dfg.simplified_image",
+                output_dir,
+                self.config['llm']['dfg']['simplify_dfg']['image_formats']
+            )
         }

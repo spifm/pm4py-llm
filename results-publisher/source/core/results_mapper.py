@@ -1,6 +1,6 @@
 from helpers.get_filename_helper import GetFilenameHelper
 from datetime import datetime
-from pathlib import Path;
+from pathlib import Path
 
 class ResultMapper:
 
@@ -18,10 +18,10 @@ class ResultMapper:
 
         analysis_filename = self.file_helper.get_analysis_filename()
         analysis_filename_extension = Path(analysis_filename).suffix
-        image_filename = self.file_helper.get_image_filename()
-        image_filename_extension = Path(image_filename).suffix
-
         return {
             analysis_filename: f"{yyyymmdd}{analysis_filename_extension}",
-            image_filename: f"{yyyymmdd}{image_filename_extension}"
         }
+
+    def get_target_filename(self, source_filename: str) -> str:
+        yyyymmdd = datetime.now().strftime("%Y%m%d")
+        return f"{yyyymmdd}{Path(source_filename).suffix}"

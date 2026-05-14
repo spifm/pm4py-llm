@@ -28,6 +28,7 @@
         },
         "dfg": {
             "enabled": true,
+            "image_formats": ["svg", "png"],
             "performance-enabled": true
         },
         "temporal_profile": {
@@ -90,6 +91,7 @@
             "prompt": "Model used is a DFG.",
             "simplify_dfg": {
                 "enabled": true,
+                "image_formats": ["svg", "png"],
                 "simplification_context_prompt": "prompts/dfg_simplify/context_template.txt",
                 "removing_transitions_ratio": 50,
                 "retaining_transitions_ratio": 20,

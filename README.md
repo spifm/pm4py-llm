@@ -97,6 +97,7 @@ The configuration file is located in the config folder. The file is called confi
     - `infrequent_ratio`: ratio of infrequent activities to be removed from the BPMN (0-100). If set to 0.00, no infrequent activities will be removed
 - `discovery.dfg`: configuration for discovering a DFG
     - `enabled`: boolean to enable/disable the discovery using true/false
+    - `image_formats`: list of image formats to generate for the discovered DFG. Example: `["svg", "png"]`. Use a single value, such as `["svg"]`, to generate only one format.
     - `performance-enabled`: boolean to enable/disable an additional performance analysis using true/false
 - `discovery.temporal_profile`: configuration for discovering a Temporal Profile
     - `enabled`: boolean to enable/disable the discovery of the temporal profile using true/false
@@ -149,6 +150,7 @@ The configuration file is located in the config folder. The file is called confi
     - `enabled`: boolean to enable/disable the analysis using true/false
     - `prompt`: prompt to be used for the analysis joined with the context
     - `simplify_dfg.enabled`: boolean to enable/disable the simplification of the DFG using true/false
+    - `simplify_dfg.image_formats`: list of image formats to generate for the simplified DFG. Example: `["svg", "png"]`. Use a single value, such as `["svg"]`, to generate only one format.
     - `simplify_dfg.removing_transitions_ratio`: ratio of transitions to be removed from the original DFG (0-100) during the simplification process
     - `simplify_dfg.retaining_transitions_ratio`: ratio of transitions to be retained from the original DFG (0-100) during the simplification process
     - `simplify_dfg.simplification_context_prompt`: prompt template to be used for the simplification of the DFG

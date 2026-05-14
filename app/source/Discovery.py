@@ -37,10 +37,10 @@ class Discovery:
         self._save_abstract_model(abstract_petri_net, abstract_file_name)
         return abstract_petri_net, net, im, fm
 
-    def get_dfg(self, image_file_name, full_dfg_filename, abstract_file_name):
+    def get_dfg(self, image_file_names, full_dfg_filename, abstract_file_name):
         """ Discover and save a Directly-Follows Graph (DFG) from the filtered log.
         Args:
-            image_file_name (str): Path to save the DFG visualization.
+            image_file_names (str | list[str]): Paths to save the DFG visualizations.
             full_dfg_filename (str): Path to save the DFG in DFG format.
             abstract_file_name (str): Path to save the abstract model description.
         Returns:
@@ -53,7 +53,11 @@ class Discovery:
             timestamp_key=self.timestamp_key
         )
 
-        pm4py.save_vis_dfg(dfg, start_activities, end_activities, image_file_name)
+        if isinstance(image_file_names, str):
+            image_file_names = [image_file_names]
+
+        for image_file_name in image_file_names:
+            pm4py.save_vis_dfg(dfg, start_activities, end_activities, image_file_name)
         pm4py.write_dfg(dfg, start_activities, end_activities, full_dfg_filename)
 
         sorted_log = self.filtered_log.sort_values(

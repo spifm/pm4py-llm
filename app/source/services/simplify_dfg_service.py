@@ -92,8 +92,9 @@ class SimplifyDFGService:
         output_analysis = fn.get_filename_path("dfg.simplified_analysis", input_dir)
         dfg_simplifier.analyze_simplified_dfg(llm_restored_simplified_dfg_file, output_analysis)
 
-        simplified_dfg_image = fn.get_filename_path("dfg.simplified_image", input_dir)
-        dfg_simplifier.convert_dfg_to_image(simplified_dfg_file, simplified_dfg_image)
+        image_formats = dfg_simplifier.config['llm']['dfg']['simplify_dfg']['image_formats']
+        simplified_dfg_images = fn.get_filename_paths_for_formats("dfg.simplified_image", input_dir, image_formats)
+        dfg_simplifier.convert_dfg_to_image(simplified_dfg_file, list(simplified_dfg_images.values()))
         dfg_simplifier.compute_simplification_info(
             original_dfg_path=os.path.join(input_dir, fn.get_filename("dfg.raw")),
             simplified_dfg_path=simplified_dfg_file
@@ -103,5 +104,5 @@ class SimplifyDFGService:
             "output_analysis": output_analysis,
             "llm_simplified_dfg": llm_restored_simplified_dfg_file,
             "simplified_dfg": simplified_dfg_file,
-            "simplified_dfg_image": simplified_dfg_image
+            "simplified_dfg_images": simplified_dfg_images
         }

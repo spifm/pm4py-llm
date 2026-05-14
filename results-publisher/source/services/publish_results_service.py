@@ -33,9 +33,7 @@ class PublishResultsService:
             publised_result = PublishedResult(published_results_directory=publish_path, files={})
 
             for file_key, source_file in result.files.items():
-                target_name = file_maps.get(source_file)
-                if target_name is None:
-                    raise ValueError(f"No target name mapping found for file: {source_file}")
+                target_name = file_maps.get(source_file, self.result_mapper.get_target_filename(source_file))
 
                 source_path = Path(f"{results_directory}/{source_file}")
                 if not source_path.exists():

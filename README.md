@@ -199,6 +199,32 @@ docker exec -it pm4py-llm-app python3 -m utils.dfg_to_image \
 
 NOTE: it has been tested using png and svg formats for the output image, but it should work with any format supported by the graphviz library used in the script.
 
+## Filter DFG by transition frequency
+
+This script discovers a DFG from a CSV or XES dataset and creates a filtered DFG keeping the most frequent transitions according to a ratio. The script is called `filter_dfg_by_frequency.py` and it must be run independently. It stores the original DFG, the filtered DFG, filtered DFG images using the formats configured in `discovery.dfg.image_formats`, and an `info.txt` report with simplification metrics comparable to the LLM-based DFG simplification output.
+
+For CSV datasets, the case id, activity, and timestamp columns must be provided:
+
+```bash
+docker exec -it pm4py-llm-app python3 -m utils.filter_dfg_by_frequency \
+  --dataset dataset.csv \
+  --ratio 20 \
+  --case-id-column case_id \
+  --activity-column activity \
+  --timestamp-column timestamp \
+  --csv-delimiter ","
+```
+
+For XES datasets, the standard XES columns are used by default:
+
+```bash
+docker exec -it pm4py-llm-app python3 -m utils.filter_dfg_by_frequency \
+  --dataset dataset.xes \
+  --ratio 20
+```
+
+The dataset must be inside `/dataset`. The output is stored in `/output/filter_dfg_by_frequency_<ratio>_<timestamp>/`.
+
 ## CSV to JSON conversion
 
 This script converts a CSV file to a custom JSON format. The script is called `csv_to_json.py` and it must be run independently. The CSV file path is directly set in the script. The script will then generate a new json file with the converted data. The script can be run using the following command:

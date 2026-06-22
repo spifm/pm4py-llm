@@ -1,6 +1,9 @@
 from models.schema import Result
 from helpers.get_filename_helper import GetFilenameHelper
 from pathlib import Path
+import logging
+
+logger = logging.getLogger(__name__)
 
 class ResultBuilder:
 
@@ -17,6 +20,16 @@ class ResultBuilder:
                 "analysis": self.file_helper.get_analysis_filename(),
             }
         )
+
+        summary_filename = self.file_helper.get_summary_filename()
+        if (Path(results_directory) / summary_filename).exists():
+            result.files["summary"] = summary_filename
+        else:
+            logger.warning(
+                "Summary file '%s' not found in '%s'; skipping it from publication.",
+                summary_filename,
+                results_directory,
+            )
 
         image_paths = [
             image_path

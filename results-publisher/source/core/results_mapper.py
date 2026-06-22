@@ -18,8 +18,12 @@ class ResultMapper:
 
         analysis_filename = self.file_helper.get_analysis_filename()
         analysis_filename_extension = Path(analysis_filename).suffix
+
+        summary_filename = self.file_helper.get_summary_filename()
+        summary_filename_extension = Path(summary_filename).suffix
         return {
-            analysis_filename: f"{yyyymmdd}{analysis_filename_extension}",
+            analysis_filename: f"{yyyymmdd}-analysis{analysis_filename_extension}",
+            summary_filename: f"{yyyymmdd}-summary{summary_filename_extension}",
         }
 
     def get_target_filename(self, source_filename: str) -> str:

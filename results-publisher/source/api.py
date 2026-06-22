@@ -77,6 +77,7 @@ def read_root():
         "    \"results_directory\": \"XXX\",\n"
         "      \"files\": {\n"
         "        \"analysis\": \"XXX\",\n"
+        "        \"summary\": \"XXX\",\n"
         "        \"image\": \"XXX\",\n"
         "      }\n"
         "  }\n"
@@ -84,11 +85,15 @@ def read_root():
         "    \"published_results_directory\": \"XXX\",\n"
         "      \"files\": {\n"
         "        \"analysis\": \"XXX\",\n"
+        "        \"summary\": \"XXX\",\n"
         "        \"image\": \"XXX\",\n"
         "      }\n"
         "  }\n"
         "}\n"
         "```"
+        "\n\n"
+        "**Notes**\n"
+        "- The `summary` file is optional: if it is not present in the results directory, it is skipped (a warning is logged).\n"
     ),
     dependencies=[Depends(verify_token)],
 )

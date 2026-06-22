@@ -38,7 +38,7 @@ def verify_token(credentials: HTTPAuthorizationCredentials = Depends(security)):
     if not token or token != API_TOKEN:
         raise HTTPException(
             status_code=status.HTTP_401_UNAUTHORIZED,
-            detail="Invalid or missing token" + API_TOKEN,
+            detail="Invalid or missing token",
         )
 
 app = FastAPI()

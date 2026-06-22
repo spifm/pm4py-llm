@@ -13,5 +13,8 @@ class DatasetToStoreRequest(BaseModel):
 class SimplifyDFGRequest(BaseModel):
     output_path: str
 
+class SummarizeSimplifiedDFGRequest(BaseModel):
+    analysis_dir: str
+
 class CreateMindMapRequest(BaseModel):
     analysis_dir: str

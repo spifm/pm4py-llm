@@ -97,7 +97,8 @@
                 "removing_transitions_ratio": 50,
                 "retaining_transitions_ratio": 20,
                 "simplification_instructions_prompt": "prompts/dfg_simplify/instructions_using_activities_template.txt",
-                "simplification_analysis_prompt": "prompts/dfg_simplify/analysis_template.txt"
+                "simplification_analysis_prompt": "prompts/dfg_simplify/analysis_template.txt",
+                "simplification_summary_prompt": "prompts/dfg_simplify/summary_template.txt"
             }
         },
         "temporal_profile": {

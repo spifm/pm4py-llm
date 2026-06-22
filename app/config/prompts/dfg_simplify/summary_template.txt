@@ -1,0 +1,40 @@
+The model is a simplified DFG that you have created in a previous message based on the original model.
+The DFG is expressed as a single JSON object with the following structure:
+
+{
+  "start_activities": [
+    { "activity": "<activity_name>", "freq": <integer> },
+    ...
+  ],
+  "end_activities": [
+    { "activity": "<activity_name>", "freq": <integer> },
+    ...
+  ],
+  "transitions": [
+    { "src": "<activity_name>", "tgt": "<activity_name>", "freq": <integer> },
+    ...
+  ]
+}
+
+Each activity is identified by a string prefixed with a human-readable number in square brackets (for example "[1] activity create", "[2] activity submit", ...).
+The frequencies are integers representing how often the activity or transition appears.
+
+### SUMMARY INSTRUCTIONS ###
+Write a SHORT, concise explanatory summary (TL;DR) of the simplified DFG in Markdown.
+
+The intended audience is non-technical teaching staff or course coordinators. Explain the findings as observations about student behavior, not as technical properties of a graph. Avoid technical jargon.
+
+Keep it brief: aim for 4 to 8 sentences total. Do NOT produce a long, sectioned report.
+
+Follow this structure:
+
+## Summary
+One short paragraph (2-4 sentences) describing in plain language what students typically do in this process.
+
+## Key Points
+A short bullet list (3-5 bullets) with the most important observations: the most common path, any notable bottleneck or unusual behavior, and the typical entry and exit points.
+
+When referring to an activity, include its numbered label exactly as it appears, for example "[3] submit assignment".
+
+Base every statement on the activities, transitions, and frequencies present in the DFG. Do not assume external information. Do not overstate conclusions: when a finding is uncertain, describe it as a possible interpretation.
+### DFG JSON ###

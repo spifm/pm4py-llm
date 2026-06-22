@@ -13,6 +13,9 @@ class DatasetToStoreRequest(BaseModel):
 class SimplifyDFGRequest(BaseModel):
     output_path: str
 
+class SummarizeSimplifiedDFGRequest(BaseModel):
+    analysis_dir: str
+
 class CreateMindMapRequest(BaseModel):
     analysis_dir: str
 
@@ -21,3 +24,4 @@ class FullAnalysisRequest(BaseModel):
     dataset_csv_delimiter: Optional[str] = ","
     output_path: Optional[str] = ""
     disable_mind_map: Optional[bool] = Field(False, alias="disable-mind_map")
+    disable_summary: Optional[bool] = Field(False, alias="disable-summary")

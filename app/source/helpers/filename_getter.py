@@ -23,6 +23,7 @@ class Filename:
             "simplified": "simplified-dfg.dfg",
             "simplified_image": "simplified-dfg.FORMAT",
             "simplified_analysis": "simplified-dfg-analysis.txt",
+            "simplified_summary": "simplified-dfg-summary.txt",
             "json": "dfg.json",
             "json_activity_mapping_from_dfg": "dfg-activity_mapping.json",
             "json_generic_act_filtered_by_freq": "dfg-generic-activities-filtered-by-freq.json",

@@ -139,6 +139,32 @@ class DFGSimplifier:
             raise
 
 
+    def summarize_simplified_dfg(self, dfg_file, output_summary):
+        """
+        Generate a short, concise explanatory summary of the simplified
+        Directly-Follows Graph (DFG) using an LLM.
+        """
+        print("\n\n-------------------\nSummarizing Simplified DFG\n-------------------\n\n")
+        try:
+            prompt_context = self._get_context_prompt()
+            prompt_instructions = self.prompt_loader.load_template(
+                self.config['llm']['dfg']['simplify_dfg']['simplification_summary_prompt']
+            )
+            simplified_dfg = self._read_dfg(dfg_file)
+            prompt = f"{prompt_context}{prompt_instructions}{simplified_dfg}"
+            logger.debug(f"Summary prompt: {prompt}")
+            metrics = self.llm.client.exec_prompt(prompt, output_summary)
+            if metrics is not None:
+                out_dir = os.path.dirname(os.path.abspath(output_summary))
+                info_writer = InfoWriter(out_dir)
+                info_writer.write("\n\n=== Simplified DFG Summary LLM Request Metrics ===\n\n")
+                for key, value in metrics.items():
+                    info_writer.write(f"{key}: {value}\n")
+        except Exception as e:
+            logger.exception(f"Error summarizing simplified DFG: {e}")
+            raise
+
+
     def convert_dfg_to_image(self, dfg_file, output_paths):
         """
         Converts the DFG to one or more image files.

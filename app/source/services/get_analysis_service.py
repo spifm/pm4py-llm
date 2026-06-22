@@ -6,7 +6,9 @@ class GetAnalysisService:
 
     def __init__(self):
         self.fn = Filename()
-        self.config = Config().get()
+        config_instance = Config()
+        config_instance.initialize()
+        self.config = config_instance.get()
     
     def get_analysis_files(self, output_dir):
         """
@@ -28,6 +30,7 @@ class GetAnalysisService:
                 self.config['discovery']['dfg']['image_formats']
             ),
             "simplified_dfg_analysis": self.fn.get_filename_path("dfg.simplified_analysis", output_dir),
+            "simplified_dfg_summary": self.fn.get_filename_path("dfg.simplified_summary", output_dir),
             "simplified_dfg_images": self.fn.get_filename_paths_for_formats(
                 "dfg.simplified_image",
                 output_dir,
@@ -42,6 +45,7 @@ class GetAnalysisService:
         """
         return {
             "simplified_dfg_analysis": self.fn.get_filename_path("dfg.simplified_analysis", output_dir),
+            "simplified_dfg_summary": self.fn.get_filename_path("dfg.simplified_summary", output_dir),
             "simplified_dfg_images": self.fn.get_filename_paths_for_formats(
                 "dfg.simplified_image",
                 output_dir,

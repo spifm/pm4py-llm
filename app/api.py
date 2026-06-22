@@ -290,6 +290,8 @@ def get_analysis(analysis_dir: str = Query(
 
         return result
 
+    except HTTPException:
+        raise
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
     
@@ -353,6 +355,8 @@ def get_simplified_analysis(analysis_dir: str = Query(
 
         return result
 
+    except HTTPException:
+        raise
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
     

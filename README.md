@@ -58,6 +58,43 @@ chmod 777 output
 docker compose down
 ```
 
+# Tests
+
+Automated tests are provided for every service (`app`, `orchestrator`, `moodle-data-service`, `mermaid-service` and `results-publisher`). The tests run **inside each service's Docker image**, so nothing needs to be installed on the host machine: the only requirement is Docker.
+
+The test dependencies (`pytest` and `httpx`) are baked into a dedicated `test` stage of each `Dockerfile`, on top of the production image. The heavy/external dependencies (pm4py, LLM clients, the Moodle database, Redis/RQ, the Mermaid CLI and the filesystem) are mocked by the tests, so no real services are started and no network access is required.
+
+## Run all tests
+
+```bash
+./run-tests.sh
+```
+
+This builds the `test` stage of each image (cached after the first run) and executes `pytest` inside a one-off container that is discarded afterwards.
+
+## Run the tests of a single service
+
+Pass the service name as an argument:
+
+```bash
+./run-tests.sh orchestrator
+```
+
+Valid service names are: `app`, `orchestrator`, `moodle-data-service`, `mermaid-service` and `results-publisher`.
+
+> If the script is not executable, run `chmod +x run-tests.sh` first (or invoke it with `bash run-tests.sh`). Docker must be running.
+
+The production images built by `docker compose up` are not affected: they target the `runtime` stage and therefore never include the test-only dependencies.
+
+## Test coverage
+
+Coverage is measured automatically with [`pytest-cov`](https://pytest-cov.readthedocs.io/) every time the tests run. After each service finishes, a coverage summary (including the uncovered lines) is printed in the terminal, and a navigable HTML report is generated:
+
+- `app/coverage_html/index.html`
+- `<service>/source/coverage_html/index.html` (for the other services)
+
+Coverage is reported per service (each one runs in its own container), so there is no combined total. The generated `.coverage` data and `coverage_html/` reports are git-ignored.
+
 # Orchestrator container
 
 The API documentation is available at `http://localhost:8000/docs` after the container `pm4py-llm-orchestrator"` is started. The documentation is generated using [FastAPI] and it provides information about the available endpoints, request and response formats, and examples of how to use the API.

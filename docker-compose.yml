@@ -3,6 +3,7 @@ services:
     image: pm4py-llm-app
     build:
       context: ./app
+      target: runtime
     container_name: pm4py-llm-app
     ports:
       - "8001:8001"
@@ -18,6 +19,7 @@ services:
     image: pm4py-llm-orchestrator
     build:
       context: ./orchestrator
+      target: runtime
     container_name: pm4py-llm-orchestrator
     ports:
       - "8000:8000"
@@ -33,6 +35,7 @@ services:
     image: pm4py-moodle-data-service
     build:
       context: ./moodle-data-service
+      target: runtime
     container_name: pm4py-moodle-data-service
     ports:
       - "8002:8002"
@@ -46,6 +49,7 @@ services:
   moodle-data-service-worker:
     build:
       context: ./moodle-data-service
+      target: runtime
     container_name: pm4py-moodle-data-service-worker
     command: ["rq", "worker", "-u", "redis://redis:6379/0", "default"]
     volumes:
@@ -77,6 +81,7 @@ services:
     image: pm4py-mermaid-service
     build:
       context: ./mermaid-service
+      target: runtime
     container_name: pm4py-mermaid-service
     ports:
       - "8003:8003"
@@ -89,6 +94,7 @@ services:
     image: pm4py-results-publisher
     build:
       context: ./results-publisher
+      target: runtime
     container_name: pm4py-results-publisher
     ports:
       - "8004:8004"

@@ -1,0 +1,37 @@
+# Overrides to run the `test` stage of each service image.
+# Usage: docker compose -f docker-compose.yml -f docker-compose.test.yml run --rm <service>
+#
+# `pytest` and `httpx` are baked into the `test` stage of each Dockerfile, so
+# nothing is installed at runtime. The `command` runs pytest against the
+# `tests/` folder relative to each image's WORKDIR (/app for app,
+# /app/source for the rest).
+services:
+  app:
+    build:
+      target: test
+    entrypoint: []
+    command: ["python", "-m", "pytest", "tests", "-q", "-p", "no:cacheprovider", "--cov=.", "--cov-report=term-missing", "--cov-report=html:coverage_html"]
+
+  orchestrator:
+    build:
+      target: test
+    entrypoint: []
+    command: ["python", "-m", "pytest", "tests", "-q", "-p", "no:cacheprovider", "--cov=.", "--cov-report=term-missing", "--cov-report=html:coverage_html"]
+
+  moodle-data-service:
+    build:
+      target: test
+    entrypoint: []
+    command: ["python", "-m", "pytest", "tests", "-q", "-p", "no:cacheprovider", "--cov=.", "--cov-report=term-missing", "--cov-report=html:coverage_html"]
+
+  mermaid-service:
+    build:
+      target: test
+    entrypoint: []
+    command: ["python", "-m", "pytest", "tests", "-q", "-p", "no:cacheprovider", "--cov=.", "--cov-report=term-missing", "--cov-report=html:coverage_html"]
+
+  results-publisher:
+    build:
+      target: test
+    entrypoint: []
+    command: ["python", "-m", "pytest", "tests", "-q", "-p", "no:cacheprovider", "--cov=.", "--cov-report=term-missing", "--cov-report=html:coverage_html"]

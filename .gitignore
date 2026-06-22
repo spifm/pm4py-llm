@@ -156,3 +156,7 @@ data
 
 # config in orchestrator
 orchestrator/source/config/scheduled_courses.json
+
+# Python test coverage
+.coverage
+coverage_html/

@@ -1,4 +1,4 @@
-FROM node:20-bookworm
+FROM node:20-bookworm AS runtime
 
 RUN apt-get update && \
     apt-get install -y python3 python3-pip python3-venv chromium && \
@@ -22,3 +22,7 @@ COPY ./source /app/source
 WORKDIR /app/source
 
 CMD ["uvicorn", "api:app", "--host", "0.0.0.0", "--port", "8003"]
+
+# ─── Test stage: production image + test-only dependencies ───
+FROM runtime AS test
+RUN pip install --no-cache-dir pytest httpx pytest-cov

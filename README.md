@@ -301,7 +301,7 @@ docker exec -it pm4py-llm-app python3 -m utils.generate_summary_from_infos \
   /output/directory -o summary.csv
 ```
 
-## Cleanup old output directories
+## Cleanup in `app` container
 
 This script removes subdirectories of `/output` whose name is exactly in `YYYYMMDD` format and whose date is on or before a given cutoff date. Directories with any other naming format are left untouched.
 
@@ -313,4 +313,18 @@ docker exec -it pm4py-llm-app python3 -m utils.cleanup 20251231
 
 # Actually delete
 docker exec -it pm4py-llm-app python3 -m utils.cleanup 20251231 --apply
+```
+
+## Cleanup in `orchestrator` container
+
+This command removes subdirectories of `/app/source/tmp/pipeline-results` inside the orchestrator container whose name is exactly in `YYYYMMDD` format and whose date is on or before a given cutoff date. Directories with any other naming format are left untouched.
+
+By default the command runs in **dry-run mode**: it lists what would be deleted without removing anything. Pass `--apply` to actually delete.
+
+```bash
+# Preview what would be deleted (dry-run)
+docker exec -it pm4py-llm-orchestrator python3 -m commands.cleanup 20251231
+
+# Actually delete
+docker exec -it pm4py-llm-orchestrator python3 -m commands.cleanup 20251231 --apply
 ```

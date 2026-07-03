@@ -280,7 +280,7 @@ This script generates histograms from XES log files. The script is called `xes_t
 docker exec -it pm4py-llm-app python3 -m utils.xes_to_histogram
 ```
 
-# Build training JSONL for LLM fine-tuning
+## Build training JSONL for LLM fine-tuning
 This script builds a JSONL file for training a Large Language Model (LLM) using prompt-completion pairs based on Directly-Follows Graphs (DFGs). The script is called `build-train-jsonl.py` and it must be run independently. When the script is run, it reads a prompt template from a specified file and processes multiple example directories containing input and output JSON files representing DFGs. It replaces a placeholder in the prompt template with the content of the input JSON files and pairs it with the corresponding output JSON files to create training examples. The resulting prompt-completion pairs are saved in a JSONL file for LLM fine-tuning. The script can be run using the following command:
 
 ```bash
@@ -293,7 +293,7 @@ docker exec -it pm4py-llm-app python3 -m utils.build-train-jsonl \
   --output-filename llm-simplified-dfg.json
 ```
 
-# Generate summary from infos
+## Generate summary from infos
 This script generates a summary from several info.txt files containing information about the analysis of process mining models and their simplification using LLMs. The script is called `generate_summary_from_infos.py` and it must be run independently. When the script is run, it reads all the info.txt files from each subdirectory of a specified base directory, extracts relevant information and compiles this information into a structured summary format. The resulting summary is saved in a CSV file for further analysis or reporting. The script can be run using the following command:
 
 ```bash
@@ -328,3 +328,31 @@ docker exec -it pm4py-llm-orchestrator python3 -m commands.cleanup 20251231
 # Actually delete
 docker exec -it pm4py-llm-orchestrator python3 -m commands.cleanup 20251231 --apply
 ```
+
+# Cleanup script
+
+The `cleanup.sh` script in the project root runs the cleanup command in **both** containers (`app` and `orchestrator`) in one shot. It is designed to be called from a cron job or manually.
+
+The cutoff date is calculated as **today minus `CLEANUP_RETENTION_MONTHS` months**, where `CLEANUP_RETENTION_MONTHS` is read from the `.env` file. Add it to your `.env`:
+
+```
+CLEANUP_RETENTION_MONTHS=6
+```
+
+By default the script runs in **dry-run mode**: it shows what would be deleted without removing anything. Pass `--apply` to actually delete.
+
+```bash
+# Preview what would be deleted (dry-run)
+./cleanup.sh
+
+# Actually delete
+./cleanup.sh --apply
+```
+
+Example crontab entry to run the cleanup on the 1st of every month at 02:00:
+
+```cron
+0 2 1 * * cd /path/to/pm4py-llm && ./cleanup.sh --apply >> /var/log/pm4py-cleanup.log 2>&1
+```
+
+> If the script is not executable, run `chmod +x cleanup.sh` first.

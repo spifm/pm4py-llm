@@ -21,7 +21,25 @@ class DFGFilter:
         config_instance = Config()
         config_instance.initialize()
         return config_instance.get()
-    
+
+    def get_min_transition_frequency(self, json_dfg_path: str) -> int | None:
+        """
+        Returns the minimum 'freq' among the transitions of a DFG JSON,
+        or None if the file has no transitions.
+        """
+        try:
+            with open(json_dfg_path, "r", encoding="utf-8") as f:
+                dfg: Dict[str, Any] = json.load(f)
+            transitions: List[Dict[str, Any]] = dfg.get("transitions", []) or []
+        except Exception as e:
+            logger.error("Error reading DFG JSON file: %s", e)
+            raise
+
+        if not transitions:
+            return None
+
+        return min(int(t.get("freq", 0)) for t in transitions)
+
     def filter_json_dfg_by_frequency(
         self,
         json_dfg_path: str,

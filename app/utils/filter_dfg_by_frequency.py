@@ -5,6 +5,8 @@ import os
 from datetime import datetime
 from pathlib import Path
 
+from source.core.dfg.dfg_frequency import frequency_threshold_for_ratio
+
 
 DEFAULT_XES_CASE_ID_COLUMN = "case:concept:name"
 DEFAULT_XES_ACTIVITY_COLUMN = "concept:name"
@@ -166,21 +168,21 @@ def discover_dfg(log, case_id_column: str, activity_column: str, timestamp_colum
 
 
 def filter_dfg_by_frequency(dfg: dict, ratio: float) -> tuple[dict, int]:
-    if ratio <= 0 or ratio > 100:
-        raise ValueError("Ratio must be greater than 0 and less than or equal to 100")
-
-    transitions = sorted(
-        dfg.items(),
-        key=lambda item: (-int(item[1]), str(item[0][0]), str(item[0][1])),
-    )
-
-    if not transitions:
+    if not dfg:
         raise ValueError("The discovered DFG has no transitions")
 
-    minimum_retained_transitions = math.ceil(len(transitions) * ratio / 100.0)
-    retained_transitions = transitions[:minimum_retained_transitions]
+    freqs = [int(freq) for freq in dfg.values()]
+    threshold = frequency_threshold_for_ratio(freqs, ratio)
 
-    return dict(retained_transitions), minimum_retained_transitions
+    filtered_dfg = {
+        transition: freq
+        for transition, freq in dfg.items()
+        if int(freq) > threshold
+    }
+
+    minimum_retained_transitions = math.ceil(len(freqs) * ratio / 100.0)
+
+    return filtered_dfg, minimum_retained_transitions
 
 
 def filter_start_end_activities(start_activities: dict, end_activities: dict, filtered_dfg: dict) -> tuple[dict, dict]:

@@ -1,4 +1,5 @@
 from source.core.dfg.dfg_filter import DFGFilter
+from source.core.dfg.dfg_frequency import get_min_transition_frequency
 from source.core.dfg.dfg_simplifier import DFGSimplifier
 from source.core.dfg.dfg_transformer import DFGTransformer
 import os
@@ -50,7 +51,7 @@ class SimplifyDFGService:
             try:
                 # Start from the least frequent transitions: filter out the
                 # current minimum frequency tier and re-evaluate on next pass.
-                min_freq = dfg_filter.get_min_transition_frequency(json_dfg_to_simplify)
+                min_freq = get_min_transition_frequency(json_dfg_to_simplify)
                 if min_freq is None:
                     logger.warning("No transitions left to filter; stopping reduction.")
                     break

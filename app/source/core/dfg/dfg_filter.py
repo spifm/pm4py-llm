@@ -1,5 +1,3 @@
-from source.Config import Config
-from source.helpers.filename_getter import Filename
 from source.helpers.info_writer import InfoWriter
 import logging
 import json
@@ -9,37 +7,6 @@ from typing import Any, Dict, List, Set
 logger = logging.getLogger(__name__)
 
 class DFGFilter:
-    def __init__(self):
-        self.config = self._load_config()
-        self.fn = Filename()
-
-
-    def _load_config(self):
-        """
-        Initializes and returns the configuration instance.
-        """
-        config_instance = Config()
-        config_instance.initialize()
-        return config_instance.get()
-
-    def get_min_transition_frequency(self, json_dfg_path: str) -> int | None:
-        """
-        Returns the minimum 'freq' among the transitions of a DFG JSON,
-        or None if the file has no transitions.
-        """
-        try:
-            with open(json_dfg_path, "r", encoding="utf-8") as f:
-                dfg: Dict[str, Any] = json.load(f)
-            transitions: List[Dict[str, Any]] = dfg.get("transitions", []) or []
-        except Exception as e:
-            logger.error("Error reading DFG JSON file: %s", e)
-            raise
-
-        if not transitions:
-            return None
-
-        return min(int(t.get("freq", 0)) for t in transitions)
-
     def filter_json_dfg_by_frequency(
         self,
         json_dfg_path: str,
@@ -113,7 +80,7 @@ class DFGFilter:
         # Write in information file
         out_dir = os.path.dirname(os.path.abspath(json_dfg_path))
         info_writer = InfoWriter(out_dir)
-        info_writer.write("\n\n=== Filtered Info (in dfg simplification) ===\n\n")
+        info_writer.write("\n\n=== Filtered Info ===\n\n")
         info_writer.write(
             f"Filtered DFG with freq >{frequency_threshold} | "
             f"transitions: {len(transitions)} -> {len(filtered_transitions)} | "

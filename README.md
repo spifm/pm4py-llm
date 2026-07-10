@@ -188,8 +188,6 @@ The configuration file is located in the config folder. The file is called confi
     - `prompt`: prompt to be used for the analysis joined with the context
     - `simplify_dfg.enabled`: boolean to enable/disable the simplification of the DFG using true/false
     - `simplify_dfg.image_formats`: list of image formats to generate for the simplified DFG. Example: `["svg", "png"]`. Use a single value, such as `["svg"]`, to generate only one format.
-    - `simplify_dfg.removing_transitions_ratio`: ratio of transitions to be removed from the original DFG (0-100) during the simplification process
-    - `simplify_dfg.retaining_transitions_ratio`: ratio of transitions to be retained from the original DFG (0-100) during the simplification process
     - `simplify_dfg.simplification_context_prompt`: prompt template to be used for the simplification of the DFG
     - `simplify_dfg.simplification_instructions_prompt`: prompt template joined with the context to be used for the simplification of the DFG
     - `simplify_dfg.simplification_analysis_prompt`: prompt template joined with the context to be used to analyze the simplified DFG

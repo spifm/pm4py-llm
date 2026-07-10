@@ -3,9 +3,6 @@ from source.Config import Config
 from source.Llm import Llm
 import os
 import logging
-import json
-from typing import Any, Dict, List
-import math
 from source.helpers.info_writer import InfoWriter
 from source.helpers.load_prompt_template import PromptLoader
 
@@ -16,8 +13,6 @@ class DFGSimplifier:
         self.config = self._load_config()
         self.prompt_loader = PromptLoader()
         self.llm = Llm()
-        self.removing_transitions_ratio = self.config['llm']['dfg']['simplify_dfg'].get('removing_transitions_ratio', 50)
-        self.retaining_transitions_ratio = self.config['llm']['dfg']['simplify_dfg'].get('retaining_transitions_ratio', 20)
 
 
     def _load_config(self):
@@ -63,20 +58,13 @@ class DFGSimplifier:
     def _build_simplification_prompt(self, dfg_file):
         """
         Builds the full simplification prompt by combining the context prompt,
-        instructions, ratios, and the DFG content.
+        instructions and the DFG content.
         """
         try:
             dfg = self._read_dfg(dfg_file)
             prompt_context = self._get_context_prompt()
             prompt_instructions = self.prompt_loader.load_template(
                 self.config['llm']['dfg']['simplify_dfg']['simplification_instructions_prompt']
-            )
-            prompt_instructions = prompt_instructions.replace(
-                "{{removing_transitions_ratio}}",
-                str(self.removing_transitions_ratio),
-            ).replace(
-                "{{retaining_transitions_ratio}}",
-                str(self.retaining_transitions_ratio),
             )
             prompt = f"{prompt_context}\n\n{prompt_instructions}\n\n{dfg}"
             return prompt
@@ -101,10 +89,16 @@ class DFGSimplifier:
         print("\n\n-------------------\nSimplifying DFG\n-------------------\n\n")
         try:
             prompt = self._build_simplification_prompt(dfg_file)
+            out_dir = os.path.dirname(os.path.abspath(output_file))
+            info_writer = InfoWriter(out_dir)
+            instructions_template = self.config['llm']['dfg']['simplify_dfg']['simplification_instructions_prompt']
+            info_writer.write(
+                "\n\n=== Simplification Criterion ===\n\n"
+                f"Instructions template: {instructions_template}\n"
+                "Note: simplification limits apply to the DFG given to the LLM.\n"
+            )
             metrics = self.llm.client.exec_json_prompt(prompt, output_file)
             if metrics is not None:
-                out_dir = os.path.dirname(os.path.abspath(output_file))
-                info_writer = InfoWriter(out_dir)
                 info_writer.write("\n\n=== Simplification LLM Request Metrics ===\n\n")
                 for key, value in metrics.items():
                     info_writer.write(f"{key}: {value}\n")
@@ -312,98 +306,3 @@ class DFGSimplifier:
         info_writer.write(f"  - Total transition freq (original):   {total_freq_orig}\n")
         info_writer.write(f"  - Total transition freq (simplified): {total_freq_simp}\n")
         info_writer.write(f"  - Trace coverage (%):                 {trace_coverage:.2f}\n")
-
-
-    def update_transition_ratios(self, original_dfg_path: str, filtered_dfg_path: str) -> None:
-        """
-        Updates the removing and retaining transition ratios in the simplifier.
-        """
-
-        try:
-            with open(original_dfg_path, "r", encoding="utf-8") as f:
-                original_dfg: Dict[str, Any] = json.load(f)
-                original_transitions: List[Dict[str, Any]] = original_dfg.get("transitions", []) or []
-        except Exception as e:
-            logger.error("Error reading original DFG JSON file: %s", e)
-            raise
-
-        try:
-            with open(filtered_dfg_path, "r", encoding="utf-8") as f:
-                filtered_dfg: Dict[str, Any] = json.load(f)
-                filtered_transitions: List[Dict[str, Any]] = filtered_dfg.get("transitions", []) or []
-        except Exception as e:
-            logger.error("Error reading filtered DFG JSON file: %s", e)
-            raise
-
-
-        X = len(original_transitions)
-        Y = len(filtered_transitions)
-
-        # Edge cases
-        if X == 0:
-            logger.warning("Original DFG has 0 transitions. Keeping ratios as-is.")
-            return
-
-        if Y == 0:
-            logger.warning(
-                "Filtered DFG has 0 transitions. Setting ratios to 0 (nothing to retain/remove)."
-            )
-            self.removing_transitions_ratio = 0
-            self.retaining_transitions_ratio = 0
-            return
-
-        # Ratios (as floats) from current config
-        remove_pct = float(self.removing_transitions_ratio)   # e.g., 50
-        retain_pct = float(self.retaining_transitions_ratio)  # e.g., 20
-
-        # Absolute bounds implied by ORIGINAL rules (in #transitions)
-        # Keep between [L, U]
-        L = math.ceil(X * (retain_pct / 100.0))
-        U = math.floor(X * (1.0 - remove_pct / 100.0))
-
-        # Clip to what is feasible with filtered input (<= Y)
-        Lp = min(Y, L)
-        Up = min(Y, U)
-
-        # Ensure feasibility: lower bound cannot exceed upper bound
-        if Lp > Up:
-            # With filtering, you cannot satisfy both original constraints; make them consistent.
-            # We force Up = Lp (i.e., "keep exactly Lp" in worst case).
-            Up = Lp
-
-        # Convert absolute bounds back to percentages wrt FILTERED transitions Y
-        retain_new = 100.0 * (Lp / Y)            # minimum to retain
-        remove_new = 100.0 * (1.0 - (Up / Y))    # minimum to remove
-
-        # Clamp to [0, 100]
-        retain_new = max(0.0, min(100.0, retain_new))
-        remove_new = max(0.0, min(100.0, remove_new))
-
-        # Keep them as ints
-        self.retaining_transitions_ratio = int(math.floor(retain_new))
-        self.removing_transitions_ratio = int(math.ceil(remove_new))
-
-        # Write in information file
-        out_dir = os.path.dirname(os.path.abspath(filtered_dfg_path))
-        info_writer = InfoWriter(out_dir)
-        info_writer.write(
-            "\n\n=== Updated Transitions' Ratios Due to Pre-filtering ===\n\n"
-            f"Adjusted ratios after pre-filtering:\n"
-            f"- Original Transitions={X} -> Filtered Transitions={Y}\n"
-            f"- orig retain={retain_pct} remove={remove_pct}\n"
-            f"- abs bounds:\n"
-            f"  orig_min_keep={L} orig_max_keep={U} -> "
-            f"filtered_min_keep={Lp} filtered_max_keep={Up}\n"
-            f"- new retain={self.retaining_transitions_ratio}% remove={self.removing_transitions_ratio}%\n"
-        )
-        
-        logger.info(
-            "Adjusted ratios after pre-filtering: Original Transitions=%s -> Filtered Transitions=%s | "
-            "orig retain=%s%% remove=%s%% | "
-            "abs bounds orig_min_keep=%s orig_max_keep=%s -> filtered_min_keep=%s filtered_max_keep=%s | "
-            "new retain=%s%% remove=%s%%",
-            X, Y,
-            retain_pct, remove_pct,
-            L, U, Lp, Up,
-            self.retaining_transitions_ratio, self.removing_transitions_ratio,
-        )

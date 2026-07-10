@@ -4,6 +4,7 @@ from source.core.dfg.dfg_transformer import DFGTransformer
 import os
 from config.constants import *
 from source.helpers.filename_getter import Filename
+from source.helpers.info_writer import InfoWriter
 import logging
 
 logger = logging.getLogger(__name__)
@@ -45,27 +46,40 @@ class SimplifyDFGService:
             if is_within_limit:
                 logger.info("Prompt is within token limits, proceeding with simplification.")
                 break
-            else:
-                if i == max_attempts - 1:
-                    logger.error(f"Prompt exceeds token limits after {max_attempts} attempts.")
-                else:
-                    try:
-                        logger.info(f"Prompt exceeds token limits, attempting to simplify further in try {i+1}.")
-                        reduced_dfg_filename = fn.get_filename_path("dfg.json_generic_act_filtered_by_freq", input_dir)
-                        dfg_filter.filter_json_dfg_by_frequency(
-                            json_dfg_path=json_dfg_to_simplify,
-                            json_output_path=reduced_dfg_filename,
-                            frequency_threshold=i + 1 # TODO Find better strategy
-                        )
-                        json_dfg_to_simplify = reduced_dfg_filename
-                    except Exception as e:
-                        logger.error(f"Error during DFG filtering attempt {i+1}: {e}")
-                        raise
-        
 
-        # Update transitions ratios to retain/remove if dfg was filtered
-        if json_dfg_generics_file != json_dfg_to_simplify:
-            dfg_simplifier.update_transition_ratios(json_dfg_generics_file, json_dfg_to_simplify)
+            try:
+                # Start from the least frequent transitions: filter out the
+                # current minimum frequency tier and re-evaluate on next pass.
+                min_freq = dfg_filter.get_min_transition_frequency(json_dfg_to_simplify)
+                if min_freq is None:
+                    logger.warning("No transitions left to filter; stopping reduction.")
+                    break
+
+                logger.info(
+                    f"Prompt exceeds token limits, attempting to simplify further "
+                    f"in try {i + 1} with frequency filter >{min_freq}."
+                )
+                reduced_dfg_filename = fn.get_filename_path("dfg.json_generic_act_filtered_by_freq", input_dir)
+                info_writer = InfoWriter(input_dir)
+                info_writer.write(
+                    "\n\n=== DFG Pre-filtered to fit LLM context window ===\n\n"
+                    f"Prompt exceeded the LLM token/context window (attempt {i + 1}); "
+                    f"applied frequency filter with threshold >{min_freq} to reduce the DFG.\n"
+                    f"Proceeding to filter the DFG...\n"
+                )
+                dfg_filter.filter_json_dfg_by_frequency(
+                    json_dfg_path=json_dfg_to_simplify,
+                    json_output_path=reduced_dfg_filename,
+                    frequency_threshold=min_freq
+                )
+                json_dfg_to_simplify = reduced_dfg_filename
+            except Exception as e:
+                logger.error(f"Error during DFG filtering attempt {i + 1} with frequency threshold >{min_freq}: {e}")
+                raise
+        else:
+            if not dfg_simplifier.eval_fit_json_prompt_tokens(json_dfg_to_simplify):
+                logger.error(f"Prompt exceeds token limits after {max_attempts} attempts.")
+
 
         # Simplify DFG using LLM
         print(f"Simplifying DFG in json ({json_dfg_to_simplify}) using LLM...")

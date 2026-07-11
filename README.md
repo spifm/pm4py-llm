@@ -109,7 +109,27 @@ The orchestrator container exposes one command called `run_scheduled_pipeline`, 
 The courses to be analyzed can be specified in the `config/scheduled_courses.json` file located in the orchestrator container.
 
 ```bash
-docker exec -it pm4py-llm-orchestrator python3 -m commands.run_scheduled_pipeline_command
+docker exec -it pm4py-llm-orchestrator python3 -m commands.run_scheduled_pipeline_command [OPTIONS]
+```
+
+Available flags:
+
+| Flag | Type | Default | Description |
+|---|---|---|---|
+| `--disable-mind_map` | flag | `false` | Disables mind map generation during the full analysis step |
+| `--deterministic_ratio N` | float | _(none)_ | Applies a deterministic frequency pre-filter before LLM simplification, retaining the top `N`% most frequent transitions. Valid range: `(0, 100]` |
+
+Examples:
+
+```bash
+# Run without LLM mind map
+docker exec -it pm4py-llm-orchestrator python3 -m commands.run_scheduled_pipeline_command --disable-mind_map
+
+# Run with deterministic pre-filter (top 20% most frequent transitions)
+docker exec -it pm4py-llm-orchestrator python3 -m commands.run_scheduled_pipeline_command --deterministic_ratio 20
+
+# Combine both flags
+docker exec -it pm4py-llm-orchestrator python3 -m commands.run_scheduled_pipeline_command --disable-mind_map --deterministic_ratio 20
 ```
 
 # Configuration in app

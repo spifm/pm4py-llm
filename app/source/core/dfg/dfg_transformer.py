@@ -1,23 +1,9 @@
-from source.Config import Config
 import logging
 import json
 
 logger = logging.getLogger(__name__)
 
 class DFGTransformer:
-    def __init__(self):
-        self.config = self._load_config()
-
-
-    def _load_config(self):
-        """
-        Initializes and returns the configuration instance.
-        """
-        config_instance = Config()
-        config_instance.initialize()
-        return config_instance.get()
-
-
     def dfg_pm4py_to_json(self, dfg_path: str, json_output_path: str) -> None:
         """
         Converts a PM4Py DFG file into a JSON representation using activity *names*.

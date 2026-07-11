@@ -2,7 +2,6 @@ from fastapi import FastAPI, HTTPException, Query, status, Depends, Body
 from fastapi.security import HTTPBearer, HTTPAuthorizationCredentials
 from fastapi.responses import JSONResponse
 from models.schemas import *
-from helpers.cache_results_helper import CacheResultsHelper
 import requests
 import os
 from datetime import datetime
@@ -43,8 +42,6 @@ def verify_token(credentials: HTTPAuthorizationCredentials = Depends(security)):
 
 app = FastAPI()
 
-cache_results_helper = CacheResultsHelper()
-
 
 SIMPLIFY_FILE = "dfg-generic-activities.json"
 
@@ -63,7 +60,8 @@ def read_root():
     "/run-full-analysis",
     summary="Execute full analysis pipeline: process mining analysis, simplification, mind map, and return results",
     description=(
-        "Runs the full pipeline: pm-analysis → simplify-dfg → summarize-simplified-dfg → get-analysis → create-mind-map\n\n"
+        "Runs the full pipeline: pm-analysis → simplify-dfg → summarize-simplified-dfg → get-analysis-files → create-mind-map\n\n"
+        "The response contains the **file paths** of the generated artifacts (analysis texts and images)\n\n"
         "**Required input:**\n"
         "- `dataset` (str): the dataset file (CSV format) to analyze.\n"
         "- `output_path` (str): Directory where the analysis results will be stored.\n"
@@ -71,6 +69,10 @@ def read_root():
         "- `dataset_csv_delimiter` (Optional[str]): CSV delimiter used in the dataset.\n"
         "- `disable-mind_map` (Optional[bool]): Flag to disable mind map generation.\n"
         "- `disable-summary` (Optional[bool]): Flag to disable simplified DFG summary generation.\n"
+        "- `deterministic_ratio` (Optional[float], range `(0, 100]`): when provided, applies a deterministic "
+        "frequency pre-filter to the DFG before LLM simplification, retaining the top `deterministic_ratio`% "
+        "most frequent transitions. Transitions in the same frequency tier at the cutoff are all kept or all "
+        "discarded (no arbitrary tie-breaking). When omitted, the LLM simplification runs on the original DFG.\n"
         "**Example input:**\n"
         "```json\n"
         "{\n"
@@ -78,7 +80,8 @@ def read_root():
         "  \"dataset_csv_delimiter\": \",\",\n"
         "  \"output_path\": \"my-folder\",\n"
         "  \"disable-mind_map\": false,\n"
-        "  \"disable-summary\": false\n"
+        "  \"disable-summary\": false,\n"
+        "  \"deterministic_ratio\": 20\n"
         "}\n"
         "```"
         "\n\n"
@@ -86,15 +89,16 @@ def read_root():
         "```json\n"
         "{\n"
         "  \"output_dir\": \"XXX\",\n"
-        "  \"analysis\": \"XXX\",\n"
-        "  \"dfg_images\": {\"svg\": \"XXX\", \"png\": \"XXX\"},\n"
-        "  \"simplified_dfg_analysis\": \"XXX\",\n"
-        "  \"simplified_dfg_summary\": \"XXX\",\n"
-        "  \"simplified_dfg_images\": {\"svg\": \"XXX\", \"png\": \"XXX\"},\n"
-        "  \"mind_map_file\": \"output/mind_map.mmd\"\n"
+        "  \"dfg_analysis\": \"/output/XXX/dfg-analysis.txt\",\n"
+        "  \"dfg_images\": {\"svg\": \"/output/XXX/dfg.svg\", \"png\": \"/output/XXX/dfg.png\"},\n"
+        "  \"simplified_dfg_analysis\": \"/output/XXX/simplified-dfg-analysis.txt\",\n"
+        "  \"simplified_dfg_summary\": \"/output/XXX/simplified-dfg-summary.txt\",\n"
+        "  \"simplified_dfg_images\": {\"svg\": \"/output/XXX/simplified-dfg.svg\", \"png\": \"/output/XXX/simplified-dfg.png\"},\n"
+        "  \"mind_map_file\": \"output/mind_map.mmd\",\n"
         "  \"mind_map_image_file\": \"output/mind_map.svg\"\n"
         "}\n"
         "\n**Notes**\n"
+        "- The response contains file paths, not file content.\n"
         "- If `disable-mind_map` is set to true, the response will not include `mind_map_file` and `mind_map_image_file` fields.\n"
         "- If `disable-summary` is set to true, the response will not include the `simplified_dfg_summary` field.\n"
         "```"
@@ -128,7 +132,8 @@ def full_analysis(
     
     # Step 2: Execute simplify_dfg_endpoint
     simplify_request = SimplifyDFGRequest(
-        output_path = output_directory
+        output_path = output_directory,
+        deterministic_ratio = request.deterministic_ratio
     )
 
     simplify_result = simplify_dfg_endpoint(simplify_request)
@@ -154,12 +159,12 @@ def full_analysis(
         logger.info("Simplified DFG summary generation is disabled for this analysis by request.")
 
 
-    # Step 4: Execute get_analysis
+    # Step 4: Collect analysis result file paths
     try:
-        analysis_result = get_analysis(analysis_dir=output_directory)
-        logger.debug(f"Step 4: Get Analysis output: {analysis_result}")
+        analysis_result = get_analysis_files(analysis_dir=output_directory)
+        logger.debug(f"Step 4: Get Analysis files output: {analysis_result}")
     except Exception as e:
-        return {"step": "get-analysis", "error": str(e)}
+        return {"step": "get-analysis-files", "error": str(e)}
     
 
     content = {
@@ -350,37 +355,30 @@ def create_mind_map(request: CreateMindMapRequest):
     
 
 @app.get(
-        "/get-analysis",
-        summary="Get analysis results",
+        "/get-analysis-files",
+        summary="Get analysis result file paths",
         description=(
-            "Retrieves the analysis results for a given directory.\n\n"
-            "It first checks if a cached version exists and is still valid. If so, it returns the cached data.\n"
-            "If not, it fetches the data from the PM4PY container and caches it for future requests.\n\n"
+            "Retrieves the file paths of the analysis results for a given directory, "
+            "instead of their content. Only files that actually exist on disk are included.\n\n"
             "**Example response:**\n"
             "```json\n"
             "{\n"
-            "  \"analysis\": \"XXX\",\n"
-            "  \"dfg_images\": {\"svg\": \"XXX\", \"png\": \"XXX\"},\n"
-            "  \"simplified_dfg_analysis\": \"XXX\",\n"
-            "  \"simplified_dfg_images\": {\"svg\": \"XXX\", \"png\": \"XXX\"}\n"
+            "  \"dfg_analysis\": \"/output/my-folder/dfg-analysis.txt\",\n"
+            "  \"dfg_images\": {\"svg\": \"/output/my-folder/dfg.svg\"},\n"
+            "  \"simplified_dfg_analysis\": \"/output/my-folder/simplified-dfg-analysis.txt\",\n"
+            "  \"simplified_dfg_summary\": \"/output/my-folder/simplified-dfg-summary.txt\",\n"
+            "  \"simplified_dfg_images\": {\"svg\": \"/output/my-folder/simplified-dfg.svg\"}\n"
             "}\n"
             "```"
         ),
         dependencies=[Depends(verify_token)]
 )
-def get_analysis(analysis_dir: str = Query(
+def get_analysis_files(analysis_dir: str = Query(
                                     alias="analysis_dir",
                                     description="Directory where the analysis results are stored"
                                     )
     ):
-    # Check if the analysis is stored in a cache directory
-    if cache_results_helper.is_enabled():
-        cache, cache_file = cache_results_helper.read_from_cache(analysis_dir, simplified=False)
-        if cache is not None:
-            return JSONResponse(content=cache)
-
-    # If not cached or cache is expired, fetch from PM4PY container
-    url = f"{PM4PY_BASE_URL}/get-analysis"
+    url = f"{PM4PY_BASE_URL}/get-analysis-files"
     headers = {"Authorization": f"Bearer {API_TOKEN}"}
     try:
         response = requests.get(url, params={"analysis_dir": analysis_dir}, headers=headers)
@@ -392,65 +390,8 @@ def get_analysis(analysis_dir: str = Query(
                 detail = response.text or "Unknown error"
             raise HTTPException(status_code=response.status_code, detail=f"PM4PY error: {detail}")
 
-        data = response.json()
-
-        if cache_results_helper.is_enabled():
-            cache_results_helper.write_to_cache(cache_file, data)
-
-        return JSONResponse(content=data)
+        return JSONResponse(content=response.json())
 
     except requests.exceptions.RequestException as e:
-        raise HTTPException(status_code=500, detail=f"Error fetching analysis: {str(e)}")
+        raise HTTPException(status_code=500, detail=f"Error fetching analysis files: {str(e)}")
 
-
-@app.get(
-        "/get-simplified-analysis",
-        summary="Get simplified analysis results",
-        description=(
-            "Retrieves the simplified analysis results for a given directory.\n\n"
-            "It first checks if a cached version exists and is still valid. If so, it returns the cached data.\n"
-            "If not, it fetches the data from the PM4PY container and caches it for future requests.\n\n"
-            "**Example response:**\n"
-            "```json\n"
-            "{\n"
-            "  \"simplified_dfg_analysis\": \"XXX\",\n"
-            "  \"simplified_dfg_summary\": \"XXX\",\n"
-            "  \"simplified_dfg_images\": {\"svg\": \"XXX\", \"png\": \"XXX\"}\n"
-            "}\n"
-            "```"
-        ),
-        dependencies=[Depends(verify_token)]
-)
-def get_simplified_analysis(analysis_dir: str = Query(
-                                    alias="analysis_dir",
-                                    description="Directory where the analysis results are stored"
-                                    )
-    ):
-    # Check if the simplified analysis is stored in a cache directory
-    if cache_results_helper.is_enabled():
-        cache, cache_file = cache_results_helper.read_from_cache(analysis_dir, simplified=True)
-        if cache is not None:
-            return JSONResponse(content=cache)
-
-    # If not cached or cache is expired, fetch from PM4PY container
-    url = f"{PM4PY_BASE_URL}/get-simplified-analysis"
-    headers = {"Authorization": f"Bearer {API_TOKEN}"}
-    try:
-        response = requests.get(url, params={"analysis_dir": analysis_dir}, headers=headers)
-
-        if response.status_code != 200:
-            try:
-                detail = response.json().get("detail", "Unknown error")
-            except Exception:
-                detail = response.text or "Unknown error"
-            raise HTTPException(status_code=response.status_code, detail=f"PM4PY error: {detail}")
-
-        data = response.json()
-
-        if cache_results_helper.is_enabled():
-            cache_results_helper.write_to_cache(cache_file, data)
-
-        return JSONResponse(content=data)
-
-    except requests.exceptions.RequestException as e:
-        raise HTTPException(status_code=500, detail=f"Error fetching analysis: {str(e)}")

@@ -12,6 +12,7 @@ class DatasetToStoreRequest(BaseModel):
 
 class SimplifyDFGRequest(BaseModel):
     output_path: str
+    deterministic_ratio: Optional[float] = None
 
 class SummarizeSimplifiedDFGRequest(BaseModel):
     analysis_dir: str

@@ -28,11 +28,6 @@ class FakeResponse:
             raise requests.exceptions.HTTPError(f"status {self.status_code}")
 
 
-@pytest.fixture(autouse=True)
-def _disable_cache(monkeypatch):
-    monkeypatch.setattr(api.cache_results_helper, "is_enabled", lambda: False)
-
-
 def _patch_requests(monkeypatch, post=None, get=None):
     if post is not None:
         monkeypatch.setattr(api.requests, "post", post)
@@ -197,7 +192,12 @@ def _full_analysis_dispatcher():
         return FakeResponse({})
 
     def fake_get(url, params=None, headers=None):
-        return FakeResponse({"analysis": "A", "dfg_images": {}})
+        return FakeResponse(
+            {
+                "dfg_analysis": "/output/out/dfg-analysis.txt",
+                "dfg_images": {"svg": "/output/out/dfg.svg"},
+            }
+        )
 
     return fake_post, fake_get
 
@@ -213,7 +213,8 @@ def test_full_analysis_ok(client, monkeypatch):
     assert resp.status_code == 200
     body = resp.json()
     assert body["output_dir"] == "out"
-    assert body["analysis"] == "A"
+    assert body["dfg_analysis"] == "/output/out/dfg-analysis.txt"
+    assert body["dfg_images"] == {"svg": "/output/out/dfg.svg"}
     assert body["mind_map_image_file"] == "m.svg"
 
 
@@ -242,48 +243,3 @@ def test_full_analysis_missing_dataset_returns_422(client):
 def test_full_analysis_missing_token(client):
     assert client.post("/run-full-analysis", json={"dataset": "d.csv"}).status_code == 401
 
-
-# ===========================================================================
-# GET /get-analysis
-# ===========================================================================
-def test_get_analysis_ok(client, monkeypatch):
-    _patch_requests(monkeypatch, get=lambda *a, **k: FakeResponse({"analysis": "A", "dfg_images": {}}))
-    resp = client.get("/get-analysis", params={"analysis_dir": "d"}, headers=VALID)
-    assert resp.status_code == 200
-    assert resp.json()["analysis"] == "A"
-
-
-def test_get_analysis_upstream_404_propagates(client, monkeypatch):
-    _patch_requests(
-        monkeypatch, get=lambda *a, **k: FakeResponse({"detail": "missing"}, status_code=404),
-    )
-    resp = client.get("/get-analysis", params={"analysis_dir": "d"}, headers=VALID)
-    assert resp.status_code == 404
-
-
-def test_get_analysis_missing_query_returns_422(client):
-    assert client.get("/get-analysis", headers=VALID).status_code == 422
-
-
-def test_get_analysis_missing_token(client):
-    assert client.get("/get-analysis", params={"analysis_dir": "d"}).status_code == 401
-
-
-# ===========================================================================
-# GET /get-simplified-analysis
-# ===========================================================================
-def test_get_simplified_analysis_ok(client, monkeypatch):
-    _patch_requests(
-        monkeypatch, get=lambda *a, **k: FakeResponse({"simplified_dfg_analysis": "S"}),
-    )
-    resp = client.get("/get-simplified-analysis", params={"analysis_dir": "d"}, headers=VALID)
-    assert resp.status_code == 200
-    assert resp.json()["simplified_dfg_analysis"] == "S"
-
-
-def test_get_simplified_analysis_missing_query_returns_422(client):
-    assert client.get("/get-simplified-analysis", headers=VALID).status_code == 422
-
-
-def test_get_simplified_analysis_missing_token(client):
-    assert client.get("/get-simplified-analysis", params={"analysis_dir": "d"}).status_code == 401

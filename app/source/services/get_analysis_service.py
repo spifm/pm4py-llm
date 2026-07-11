@@ -37,18 +37,4 @@ class GetAnalysisService:
                 self.config['llm']['dfg']['simplify_dfg']['image_formats']
             )
         }
-    
-    def get_simplified_analysis_files(self, output_dir):
-        """
-        Returns a dictionary with the content of all analysis files in the output_dir.
-        The keys of the dictionary are the filenames without extension.
-        """
-        return {
-            "simplified_dfg_analysis": self.fn.get_filename_path("dfg.simplified_analysis", output_dir),
-            "simplified_dfg_summary": self.fn.get_filename_path("dfg.simplified_summary", output_dir),
-            "simplified_dfg_images": self.fn.get_filename_paths_for_formats(
-                "dfg.simplified_image",
-                output_dir,
-                self.config['llm']['dfg']['simplify_dfg']['image_formats']
-            )
-        }
+

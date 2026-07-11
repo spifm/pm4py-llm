@@ -81,10 +81,16 @@ def run_script(request: DatasetToStoreRequest):
         "This endpoint requires a **previous process mining analysis** that has generated a DFG file in PM4Py format.\n\n"
         "**Required input:**\n"
         "- `output_path` (str): Path where the DFG file to simplify is located.\n"
+        "\n**Optional input:**\n"
+        "- `deterministic_ratio` (Optional[float], range `(0, 100]`): when provided, applies a deterministic "
+        "frequency pre-filter to the DFG before LLM simplification, retaining the top `deterministic_ratio`% "
+        "most frequent transitions. Transitions in the same frequency tier at the cutoff are all kept or all "
+        "discarded (no arbitrary tie-breaking). When omitted, the LLM simplification runs on the original DFG.\n"
         "**Example input:**\n"
         "```json\n"
         "{\n"
-        "  \"output_path\": \"my-folder\"\n"
+        "  \"output_path\": \"my-folder\",\n"
+        "  \"deterministic_ratio\": 20\n"
         "}\n"
         "```"
         "\n\n"
@@ -111,7 +117,8 @@ def simplify_dfg_endpoint(request: SimplifyDFGRequest):
     try:
         
         result = SimplifyDFGService.simplify_dfg(
-            output_path=request.output_path
+            output_path=request.output_path,
+            deterministic_ratio=request.deterministic_ratio
         )
 
         return {
@@ -122,6 +129,8 @@ def simplify_dfg_endpoint(request: SimplifyDFGRequest):
             "simplified_dfg_images": result["simplified_dfg_images"]
         }
 
+    except ValueError as ve:
+        raise HTTPException(status_code=400, detail=str(ve))
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
 
@@ -214,23 +223,24 @@ def create_mind_map(request: CreateMindMapRequest):
 
 
 @app.get(
-        "/get-analysis",
-        summary="Get analysis results",
+        "/get-analysis-files",
+        summary="Get analysis result file paths",
         description=(
-            "Retrieves the analysis results for a given output directory. Includes simplified DFG information if exists.\n\n"
+            "Retrieves the file paths of the analysis results for a given output directory.\n\n"
             "**Example response:**\n"
             "```json\n"
             "{\n"
-            "  \"analysis\": \"XXX\",\n"
-            "  \"dfg_images\": {\"svg\": \"XXX\", \"png\": \"XXX\"},\n"
-            "  \"simplified_dfg_analysis\": \"XXX\",\n"
-            "  \"simplified_dfg_images\": {\"svg\": \"XXX\", \"png\": \"XXX\"}\n"
+            "  \"dfg_analysis\": \"/output/my-folder/dfg-analysis.txt\",\n"
+            "  \"dfg_images\": {\"svg\": \"/output/my-folder/dfg.svg\"},\n"
+            "  \"simplified_dfg_analysis\": \"/output/my-folder/simplified-dfg-analysis.txt\",\n"
+            "  \"simplified_dfg_summary\": \"/output/my-folder/simplified-dfg-summary.txt\",\n"
+            "  \"simplified_dfg_images\": {\"svg\": \"/output/my-folder/simplified-dfg.svg\"}\n"
             "}\n"
             "```"
         ),
         dependencies=[Depends(verify_token)]
 )
-def get_analysis(analysis_dir: str = Query(
+def get_analysis_files(analysis_dir: str = Query(
                                     alias="analysis_dir",
                                     description="Directory where the analysis results are stored"
                                     )
@@ -240,124 +250,37 @@ def get_analysis(analysis_dir: str = Query(
 
     if not os.path.isdir(basepath):
         raise HTTPException(status_code=404, detail="Analysis directory not found")
-    
-    get_analysis_service = GetAnalysisService()
-    result = get_analysis_service.get_analysis_files(basepath)
 
-    dfg_base_paths = result["dfg_images"]
-    dfg_analysis_base_path = result["dfg_analysis"]
-    simplified_dfg_base_paths = result["simplified_dfg_images"]
-    simplified_dfg_analysis_base_path = result["simplified_dfg_analysis"]
-    simplified_dfg_summary_base_path = result["simplified_dfg_summary"]
-    
-    try:
-        dfg_images = {}
-        for image_format, dfg_base_path in dfg_base_paths.items():
-            if not os.path.isfile(dfg_base_path):
-                raise HTTPException(status_code=404, detail=dfg_base_path + " not found")
-            with open(dfg_base_path, "rb") as f:
-                dfg_images[image_format] = f.read().hex()
-        
-        if not os.path.isfile(dfg_analysis_base_path):
-            dfg_analysis_text = 'No analysis file found for DFG.'
-        else:
-            with open(dfg_analysis_base_path, "r") as f:
-                dfg_analysis_text = f.read()
-        
-        result = {
-            "analysis": dfg_analysis_text,
-            "dfg_images": dfg_images
-        }
+    files = GetAnalysisService().get_analysis_files(basepath)
 
-        if os.path.isfile(simplified_dfg_analysis_base_path):
-            with open(simplified_dfg_analysis_base_path, "r") as f:
-                simplified_dfg_analysis_text = f.read()
-            result["simplified_dfg_analysis"] = simplified_dfg_analysis_text
+    result = {}
 
-        if os.path.isfile(simplified_dfg_summary_base_path):
-            with open(simplified_dfg_summary_base_path, "r") as f:
-                simplified_dfg_summary_text = f.read()
-            result["simplified_dfg_summary"] = simplified_dfg_summary_text
+    if os.path.isfile(files["dfg_analysis"]):
+        result["dfg_analysis"] = files["dfg_analysis"]
+    else:
+        result["dfg_analysis"] = "No analysis file found for DFG."
 
-        simplified_dfg_images = {}
-        for image_format, simplified_dfg_base_path in simplified_dfg_base_paths.items():
-            if os.path.isfile(simplified_dfg_base_path):
-                with open(simplified_dfg_base_path, "rb") as f:
-                    simplified_dfg_images[image_format] = f.read().hex()
+    if os.path.isfile(files["simplified_dfg_analysis"]):
+        result["simplified_dfg_analysis"] = files["simplified_dfg_analysis"]
+    else:
+        result["simplified_dfg_analysis"] = "No analysis file found for simplified DFG."
 
-        if simplified_dfg_images:
-            result["simplified_dfg_images"] = simplified_dfg_images
+    if os.path.isfile(files["simplified_dfg_summary"]):
+        result["simplified_dfg_summary"] = files["simplified_dfg_summary"]
+    else:
+        result["simplified_dfg_summary"] = "No summary file found for simplified DFG."
 
-        return result
+    dfg_images = {fmt: path for fmt, path in files["dfg_images"].items() if os.path.isfile(path)}
+    if dfg_images:
+        result["dfg_images"] = dfg_images
 
-    except HTTPException:
-        raise
-    except Exception as e:
-        raise HTTPException(status_code=500, detail=str(e))
-    
+    simplified_dfg_images = {
+        fmt: path for fmt, path in files["simplified_dfg_images"].items() if os.path.isfile(path)
+    }
+    if simplified_dfg_images:
+        result["simplified_dfg_images"] = simplified_dfg_images
 
-@app.get(
-        "/get-simplified-analysis",
-        summary="Get simplified analysis results",
-        description=(
-            "Retrieves the simplified analysis results for a given output directory.\n\n"
-            "**Example response:**\n"
-            "```json\n"
-            "{\n"
-            "  \"simplified_dfg_analysis\": \"XXX\",\n"
-            "  \"simplified_dfg_summary\": \"XXX\",\n"
-            "  \"simplified_dfg_images\": {\"svg\": \"XXX\", \"png\": \"XXX\"}\n"
-            "}\n"
-            "```"
-        ),
-        dependencies=[Depends(verify_token)]
-)
-def get_simplified_analysis(analysis_dir: str = Query(
-                                    alias="analysis_dir",
-                                    description="Directory where the analysis results are stored"
-                                    )
-    ):
+    return result
 
-    basepath = os.path.join(output_dir, analysis_dir)
-
-    if not os.path.isdir(basepath):
-        raise HTTPException(status_code=404, detail="Analysis directory not found")
-    
-    get_analysis_service = GetAnalysisService()
-    result = get_analysis_service.get_simplified_analysis_files(basepath)
-    simplified_dfg_base_paths = result["simplified_dfg_images"]
-    simplified_dfg_analysis_base_path = result["simplified_dfg_analysis"]
-    simplified_dfg_summary_base_path = result["simplified_dfg_summary"]
-
-    try:
-        if not os.path.isfile(simplified_dfg_analysis_base_path):
-            raise HTTPException(status_code=404, detail="Simplified DFG files not found")
-
-        if os.path.isfile(simplified_dfg_analysis_base_path):
-            with open(simplified_dfg_analysis_base_path, "r") as f:
-                simplified_dfg_analysis_text = f.read()
-
-        simplified_dfg_images = {}
-        for image_format, simplified_dfg_base_path in simplified_dfg_base_paths.items():
-            if not os.path.isfile(simplified_dfg_base_path):
-                raise HTTPException(status_code=404, detail=simplified_dfg_base_path + " not found")
-            with open(simplified_dfg_base_path, "rb") as f:
-                simplified_dfg_images[image_format] = f.read().hex()
-
-        result = {
-            "simplified_dfg_analysis": simplified_dfg_analysis_text,
-            "simplified_dfg_images": simplified_dfg_images
-        }
-
-        if os.path.isfile(simplified_dfg_summary_base_path):
-            with open(simplified_dfg_summary_base_path, "r") as f:
-                result["simplified_dfg_summary"] = f.read()
-
-        return result
-
-    except HTTPException:
-        raise
-    except Exception as e:
-        raise HTTPException(status_code=500, detail=str(e))
     
 

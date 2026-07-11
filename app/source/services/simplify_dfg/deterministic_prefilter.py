@@ -1,7 +1,9 @@
 import json
 import logging
+import os
 
 from source.core.dfg.dfg_frequency import frequency_threshold_for_ratio
+from source.helpers.info_writer import InfoWriter
 
 logger = logging.getLogger(__name__)
 
@@ -30,6 +32,13 @@ class DeterministicPreFilter:
             transitions = json.load(f).get("transitions") or []
         freqs = [int(t.get("freq", 0)) for t in transitions]
         threshold = frequency_threshold_for_ratio(freqs, ratio)
+
+        info_writer = InfoWriter(os.path.dirname(os.path.abspath(json_dfg_file)))
+        info_writer.write("\n\n=== Deterministic Pre-Filter ===\n\n")
+        info_writer.write(
+            f"Deterministic frequency pre-filter | ratio={ratio}% | "
+            f"frequency threshold >{threshold}\n"
+        )
 
         filtered_dfg_file = self._fn.get_filename_path("dfg.json_filtered_by_freq", input_dir)
         self._dfg_filter.filter_json_dfg_by_frequency(

@@ -136,6 +136,7 @@ dataset/*
 !dataset/activity_mappings/
 dataset/activity_mappings/*
 !dataset/activity_mappings/.gitkeep
+!dataset/activity_mappings/moodle_activity_mapping_EN.json
 
 # Saved outputs
 output/*

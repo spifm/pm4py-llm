@@ -1,9 +1,9 @@
 {
     "dataset": {
         "columns": {
-            "case_id": "userid",
-            "activity": "eventname",
-            "timestamp": "timecreated"
+            "case_id": "case_id",
+            "activity": "concept:name",
+            "timestamp": "time:timestamp"
         }
     },
     "filter": {
@@ -15,24 +15,24 @@
     },
     "preprocess": {
         "enabled": true,
-        "mapping_activity_json_path": "/dataset/activity_mappings/moodle_activity_mapping_EN.json"
+        "mapping_activity_json_path": "/dataset/activity_mappings/moodle_activity_mapping.json"
     },
     "discovery": {
         "petri_net": {
-            "enabled": false,
+            "enabled": true,
             "infrequent_ratio": 0.0
         },
         "bpmn": {
-            "enabled": false,
+            "enabled": true,
             "infrequent_ratio": 0.0
         },
         "dfg": {
             "enabled": true,
             "image_formats": ["svg", "png"],
-            "performance-enabled": false
+            "performance-enabled": true
         },
         "temporal_profile": {
-            "enabled": false
+            "enabled": true
         }
     },
     "llm": {
@@ -48,38 +48,40 @@
             "api_endpoint": "/api/chat",
             "model_name": "gemma3:27b-it-qat",
             "options": {
+                "num_ctx": 16384,
+                "num_predict": 6144,
+                "temperature": 0.2,
+                "top_p": 0.95
             },
-            "max_prompt_tokens": 0,
-            "think": false
+            "max_prompt_tokens": 14000,
+            "think": false,
+            "json_prompt_config": {
+                "api_url": "http://genialle.uca.es:11434",
+                "api_endpoint": "/api/generate",
+                "model_name": "dfg-simplifier-mistral-7b",
+                "options": {
+                    "temperature": 0.1,
+                    "top_p": 0.95
+                },
+                "max_prompt_tokens": 14000,
+                "think": false
+            }
         },
         "openai": {
             "api_key": "your_openai_api_key",
             "model_name": "gpt-5-mini",
-            "think": false
+            "think": {"effort": "medium"},
+            "max_tokens": 3000
         },
         "gemini": {
             "api_key": "your_gemini_api_key",
             "model_name": "gemini-3-flash-preview",
-            "think": false
+            "think": {"thinkingLevel": "high"}
          },
-       "context": [
+        "context": [
             "Analyze the following process model, which is based on event logs from a Moodle database at a University.",
             "The dataset captures student interactions within a course.",
-            "Objective: Identify key behavioral indicators, trends, anomalies, and recurring patterns.",
-            "Pay special attention to:",
-            "- Common and uncommon workflows followed by students.",
-            "- Variability in the learning process (i.e., differences in how students interact with the course).",
-            "- Bottlenecks or deviations from expected behavior.",
-            "- Potential indicators of engagement, difficulty, or inefficiencies in learning.",
-            "Analysis requirements:",
-            "- Present findings clearly and in a structured way.",
-            "- Justify conclusions based on the structure of the provided model, detected event relationships, and transition frequencies.",
-            "- Explain the implications of identified patterns for student experience and course design.",
-            "- Avoid assuming prior knowledge or external data; base your analysis solely on the provided model.",
-            "Additional instructions:",
-            "Reason step by step, explaining how detected patterns relate to the events and transitions in the model.",
-            "Justify any conclusions with observed data, and do not assume external information.",
-            "If you identify a pattern, explain how you reached that conclusion and what it implies for student behavior and course design."
+            "Objective: Identify key behavioral indicators, trends, anomalies, and recurring patterns."
         ],
         "petri_net": {
             "enabled": false,
@@ -87,7 +89,7 @@
         },
         "dfg": {
             "enabled": false,
-            "prompt": "The model below is a textual representation of a Directly-Follows Graph (DFG) obtained through process mining techniques applied to the Moodle logs. Each line represents a transition between two events, including the frequency of the transition. The `performance` and `stdev` values can be ignored, as they are always zero and not relevant for this analysis.",
+            "prompt": "Model used is a DFG.",
             "simplify_dfg": {
                 "enabled": true,
                 "image_formats": ["svg", "png"],

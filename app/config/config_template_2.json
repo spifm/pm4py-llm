@@ -56,7 +56,7 @@
             "max_prompt_tokens": 14000,
             "think": false,
             "json_prompt_config": {
-                "api_url": "http://genialle.uca.es:11434",
+                "api_url": "http://myurl.es:11434",
                 "api_endpoint": "/api/generate",
                 "model_name": "dfg-simplifier-mistral-7b",
                 "options": {

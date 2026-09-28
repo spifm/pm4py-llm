@@ -78,6 +78,18 @@
             "model_name": "gemini-3-flash-preview",
             "think": {"thinkingLevel": "high"}
          },
+        "vllm": {
+            "api_url": "http://myurl.es:8000/v1",
+            "api_key": "EMPTY",
+            "model_name": "meta-llama/Llama-3.1-8B-Instruct",
+            "options": {
+                "temperature": 0.2,
+                "top_p": 0.95,
+                "max_tokens": 6144
+            },
+            "max_prompt_tokens": 14000,
+            "think": false
+        },
         "context": [
             "Analyze the following process model, which is based on event logs from a Moodle database at a University.",
             "The dataset captures student interactions within a course.",

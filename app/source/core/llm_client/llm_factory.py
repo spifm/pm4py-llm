@@ -5,6 +5,7 @@ from .OpenAIClient import OpenAIClient
 from .OllamaClient import OllamaClient
 from .HuggingFaceClient import HuggingFaceClient
 from .GeminiClient import GeminiClient
+from .VLLMClient import VLLMClient
 
 def create_llm_client(config: Dict[str, Any], logger: Logger) -> LlmClientInterface:
     provider = config["llm"]["llm_provider"]
@@ -16,5 +17,7 @@ def create_llm_client(config: Dict[str, Any], logger: Logger) -> LlmClientInterf
         return HuggingFaceClient(config, logger)
     elif provider == "gemini":
         return GeminiClient(config, logger)
+    elif provider == "vllm":
+        return VLLMClient(config, logger)
     else:
         raise ValueError(f"Unsupported LLM provider: {provider}")

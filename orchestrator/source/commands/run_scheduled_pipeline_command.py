@@ -64,6 +64,25 @@ class RunScheduledPipelineCommand:
 
                 dataset = export_result["output_file"]
                 course_info = export_result["course_info"]
+
+                if export_result.get("rows_exported", 0) == 0:
+                    logger.warning(
+                        "Scheduled pipeline: empty event log for course_id=%s, course.shortname=%s. Skipping course.",
+                        course_id, course_info["shortname"]
+                    )
+                    results.append(
+                        {
+                            "course_id": course_id,
+                            "course.shortname": course_info["shortname"],
+                            "course.fullname": course_info["fullname"],
+                            "dbname": dbname,
+                            "status": "skipped",
+                            "dataset": dataset,
+                            "warning": "Empty event log: no events found for this course",
+                        }
+                    )
+                    continue
+
                 #output_path = f"{course_info['shortname']}_{datetime.now().strftime('%Y%m%d')}"
                 output_path = f"{datetime.now().strftime('%Y%m%d')}/{course_info['shortname']}"
                 logger.info("Scheduled pipeline: Starting STEP 2 (run analysis) for course.shortname=%s, output_path=%s",
